@@ -64,7 +64,7 @@ export function InvestmentsPage() {
               <XAxis dataKey="year" tick={{ fontSize: 11 }} stroke="var(--color-muted)" />
               <YAxis tickFormatter={formatCurrencyCompact} tick={{ fontSize: 11 }} stroke="var(--color-muted)" />
               <Tooltip
-                formatter={(value: number) => formatCurrency(value)}
+                formatter={(value) => typeof value === 'number' ? formatCurrency(value) : String(value)}
                 contentStyle={{ borderRadius: 12, border: '1px solid var(--color-border)' }}
               />
               <Legend />

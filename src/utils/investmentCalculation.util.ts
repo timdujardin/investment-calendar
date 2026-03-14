@@ -28,7 +28,7 @@ export function calculatePensionData(
   let valueBaloise =
     BALOISE_MONTHLY_2026 * Math.pow(rBaloise, FIRST_YEAR_MONTHS / 12) +
     (BALOISE_FIRST_YEAR_TOTAL - BALOISE_MONTHLY_2026) * Math.pow(rBaloise, 4.5 / 12);
-  let investedCrelan = CRELAN_START_VALUE;
+  const investedCrelan = CRELAN_START_VALUE;
   let investedBaloise = BALOISE_FIRST_YEAR_TOTAL;
 
   result.push({

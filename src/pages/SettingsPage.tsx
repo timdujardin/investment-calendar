@@ -1,5 +1,5 @@
 import { useState, useEffect, type InputHTMLAttributes } from 'react';
-import { useSettings, type AppSettings } from '../contexts/SettingsContext';
+import { useSettings } from '../contexts/SettingsContext';
 import type { InvestmentRate } from '../types/investment';
 import { formatCurrency } from '../utils/format.util';
 
@@ -283,15 +283,14 @@ export function SettingsPage() {
             </label>
             <div className="settings-field__input-wrap">
               <span className="settings-field__prefix">€</span>
-              <input
+              <NumericInput
                 id="current-invested"
                 className="settings-field__input"
-                type="number"
                 inputMode="numeric"
                 min="0"
                 step="500"
-                value={settings.currentInvestedAmount}
-                onChange={(e) => handleNumber('currentInvestedAmount', e.target.value)}
+                numericValue={settings.currentInvestedAmount}
+                onCommit={(v) => updateSettings({ currentInvestedAmount: v })}
               />
             </div>
             <span className="settings-field__hint">
@@ -304,15 +303,14 @@ export function SettingsPage() {
             </label>
             <div className="settings-field__input-wrap">
               <span className="settings-field__prefix">€</span>
-              <input
+              <NumericInput
                 id="cash-reserve"
                 className="settings-field__input"
-                type="number"
                 inputMode="numeric"
                 min="0"
                 step="500"
-                value={settings.cashReserve}
-                onChange={(e) => handleNumber('cashReserve', e.target.value)}
+                numericValue={settings.cashReserve}
+                onCommit={(v) => updateSettings({ cashReserve: v })}
               />
             </div>
             <span className="settings-field__hint">
@@ -327,15 +325,14 @@ export function SettingsPage() {
             </label>
             <div className="settings-field__input-wrap">
               <span className="settings-field__prefix">€</span>
-              <input
+              <NumericInput
                 id="monthly-first"
                 className="settings-field__input"
-                type="number"
                 inputMode="decimal"
                 min="0"
                 step="25"
-                value={settings.investmentMonthlyFirstYear}
-                onChange={(e) => handleNumber('investmentMonthlyFirstYear', e.target.value)}
+                numericValue={settings.investmentMonthlyFirstYear}
+                onCommit={(v) => updateSettings({ investmentMonthlyFirstYear: v })}
               />
               <span className="settings-field__suffix">/mnd</span>
             </div>
@@ -346,15 +343,14 @@ export function SettingsPage() {
             </label>
             <div className="settings-field__input-wrap">
               <span className="settings-field__prefix">€</span>
-              <input
+              <NumericInput
                 id="monthly-after"
                 className="settings-field__input"
-                type="number"
                 inputMode="decimal"
                 min="0"
                 step="25"
-                value={settings.investmentMonthly}
-                onChange={(e) => handleNumber('investmentMonthly', e.target.value)}
+                numericValue={settings.investmentMonthly}
+                onCommit={(v) => updateSettings({ investmentMonthly: v })}
               />
               <span className="settings-field__suffix">/mnd</span>
             </div>

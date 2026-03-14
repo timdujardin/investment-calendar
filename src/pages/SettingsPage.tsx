@@ -13,26 +13,27 @@ interface NumericInputProps extends Omit<InputHTMLAttributes<HTMLInputElement>, 
 function NumericInput({ numericValue, onCommit, toDisplay, fromDisplay, ...rest }: NumericInputProps) {
   const display = toDisplay ? toDisplay(numericValue) : numericValue;
   const [raw, setRaw] = useState(String(display));
+  const [focused, setFocused] = useState(false);
 
   useEffect(() => {
-    setRaw(String(toDisplay ? toDisplay(numericValue) : numericValue));
-  }, [numericValue, toDisplay]);
+    if (!focused) {
+      setRaw(String(toDisplay ? toDisplay(numericValue) : numericValue));
+    }
+  }, [numericValue, toDisplay, focused]);
 
   return (
     <input
       {...rest}
       type="number"
       value={raw}
-      onChange={(e) => {
-        setRaw(e.target.value);
-        const parsed = parseFloat(e.target.value);
+      onFocus={() => setFocused(true)}
+      onChange={(e) => setRaw(e.target.value)}
+      onBlur={() => {
+        setFocused(false);
+        const parsed = parseFloat(raw);
         if (!isNaN(parsed)) {
           onCommit(fromDisplay ? fromDisplay(parsed) : parsed);
-        }
-      }}
-      onBlur={() => {
-        const parsed = parseFloat(raw);
-        if (isNaN(parsed) || raw === '') {
+        } else {
           setRaw(String(display));
         }
       }}

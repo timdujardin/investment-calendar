@@ -12,7 +12,7 @@ import {
 
 const FIRST_YEAR_MONTHS = 10;
 
-export interface PensionRates {
+interface PensionRates {
   crelanRate: number;
   baloiseRate: number;
 }
@@ -26,15 +26,6 @@ export function calculatePensionData(
   const result: PensionYearRow[] = [];
   const investedCrelan = CRELAN_START_VALUE;
   let investedBaloise = BALOISE_FIRST_YEAR_TOTAL;
-
-  result.push({
-    investedTotal: investedCrelan,
-    valueTotal: CRELAN_START_VALUE,
-    investedCrelan,
-    investedBaloise: 0,
-    valueCrelan: CRELAN_START_VALUE,
-    valueBaloise: 0,
-  });
 
   let valueCrelan = CRELAN_START_VALUE * Math.pow(rCrelan, FIRST_YEAR_MONTHS / 12);
   let valueBaloise =
@@ -66,9 +57,9 @@ export function calculatePensionData(
   return result;
 }
 
-export type SavingsData = Record<string, Record<number, number | null>>;
+type SavingsData = Record<string, Record<number, number | null>>;
 
-export interface BuildCombinedDataParams {
+interface BuildCombinedDataParams {
   rate: InvestmentRate;
   pensionRates: PensionRates;
   cashReserve: number;
@@ -79,7 +70,7 @@ export interface BuildCombinedDataParams {
   monthlyAfterFirstYear: number;
   savingsData: SavingsData;
   startYear: number;
-  investmentYears: readonly (string | number)[];
+  investmentYears: readonly number[];
   pensionRecaptureRate: number;
   transactionFeeRate: number;
   capitalGainsTaxRate: number;
@@ -100,8 +91,6 @@ function calculateInvestmentData(params: BuildCombinedDataParams) {
 
   let value = params.startingValue;
   let invested = params.startingValue;
-
-  result.push({ invested, value, interest: 0 });
 
   const startMonthIndex = 12 - params.firstYearMonths;
   const firstYearKey = String(params.startYear);
@@ -140,7 +129,7 @@ export function buildCombinedData(params: BuildCombinedDataParams): CombinedYear
   return investmentData.map((inv, i) => {
     const pension = pensionData[i];
     const year = params.investmentYears[i];
-    const age = typeof year === 'number' ? year - BIRTH_YEAR : params.startYear - BIRTH_YEAR;
+    const age = year - BIRTH_YEAR;
     const investmentPensionTotal = inv.value + pension.valueTotal;
     const totalInvested = inv.invested + pension.investedTotal;
     const profitPercent =
@@ -173,8 +162,8 @@ export function buildCombinedData(params: BuildCombinedDataParams): CombinedYear
       cashReserve: params.cashReserve,
       totalValue: investmentPensionTotal + params.cashReserve,
       profitPercent,
-      investmentMonthly: i <= 1 ? params.monthlyFirstYear : params.monthlyAfterFirstYear,
-      pensionMonthly: i <= 1 ? BALOISE_MONTHLY_2026 : BALOISE_MONTHLY_FROM_2027,
+      investmentMonthly: i === 0 ? params.monthlyFirstYear : params.monthlyAfterFirstYear,
+      pensionMonthly: i === 0 ? BALOISE_MONTHLY_2026 : BALOISE_MONTHLY_FROM_2027,
       pensionRecapture,
       pensionNetValue,
       investmentTransactionCosts,
@@ -189,6 +178,6 @@ export function getLastRow<T>(data: T[]): T {
   return data[data.length - 1];
 }
 
-export function getAgeFromYear(year: string | number): number {
-  return typeof year === 'number' ? year - BIRTH_YEAR : 32;
+export function getAgeFromYear(year: number): number {
+  return year - BIRTH_YEAR;
 }

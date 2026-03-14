@@ -6,16 +6,14 @@ interface YearSelectorProps {
   onChange: (index: number) => void;
 }
 
-function getAge(year: string | number): number {
-  return typeof year === 'number' ? year - BIRTH_YEAR : BIRTH_YEAR === 1994 ? 32 : 0;
+function getAge(year: number): number {
+  return year - BIRTH_YEAR;
 }
 
 export function useCurrentYearIndex() {
-  const { investmentYears, settings } = useSettings();
+  const { investmentYears } = useSettings();
   const now = new Date().getFullYear();
-  const idx = investmentYears.findIndex(
-    (y) => (typeof y === 'number' ? y : settings.startYear) === now,
-  );
+  const idx = investmentYears.findIndex((y) => y === now);
   return idx >= 0 ? idx : 0;
 }
 
@@ -39,6 +37,7 @@ export function YearSelector({ value, onChange }: YearSelectorProps) {
           </option>
         ))}
       </select>
+      <span className="year-selector__hint">Berekeningen op basis van positie einde geselecteerd jaar</span>
     </div>
   );
 }

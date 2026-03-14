@@ -10,7 +10,7 @@ export interface PensionYearRow {
 }
 
 export interface CombinedYearRow {
-  year: string | number;
+  year: number;
   age: number;
   investmentInvested: number;
   investmentValue: number;

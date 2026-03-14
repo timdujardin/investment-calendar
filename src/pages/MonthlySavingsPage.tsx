@@ -14,6 +14,7 @@ import { formatCurrency, formatCurrencyCompact } from '../utils/format.util';
 import { useSavingsTracker } from '../hooks/savingsTracker.hooks';
 import { useSettings } from '../contexts/SettingsContext';
 import { DashboardStatus } from '../components/molecules/DashboardStatus';
+import { BIRTH_YEAR } from '../../config/investment.config';
 
 export function MonthlySavingsPage() {
   const { settings } = useSettings();
@@ -50,9 +51,10 @@ export function MonthlySavingsPage() {
           onChange={(e) => setYear(Number(e.target.value))}
         >
           {yearOptions.map((y) => (
-            <option key={y} value={y}>{y}</option>
+            <option key={y} value={y}>{y} — {y - BIRTH_YEAR} jaar</option>
           ))}
         </select>
+        <span className="year-selector__hint">Berekeningen op basis van positie einde geselecteerd jaar</span>
       </div>
 
       <DashboardStatus />

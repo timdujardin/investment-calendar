@@ -28,7 +28,6 @@ export function DashboardStatus() {
 
   const rowTarget = combinedData[rowIndexAtTarget];
   const projectedNet = rowTarget?.totalNetValue ?? 0;
-  const projectedBruto = rowTarget?.totalValue ?? 0;
   const hitsGoal = projectedNet >= settings.targetAmount;
 
   const lastFilled = months.filter((m) => m.saved !== null).at(-1);
@@ -73,9 +72,9 @@ export function DashboardStatus() {
 
     if (savingsDiff > 0) {
       lines.push({ label: 'Extra inleg dit jaar', value: `+${formatCurrency(savingsDiff)}` });
-      detail = `Dat extra bedrag rendeert mee — tegen ${settings.targetAge} jaar circa ${formatCurrency(impactAtTarget)} extra eindkapitaal. Bruto prognose: ${formatCurrency(projectedBruto)}.`;
+      detail = `Dat extra bedrag rendeert mee — tegen ${settings.targetAge} jaar circa ${formatCurrency(impactAtTarget)} extra netto eindkapitaal. Netto prognose: ${formatCurrency(projectedNet)}.`;
     } else {
-      detail = `Prognose op basis van ${settings.rate}% rendement, na kosten en belasting. Bruto prognose: ${formatCurrency(projectedBruto)}.`;
+      detail = `Prognose op basis van ${settings.rate}% rendement, na kosten en belasting. Netto prognose: ${formatCurrency(projectedNet)}.`;
     }
   } else if (mixed) {
     icon = '⚠';
@@ -87,7 +86,7 @@ export function DashboardStatus() {
       { label: 'Prognose', value: formatCurrency(projectedNet) },
       { label: 'Achterstand dit jaar', value: `-${formatCurrency(Math.abs(savingsDiff))}`, highlight: true },
     );
-    detail = `Dat gemiste bedrag mist ook ${yearsRemaining} jaar aan rendement — circa ${formatCurrency(impactAtTarget)} minder eindkapitaal bij ${settings.targetAge} jaar. Bruto prognose: ${formatCurrency(projectedBruto)}.`;
+    detail = `Dat gemiste bedrag mist ook ${yearsRemaining} jaar aan rendement — circa ${formatCurrency(impactAtTarget)} minder netto eindkapitaal bij ${settings.targetAge} jaar. Netto prognose: ${formatCurrency(projectedNet)}.`;
   } else if (!hitsGoal) {
     icon = '✗';
     title = `Doel niet gehaald — doel ${goalLabel}`;
@@ -102,9 +101,9 @@ export function DashboardStatus() {
 
     if (filledMonths > 0 && savingsDiff < 0) {
       lines.push({ label: 'Achterstand dit jaar', value: `-${formatCurrency(Math.abs(savingsDiff))}` });
-      detail = `Dat gemiste bedrag mist ook ${yearsRemaining} jaar rendement — circa ${formatCurrency(impactAtTarget)} minder eindkapitaal. Bruto prognose: ${formatCurrency(projectedBruto)}.`;
+      detail = `Dat gemiste bedrag mist ook ${yearsRemaining} jaar rendement — circa ${formatCurrency(impactAtTarget)} minder netto eindkapitaal. Netto prognose: ${formatCurrency(projectedNet)}.`;
     } else {
-      detail = `Verhoog je maandelijkse inleg, verlaag je doelbedrag, of verleng de looptijd. Bruto prognose: ${formatCurrency(projectedBruto)}.`;
+      detail = `Verhoog je maandelijkse inleg, verlaag je doelbedrag, of verleng de looptijd. Netto prognose: ${formatCurrency(projectedNet)}.`;
     }
   } else {
     icon = '→';
@@ -115,7 +114,7 @@ export function DashboardStatus() {
       { label: 'Doel', value: formatCurrency(settings.targetAmount) },
       { label: 'Prognose', value: formatCurrency(projectedNet) },
     );
-    detail = `Vul je maandelijkse stortingen in om voortgang te zien. Bruto prognose: ${formatCurrency(projectedBruto)}.`;
+    detail = `Vul je maandelijkse stortingen in om voortgang te zien. Netto prognose: ${formatCurrency(projectedNet)}.`;
   }
 
   return (

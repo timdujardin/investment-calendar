@@ -36,7 +36,7 @@ function saveToStorage(data: MonthlySavingsRecord) {
   window.dispatchEvent(new Event(SAVINGS_CHANGED_EVENT));
 }
 
-export interface MonthEntry {
+interface MonthEntry {
   monthIndex: number;
   label: string;
   target: number;

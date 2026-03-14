@@ -80,7 +80,7 @@ interface SettingsContextValue {
   resetSettings: () => void;
   projectionYears: number;
   rowIndexAtTarget: number;
-  investmentYears: readonly (string | number)[];
+  investmentYears: readonly number[];
 }
 
 const SettingsContext = createContext<SettingsContextValue | null>(null);
@@ -103,10 +103,9 @@ export function SettingsProvider({ children }: { children: ReactNode }) {
 
   const derived = useMemo(() => {
     const projectionYears = settings.endYear - settings.startYear;
-    const rowIndexAtTarget = settings.targetAge - (settings.startYear - BIRTH_YEAR) + 1;
-    const investmentYears: readonly (string | number)[] = [
-      `${settings.startYear} (start)`,
-      `${settings.startYear} (mrt–dec)`,
+    const rowIndexAtTarget = settings.targetAge - (settings.startYear - BIRTH_YEAR);
+    const investmentYears: readonly number[] = [
+      settings.startYear,
       ...Array.from({ length: projectionYears }, (_, i) => settings.startYear + 1 + i),
     ];
     return { projectionYears, rowIndexAtTarget, investmentYears };

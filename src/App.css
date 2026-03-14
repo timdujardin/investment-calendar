@@ -314,6 +314,12 @@ body {
   outline: none;
 }
 
+.year-selector__hint {
+  font-size: 0.55rem;
+  color: var(--color-muted);
+  margin-block-start: 0.15rem;
+}
+
 /* Detail grid & cards */
 .detail-grid {
   display: grid;
@@ -574,12 +580,6 @@ body {
   font-weight: 400;
 }
 
-.tracker-cell__value {
-  font-size: 0.85rem;
-  font-weight: 700;
-  padding: 0.4rem 0;
-}
-
 .tracker-cell__status {
   font-size: 0.65rem;
   font-weight: 700;
@@ -657,158 +657,6 @@ body {
   color: var(--color-warning);
 }
 
-.savings-status {
-  display: flex;
-  align-items: center;
-  gap: 0.5rem;
-  padding: 1rem;
-  border-radius: var(--radius);
-  font-weight: 600;
-}
-
-.savings-status--on-track {
-  background: var(--color-status-on-bg);
-  color: var(--color-status-on-text);
-}
-
-.savings-status--off-track {
-  background: var(--color-status-off-bg);
-  color: var(--color-status-off-text);
-}
-
-.savings-status__icon {
-  font-size: 1.25rem;
-}
-
-/* Savings input form */
-.savings-form {
-  background: var(--color-surface);
-  border-radius: var(--radius);
-  padding: 1.25rem;
-  box-shadow: var(--shadow);
-  display: flex;
-  flex-direction: column;
-  gap: 1rem;
-}
-
-.savings-form__title {
-  font-size: 0.9rem;
-  font-weight: 700;
-}
-
-.savings-form__fields {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 0.75rem;
-}
-
-.savings-form__field {
-  display: flex;
-  flex-direction: column;
-  gap: 0.25rem;
-}
-
-.savings-form__field--full {
-  grid-column: 1 / -1;
-}
-
-.savings-form__label {
-  font-size: 0.72rem;
-  font-weight: 600;
-  text-transform: uppercase;
-  letter-spacing: 0.04em;
-  color: var(--color-muted);
-}
-
-.savings-form__input {
-  padding: 0.6rem 0.75rem;
-  border: 2px solid var(--color-border);
-  border-radius: 10px;
-  background: var(--color-bg);
-  color: var(--color-text);
-  font-size: 1rem;
-  font-weight: 600;
-  font-family: inherit;
-  transition: border-color 0.2s;
-  inline-size: 100%;
-}
-
-.savings-form__input:focus {
-  border-color: var(--color-investment);
-  outline: none;
-}
-
-.savings-form__input::placeholder {
-  color: var(--color-muted);
-  font-weight: 400;
-}
-
-/* Impact analysis card */
-.impact-card {
-  background: var(--color-surface);
-  border-radius: var(--radius);
-  padding: 1.25rem;
-  box-shadow: var(--shadow);
-  display: flex;
-  flex-direction: column;
-  gap: 0.75rem;
-}
-
-.impact-card__title {
-  font-size: 0.75rem;
-  font-weight: 600;
-  text-transform: uppercase;
-  letter-spacing: 0.05em;
-  color: var(--color-muted);
-}
-
-.impact-card__row {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  padding-block: 0.4rem;
-  border-block-end: 1px solid var(--color-border);
-}
-
-.impact-card__row:last-child {
-  border-block-end: none;
-}
-
-.impact-card__label {
-  font-size: 0.85rem;
-  color: var(--color-muted);
-}
-
-.impact-card__value {
-  font-size: 0.9rem;
-  font-weight: 700;
-}
-
-.impact-card__value--positive {
-  color: var(--color-success);
-}
-
-.impact-card__value--negative {
-  color: var(--color-warning);
-}
-
-.impact-card__message {
-  font-size: 0.85rem;
-  line-height: 1.5;
-  padding: 0.75rem;
-  border-radius: 10px;
-}
-
-.impact-card__message--ok {
-  background: var(--color-status-on-bg);
-  color: var(--color-status-on-text);
-}
-
-.impact-card__message--warn {
-  background: var(--color-status-off-bg);
-  color: var(--color-status-off-text);
-}
-
 /* Text utilities */
 .text-investment {
   color: var(--color-investment);
@@ -828,10 +676,6 @@ body {
 .text-warn {
   color: var(--color-warn, #e67e22);
   font-weight: 600;
-}
-
-.text-bold {
-  font-weight: 800;
 }
 
 .detail-section__disclaimer {

@@ -27,13 +27,13 @@ export function SummaryCards() {
       <SummaryCard
         label={`Eindstand ${targetYear} (${settings.targetAge} jaar)`}
         value={formatCurrency(rowTarget.totalNetValue)}
-        sub={`Bruto: ${formatCurrency(rowTarget.totalValue)} · Ingelegd: ${formatCurrency(rowTarget.investmentInvested + rowTarget.pensionInvested)} · Cash reserve: ${formatCurrency(rowTarget.cashReserve)}`}
+        sub={`Bruto: ${formatCurrency(rowTarget.totalValue)} · Ingelegd: ${formatCurrency(rowTarget.investmentInvested + rowTarget.pensionInvested)} · Winst: +${formatCurrency(rowTarget.investmentInterest + (rowTarget.pensionValue - rowTarget.pensionInvested))} · Cash reserve: ${formatCurrency(rowTarget.cashReserve)}`}
         variant="blue"
       />
       <SummaryCard
         label={`Eindstand ${endYear} (${rowEnd.age} jaar)`}
         value={formatCurrency(rowEnd.totalNetValue)}
-        sub={`Bruto: ${formatCurrency(rowEnd.totalValue)} · Ingelegd: ${formatCurrency(rowEnd.investmentInvested + rowEnd.pensionInvested)} · Cash reserve: ${formatCurrency(rowEnd.cashReserve)}`}
+        sub={`Bruto: ${formatCurrency(rowEnd.totalValue)} · Ingelegd: ${formatCurrency(rowEnd.investmentInvested + rowEnd.pensionInvested)} · Winst: +${formatCurrency(rowEnd.investmentInterest + (rowEnd.pensionValue - rowEnd.pensionInvested))} · Cash reserve: ${formatCurrency(rowEnd.cashReserve)}`}
         variant="orange"
       />
       <SummaryCard

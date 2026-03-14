@@ -1,16 +1,5 @@
 export type InvestmentRate = 5 | 7 | 10;
 
-export interface InvestmentYearRow {
-  year: string | number;
-  investedAmount: number;
-  valueAt5: number;
-  valueAt7: number;
-  valueAt10: number;
-  interestAt5: number;
-  interestAt7: number;
-  interestAt10: number;
-}
-
 export interface PensionYearRow {
   investedTotal: number;
   valueTotal: number;
@@ -28,8 +17,15 @@ export interface CombinedYearRow {
   investmentInterest: number;
   pensionInvested: number;
   pensionValue: number;
+  cashReserve: number;
   totalValue: number;
   profitPercent: number;
   investmentMonthly: number;
   pensionMonthly: number;
+  pensionRecapture: number;
+  pensionNetValue: number;
+  investmentTransactionCosts: number;
+  investmentCapitalGainsTax: number;
+  investmentNetValue: number;
+  totalNetValue: number;
 }

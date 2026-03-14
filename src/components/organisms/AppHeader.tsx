@@ -17,7 +17,7 @@ export function AppHeader() {
           📈 Investering: €{settings.investmentMonthlyFirstYear}/mnd ({settings.startYear}) · €{settings.investmentMonthly}/mnd (vanaf {settings.startYear + 1})
         </span>
         <span className="pill">
-          🏦 Pensioensparen: Crelan {(settings.crelanRate * 100).toFixed(1)}% + Baloise {(settings.baloiseRate * 100).toFixed(1)}%
+          🏦 Pensioensparen: Crelan {(settings.crelanRate * 100).toFixed(1)}%/jaar + Baloise {(settings.baloiseRate * 100).toFixed(1)}%/jaar
         </span>
         <span className="pill">
           🎯 Doel: {formatCurrency(settings.targetAmount)} tegen {settings.targetAge} jaar · {settings.rate}% rendement

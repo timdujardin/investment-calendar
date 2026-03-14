@@ -61,7 +61,7 @@ export function SettingsPage() {
                   min="0"
                   max="20"
                   step="0.25"
-                  value={settings.crelanRate * 100}
+                  value={Math.round(settings.crelanRate * 10000) / 100}
                   onChange={(e) => {
                     const parsed = parseFloat(e.target.value);
                     if (!isNaN(parsed)) updateSettings({ crelanRate: parsed / 100 });
@@ -83,7 +83,7 @@ export function SettingsPage() {
                   min="0"
                   max="20"
                   step="0.25"
-                  value={settings.baloiseRate * 100}
+                  value={Math.round(settings.baloiseRate * 10000) / 100}
                   onChange={(e) => {
                     const parsed = parseFloat(e.target.value);
                     if (!isNaN(parsed)) updateSettings({ baloiseRate: parsed / 100 });
@@ -94,7 +94,82 @@ export function SettingsPage() {
             </div>
           </div>
           <span className="settings-field__hint">
-            Crelan {(settings.crelanRate * 100).toFixed(1)}% + Baloise {(settings.baloiseRate * 100).toFixed(1)}%
+            Crelan {(settings.crelanRate * 100).toFixed(1)}%/jaar + Baloise {(settings.baloiseRate * 100).toFixed(1)}%/jaar
+          </span>
+        </section>
+
+        <section className="settings-section">
+          <h2 className="settings-section__title">Kosten & belasting</h2>
+          <div className="settings-field-row settings-field-row--3col">
+            <div className="settings-field">
+              <label className="settings-field__label" htmlFor="pension-recapture">
+                Pensioen terugvordering
+              </label>
+              <div className="settings-field__input-wrap">
+                <input
+                  id="pension-recapture"
+                  className="settings-field__input"
+                  type="number"
+                  inputMode="decimal"
+                  min="0"
+                  max="100"
+                  step="0.5"
+                  value={Math.round(settings.pensionRecaptureRate * 10000) / 100}
+                  onChange={(e) => {
+                    const parsed = parseFloat(e.target.value);
+                    if (!isNaN(parsed)) updateSettings({ pensionRecaptureRate: parsed / 100 });
+                  }}
+                />
+                <span className="settings-field__suffix">%</span>
+              </div>
+            </div>
+            <div className="settings-field">
+              <label className="settings-field__label" htmlFor="transaction-fee">
+                Beurstaks + makelaar
+              </label>
+              <div className="settings-field__input-wrap">
+                <input
+                  id="transaction-fee"
+                  className="settings-field__input"
+                  type="number"
+                  inputMode="decimal"
+                  min="0"
+                  max="100"
+                  step="0.5"
+                  value={Math.round(settings.transactionFeeRate * 10000) / 100}
+                  onChange={(e) => {
+                    const parsed = parseFloat(e.target.value);
+                    if (!isNaN(parsed)) updateSettings({ transactionFeeRate: parsed / 100 });
+                  }}
+                />
+                <span className="settings-field__suffix">%</span>
+              </div>
+            </div>
+            <div className="settings-field">
+              <label className="settings-field__label" htmlFor="capital-gains-tax">
+                Meerwaardetaks
+              </label>
+              <div className="settings-field__input-wrap">
+                <input
+                  id="capital-gains-tax"
+                  className="settings-field__input"
+                  type="number"
+                  inputMode="decimal"
+                  min="0"
+                  max="100"
+                  step="0.5"
+                  value={Math.round(settings.capitalGainsTaxRate * 10000) / 100}
+                  onChange={(e) => {
+                    const parsed = parseFloat(e.target.value);
+                    if (!isNaN(parsed)) updateSettings({ capitalGainsTaxRate: parsed / 100 });
+                  }}
+                />
+                <span className="settings-field__suffix">%</span>
+              </div>
+            </div>
+          </div>
+          <span className="settings-field__hint">
+            Pensioen: terugvordering bij pensionering · Beurstaks: kosten bij storting · Meerwaarde: per €10.000 winst
           </span>
         </section>
 
@@ -181,6 +256,50 @@ export function SettingsPage() {
         </section>
 
         <section className="settings-section">
+          <h2 className="settings-section__title">Vermogen</h2>
+          <div className="settings-field">
+            <label className="settings-field__label" htmlFor="current-invested">
+              Huidig geïnvesteerd bedrag
+            </label>
+            <div className="settings-field__input-wrap">
+              <span className="settings-field__prefix">€</span>
+              <input
+                id="current-invested"
+                className="settings-field__input"
+                type="number"
+                inputMode="numeric"
+                min="0"
+                step="500"
+                value={settings.currentInvestedAmount}
+                onChange={(e) => handleNumber('currentInvestedAmount', e.target.value)}
+              />
+            </div>
+            <span className="settings-field__hint">
+              Startwaarde portefeuille bij aanvang projectie
+            </span>
+          </div>
+          <div className="settings-field">
+            <label className="settings-field__label" htmlFor="cash-reserve">
+              Cash reserve
+            </label>
+            <div className="settings-field__input-wrap">
+              <span className="settings-field__prefix">€</span>
+              <input
+                id="cash-reserve"
+                className="settings-field__input"
+                type="number"
+                inputMode="numeric"
+                min="0"
+                step="500"
+                value={settings.cashReserve}
+                onChange={(e) => handleNumber('cashReserve', e.target.value)}
+              />
+            </div>
+            <span className="settings-field__hint">
+              Vast bedrag zonder rendement, telt mee bij totalen
+            </span>
+          </div>
+
           <h2 className="settings-section__title">Maandelijkse investering</h2>
           <div className="settings-field">
             <label className="settings-field__label" htmlFor="monthly-first">

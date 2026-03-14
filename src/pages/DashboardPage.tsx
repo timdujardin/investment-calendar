@@ -6,12 +6,12 @@ import { PrognoseLineChart } from '../components/molecules/PrognoseLineChart';
 export function DashboardPage() {
   return (
     <div className="page">
+      <AppHeader />
       <DashboardStatus />
       <main className="page__main">
         <SummaryCards />
         <PrognoseLineChart />
       </main>
-      <AppHeader />
     </div>
   );
 }

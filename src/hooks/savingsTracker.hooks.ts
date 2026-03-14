@@ -14,7 +14,7 @@ const PREFILLED: MonthlySavingsRecord = {
   '2026': { 0: 450, 1: 500 },
 };
 
-function loadFromStorage(): MonthlySavingsRecord {
+export function loadSavingsData(): MonthlySavingsRecord {
   try {
     const raw = localStorage.getItem(STORAGE_KEY);
     if (!raw) return structuredClone(PREFILLED);
@@ -24,8 +24,16 @@ function loadFromStorage(): MonthlySavingsRecord {
   }
 }
 
+const SAVINGS_CHANGED_EVENT = 'savings-updated';
+
+export function onSavingsChanged(listener: () => void) {
+  window.addEventListener(SAVINGS_CHANGED_EVENT, listener);
+  return () => window.removeEventListener(SAVINGS_CHANGED_EVENT, listener);
+}
+
 function saveToStorage(data: MonthlySavingsRecord) {
   localStorage.setItem(STORAGE_KEY, JSON.stringify(data));
+  window.dispatchEvent(new Event(SAVINGS_CHANGED_EVENT));
 }
 
 export interface MonthEntry {
@@ -41,7 +49,7 @@ export interface MonthEntry {
 
 export function useSavingsTracker(year: number) {
   const { settings } = useSettings();
-  const [data, setData] = useState<MonthlySavingsRecord>(loadFromStorage);
+  const [data, setData] = useState<MonthlySavingsRecord>(loadSavingsData);
 
   const target = year <= settings.startYear
     ? settings.investmentMonthlyFirstYear

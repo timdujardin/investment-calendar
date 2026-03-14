@@ -34,7 +34,7 @@ function PageLoader() {
 function App() {
   return (
     <ThemeProvider>
-      <BrowserRouter>
+      <BrowserRouter basename={import.meta.env.BASE_URL}>
         <SettingsProvider>
           <InvestmentProvider>
             <div className="app">

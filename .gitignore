@@ -12,6 +12,10 @@ dist
 dist-ssr
 *.local
 
+# Generated PWA icons (rebuilt via npm run pwa:icons)
+public/apple-touch-icon.png
+public/pwa-*.png
+
 # Editor directories and files
 .vscode/*
 !.vscode/extensions.json

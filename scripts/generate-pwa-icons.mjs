@@ -11,7 +11,7 @@ const svg = readFileSync(svgPath);
 
 for (const size of [180, 192, 512]) {
   const buffer = await sharp(svg)
-    .resize(size, size)
+    .resize(size, size, { fit: 'contain', background: { r: 0, g: 0, b: 0, alpha: 0 } })
     .png()
     .toBuffer();
   const filename = size === 180 ? 'apple-touch-icon.png' : `pwa-${size}x${size}.png`;

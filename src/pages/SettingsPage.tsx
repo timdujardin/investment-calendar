@@ -1,18 +1,52 @@
+import { useState, useEffect, type InputHTMLAttributes } from 'react';
 import { useSettings, type AppSettings } from '../contexts/SettingsContext';
 import type { InvestmentRate } from '../types/investment';
 import { formatCurrency } from '../utils/format.util';
 
+interface NumericInputProps extends Omit<InputHTMLAttributes<HTMLInputElement>, 'value' | 'onChange'> {
+  numericValue: number;
+  onCommit: (value: number) => void;
+  toDisplay?: (n: number) => number;
+  fromDisplay?: (n: number) => number;
+}
+
+function NumericInput({ numericValue, onCommit, toDisplay, fromDisplay, ...rest }: NumericInputProps) {
+  const display = toDisplay ? toDisplay(numericValue) : numericValue;
+  const [raw, setRaw] = useState(String(display));
+
+  useEffect(() => {
+    setRaw(String(toDisplay ? toDisplay(numericValue) : numericValue));
+  }, [numericValue, toDisplay]);
+
+  return (
+    <input
+      {...rest}
+      type="number"
+      value={raw}
+      onChange={(e) => {
+        setRaw(e.target.value);
+        const parsed = parseFloat(e.target.value);
+        if (!isNaN(parsed)) {
+          onCommit(fromDisplay ? fromDisplay(parsed) : parsed);
+        }
+      }}
+      onBlur={() => {
+        const parsed = parseFloat(raw);
+        if (isNaN(parsed) || raw === '') {
+          setRaw(String(display));
+        }
+      }}
+    />
+  );
+}
+
 const RATE_OPTIONS: InvestmentRate[] = [5, 7, 10];
+
+const toPercent = (n: number) => Math.round(n * 10000) / 100;
+const fromPercent = (n: number) => n / 100;
 
 export function SettingsPage() {
   const { settings, updateSettings, resetSettings } = useSettings();
-
-  function handleNumber(key: keyof AppSettings, value: string) {
-    const parsed = parseFloat(value);
-    if (!isNaN(parsed)) {
-      updateSettings({ [key]: parsed });
-    }
-  }
 
   return (
     <div className="page">
@@ -53,19 +87,17 @@ export function SettingsPage() {
                 Crelan rendement
               </label>
               <div className="settings-field__input-wrap">
-                <input
+                <NumericInput
                   id="crelan-rate"
                   className="settings-field__input"
-                  type="number"
                   inputMode="decimal"
                   min="0"
                   max="20"
                   step="0.25"
-                  value={Math.round(settings.crelanRate * 10000) / 100}
-                  onChange={(e) => {
-                    const parsed = parseFloat(e.target.value);
-                    if (!isNaN(parsed)) updateSettings({ crelanRate: parsed / 100 });
-                  }}
+                  numericValue={settings.crelanRate}
+                  toDisplay={toPercent}
+                  fromDisplay={fromPercent}
+                  onCommit={(v) => updateSettings({ crelanRate: v })}
                 />
                 <span className="settings-field__suffix">%</span>
               </div>
@@ -75,19 +107,17 @@ export function SettingsPage() {
                 Baloise rendement
               </label>
               <div className="settings-field__input-wrap">
-                <input
+                <NumericInput
                   id="baloise-rate"
                   className="settings-field__input"
-                  type="number"
                   inputMode="decimal"
                   min="0"
                   max="20"
                   step="0.25"
-                  value={Math.round(settings.baloiseRate * 10000) / 100}
-                  onChange={(e) => {
-                    const parsed = parseFloat(e.target.value);
-                    if (!isNaN(parsed)) updateSettings({ baloiseRate: parsed / 100 });
-                  }}
+                  numericValue={settings.baloiseRate}
+                  toDisplay={toPercent}
+                  fromDisplay={fromPercent}
+                  onCommit={(v) => updateSettings({ baloiseRate: v })}
                 />
                 <span className="settings-field__suffix">%</span>
               </div>
@@ -106,19 +136,17 @@ export function SettingsPage() {
                 Pensioen terugvordering
               </label>
               <div className="settings-field__input-wrap">
-                <input
+                <NumericInput
                   id="pension-recapture"
                   className="settings-field__input"
-                  type="number"
                   inputMode="decimal"
                   min="0"
                   max="100"
                   step="0.5"
-                  value={Math.round(settings.pensionRecaptureRate * 10000) / 100}
-                  onChange={(e) => {
-                    const parsed = parseFloat(e.target.value);
-                    if (!isNaN(parsed)) updateSettings({ pensionRecaptureRate: parsed / 100 });
-                  }}
+                  numericValue={settings.pensionRecaptureRate}
+                  toDisplay={toPercent}
+                  fromDisplay={fromPercent}
+                  onCommit={(v) => updateSettings({ pensionRecaptureRate: v })}
                 />
                 <span className="settings-field__suffix">%</span>
               </div>
@@ -128,19 +156,17 @@ export function SettingsPage() {
                 Beurstaks + makelaar
               </label>
               <div className="settings-field__input-wrap">
-                <input
+                <NumericInput
                   id="transaction-fee"
                   className="settings-field__input"
-                  type="number"
                   inputMode="decimal"
                   min="0"
                   max="100"
                   step="0.5"
-                  value={Math.round(settings.transactionFeeRate * 10000) / 100}
-                  onChange={(e) => {
-                    const parsed = parseFloat(e.target.value);
-                    if (!isNaN(parsed)) updateSettings({ transactionFeeRate: parsed / 100 });
-                  }}
+                  numericValue={settings.transactionFeeRate}
+                  toDisplay={toPercent}
+                  fromDisplay={fromPercent}
+                  onCommit={(v) => updateSettings({ transactionFeeRate: v })}
                 />
                 <span className="settings-field__suffix">%</span>
               </div>
@@ -150,19 +176,17 @@ export function SettingsPage() {
                 Meerwaardetaks
               </label>
               <div className="settings-field__input-wrap">
-                <input
+                <NumericInput
                   id="capital-gains-tax"
                   className="settings-field__input"
-                  type="number"
                   inputMode="decimal"
                   min="0"
                   max="100"
                   step="0.5"
-                  value={Math.round(settings.capitalGainsTaxRate * 10000) / 100}
-                  onChange={(e) => {
-                    const parsed = parseFloat(e.target.value);
-                    if (!isNaN(parsed)) updateSettings({ capitalGainsTaxRate: parsed / 100 });
-                  }}
+                  numericValue={settings.capitalGainsTaxRate}
+                  toDisplay={toPercent}
+                  fromDisplay={fromPercent}
+                  onCommit={(v) => updateSettings({ capitalGainsTaxRate: v })}
                 />
                 <span className="settings-field__suffix">%</span>
               </div>
@@ -181,15 +205,14 @@ export function SettingsPage() {
             </label>
             <div className="settings-field__input-wrap">
               <span className="settings-field__prefix">€</span>
-              <input
+              <NumericInput
                 id="target-amount"
                 className="settings-field__input"
-                type="number"
                 inputMode="numeric"
                 min="0"
                 step="1000"
-                value={settings.targetAmount}
-                onChange={(e) => handleNumber('targetAmount', e.target.value)}
+                numericValue={settings.targetAmount}
+                onCommit={(v) => updateSettings({ targetAmount: v })}
               />
             </div>
             <span className="settings-field__hint">
@@ -201,15 +224,14 @@ export function SettingsPage() {
               Doelleeftijd
             </label>
             <div className="settings-field__input-wrap">
-              <input
+              <NumericInput
                 id="target-age"
                 className="settings-field__input"
-                type="number"
                 inputMode="numeric"
                 min="30"
                 max="70"
-                value={settings.targetAge}
-                onChange={(e) => handleNumber('targetAge', e.target.value)}
+                numericValue={settings.targetAge}
+                onCommit={(v) => updateSettings({ targetAge: v })}
               />
               <span className="settings-field__suffix">jaar</span>
             </div>
@@ -223,30 +245,28 @@ export function SettingsPage() {
               <label className="settings-field__label" htmlFor="start-year">
                 Startjaar
               </label>
-              <input
+              <NumericInput
                 id="start-year"
                 className="settings-field__input"
-                type="number"
                 inputMode="numeric"
                 min="2020"
                 max="2060"
-                value={settings.startYear}
-                onChange={(e) => handleNumber('startYear', e.target.value)}
+                numericValue={settings.startYear}
+                onCommit={(v) => updateSettings({ startYear: v })}
               />
             </div>
             <div className="settings-field">
               <label className="settings-field__label" htmlFor="end-year">
                 Eindjaar
               </label>
-              <input
+              <NumericInput
                 id="end-year"
                 className="settings-field__input"
-                type="number"
                 inputMode="numeric"
                 min="2030"
                 max="2080"
-                value={settings.endYear}
-                onChange={(e) => handleNumber('endYear', e.target.value)}
+                numericValue={settings.endYear}
+                onCommit={(v) => updateSettings({ endYear: v })}
               />
             </div>
           </div>

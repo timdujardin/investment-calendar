@@ -1,0 +1,32 @@
+---
+description: TypeScript patterns for utilities, types, and configuration
+globs: "**/*.ts"
+alwaysApply: false
+---
+
+# TypeScript Patterns
+
+## Types
+
+- Core interfaces in `src/types/investment.ts`: `InvestmentYearRow`, `PensionYearRow`, `CombinedYearRow`, `MonthlySavingsTarget`
+- Use `interface` for object shapes, `type` for unions and aliases
+
+## Utilities
+
+Utility functions are pure and side-effect free:
+
+```typescript
+// Good: pure function with typed return
+export function getLastRow<T>(data: T[]): T {
+  return data[data.length - 1];
+}
+
+// Bad: side effects in utility
+export function fetchAndFormatData() { ... }
+```
+
+## Configuration
+
+- All magic numbers live in `config/investment.config.ts`
+- Derived constants (e.g. `PROJECTION_YEARS`, `ROW_INDEX_AT_40`) computed from base values
+- Shared lookup arrays (e.g. `INVESTMENT_YEARS`) exported from config

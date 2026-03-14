@@ -1,0 +1,37 @@
+---
+description: CSS conventions including logical properties and design tokens
+globs: "**/*.css"
+alwaysApply: false
+---
+
+# CSS Conventions
+
+## Logical properties only
+
+Always use CSS logical properties instead of physical ones:
+
+| Physical (do not use) | Logical (use this) |
+|-----------------------|-------------------|
+| `margin-left` | `margin-inline-start` |
+| `margin-right` | `margin-inline-end` |
+| `margin-top` | `margin-block-start` |
+| `padding: 12px 16px` | `padding-block: 12px; padding-inline: 16px;` |
+| `width` | `inline-size` |
+| `height` | `block-size` |
+| `min-height` | `min-block-size` |
+| `max-width` | `max-inline-size` |
+| `top` | `inset-block-start` |
+| `border-left` | `border-inline-start` |
+
+Exceptions: `border-radius`, `box-shadow`, `line-height`, `@media (min-width:)` — these have no logical equivalents.
+
+## Design tokens
+
+- All colors via `var(--color-*)` custom properties — never hardcode colors
+- Light/dark theme tokens defined on `:root` / `[data-theme="dark"]`
+- Semantic token naming: `--color-investment`, `--color-pension`, `--color-success`, `--color-warning`
+- Component-specific tokens: `--color-badge-*`, `--color-status-*`, `--color-nav-*`
+
+## Inline styles in JSX
+
+When using inline styles in React components, also use logical properties (e.g. `marginInlineStart` not `marginLeft`).

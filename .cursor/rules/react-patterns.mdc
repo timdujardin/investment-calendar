@@ -1,0 +1,28 @@
+---
+description: React component and state management patterns
+globs: "**/*.tsx"
+alwaysApply: false
+---
+
+# React Patterns
+
+## Composition over props
+
+- Components consume context directly via hooks — no deep prop chains
+- State lives in contexts: `InvestmentContext`, `ThemeContext`
+- Each context exposes a `useXxx()` hook (e.g. `useInvestment()`, `useTheme()`)
+
+## Component rules
+
+- Functional components only (no class components)
+- No data transformation logic in components — delegate to utils or hooks
+- Custom hooks for any reusable or complex logic (chart data formatting, etc.)
+- Hooks grouped by domain in `hooks/` folder, one file per logical grouping
+- Pages are lazy-loaded with `React.lazy()` and wrapped in `<Suspense>`
+
+## Accessibility
+
+- All interactive elements must have visible focus styles (`:focus-visible`)
+- Use `role`, `aria-label`, `aria-checked` where appropriate
+- Table headers use `scope="col"` attribute
+- Navigation landmarks use proper `role` attributes

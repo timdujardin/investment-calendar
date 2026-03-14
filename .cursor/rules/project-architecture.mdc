@@ -1,0 +1,28 @@
+---
+description: Core project architecture and folder conventions for the investment calendar app
+alwaysApply: true
+---
+
+# Project Architecture
+
+## Folder structure
+
+- `config/` — app-specific configuration (investment rates, targets, projections). Suffix: `.config.ts`
+- `src/utils/` — pure, reusable functions (no React, no side effects). Suffix: `.util.ts`
+- `src/hooks/` — custom React hooks grouped by logical domain. Suffix: `.hooks.ts`
+- `src/contexts/` — React Context providers + consumer hooks. Suffix: `Context.tsx`
+- `src/types/` — shared TypeScript interfaces and type definitions
+
+## Components (Atomic Design)
+
+- `atoms/` — smallest building blocks (RateSelector, SummaryCard, ThemeToggle)
+- `molecules/` — compositions of atoms (PrognoseLineChart, SummaryCards, MobileDataCard)
+- `organisms/` — full sections with business logic (AppBar, AppHeader, BottomNav)
+- `pages/` — top-level page components (DashboardPage, InvestmentsPage, PensionPage, MonthlySavingsPage)
+
+## Key rules
+
+- No `.find()` or `.filter()` calls in components — extract to utils or hooks
+- No prop drilling — use Context + custom hooks for shared state
+- No magic numbers — use named constants from `config/investment.config.ts`
+- Pages are lazy-loaded via `React.lazy()` with a `Suspense` fallback

@@ -24,12 +24,22 @@ export function calculatePensionData(
   const rCrelan = 1 + rates.crelanRate;
   const rBaloise = 1 + rates.baloiseRate;
   const result: PensionYearRow[] = [];
+  const investedCrelan = CRELAN_START_VALUE;
+  let investedBaloise = BALOISE_FIRST_YEAR_TOTAL;
+
+  result.push({
+    investedTotal: investedCrelan,
+    valueTotal: CRELAN_START_VALUE,
+    investedCrelan,
+    investedBaloise: 0,
+    valueCrelan: CRELAN_START_VALUE,
+    valueBaloise: 0,
+  });
+
   let valueCrelan = CRELAN_START_VALUE * Math.pow(rCrelan, FIRST_YEAR_MONTHS / 12);
   let valueBaloise =
     BALOISE_MONTHLY_2026 * Math.pow(rBaloise, FIRST_YEAR_MONTHS / 12) +
     (BALOISE_FIRST_YEAR_TOTAL - BALOISE_MONTHLY_2026) * Math.pow(rBaloise, 4.5 / 12);
-  const investedCrelan = CRELAN_START_VALUE;
-  let investedBaloise = BALOISE_FIRST_YEAR_TOTAL;
 
   result.push({
     investedTotal: investedCrelan + investedBaloise,
@@ -90,6 +100,8 @@ function calculateInvestmentData(params: BuildCombinedDataParams) {
 
   let value = params.startingValue;
   let invested = params.startingValue;
+
+  result.push({ invested, value, interest: 0 });
 
   const startMonthIndex = 12 - params.firstYearMonths;
   const firstYearKey = String(params.startYear);
@@ -161,8 +173,8 @@ export function buildCombinedData(params: BuildCombinedDataParams): CombinedYear
       cashReserve: params.cashReserve,
       totalValue: investmentPensionTotal + params.cashReserve,
       profitPercent,
-      investmentMonthly: i === 0 ? params.monthlyFirstYear : params.monthlyAfterFirstYear,
-      pensionMonthly: i === 0 ? BALOISE_MONTHLY_2026 : BALOISE_MONTHLY_FROM_2027,
+      investmentMonthly: i <= 1 ? params.monthlyFirstYear : params.monthlyAfterFirstYear,
+      pensionMonthly: i <= 1 ? BALOISE_MONTHLY_2026 : BALOISE_MONTHLY_FROM_2027,
       pensionRecapture,
       pensionNetValue,
       investmentTransactionCosts,

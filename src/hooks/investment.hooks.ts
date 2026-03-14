@@ -7,9 +7,9 @@ export function useChartData() {
   return useMemo(() => {
     return combinedData.map((row) => ({
       year: String(row.year),
-      investments: row.investmentValue,
-      pension: row.pensionValue,
-      total: row.totalValue,
+      investments: row.investmentNetValue,
+      pension: row.pensionNetValue,
+      total: row.totalNetValue,
     }));
   }, [combinedData]);
 }

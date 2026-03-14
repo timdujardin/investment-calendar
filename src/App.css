@@ -439,6 +439,9 @@ body {
 }
 
 .summary-card__sub {
+  display: flex;
+  flex-direction: column;
+  gap: 0.1rem;
   font-size: 0.62rem;
   color: var(--color-muted);
   margin-block-start: 0.1rem;
@@ -921,7 +924,13 @@ body {
 }
 
 .settings-field-row--3col {
-  grid-template-columns: 1fr 1fr 1fr;
+  grid-template-columns: 1fr;
+}
+
+@media (min-width: 480px) {
+  .settings-field-row--3col {
+    grid-template-columns: 1fr 1fr 1fr;
+  }
 }
 
 .settings-field__label {
@@ -956,6 +965,17 @@ body {
   transition: border-color 0.2s;
   inline-size: 100%;
   min-inline-size: 0;
+  box-sizing: border-box;
+}
+
+.settings-field__input::-webkit-inner-spin-button,
+.settings-field__input::-webkit-outer-spin-button {
+  -webkit-appearance: none;
+  margin: 0;
+}
+
+.settings-field__input[type="number"] {
+  -moz-appearance: textfield;
 }
 
 .settings-field__input:focus {

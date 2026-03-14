@@ -2,9 +2,21 @@ import { useInvestment } from '../../contexts/InvestmentContext';
 import { useSettings } from '../../contexts/SettingsContext';
 import { useSavingsTracker } from '../../hooks/savingsTracker.hooks';
 import { formatCurrency } from '../../utils/format.util';
+import { BIRTH_YEAR } from '../../../config/investment.config';
 
-function compoundImpact(amount: number, annualRate: number, years: number): number {
-  return amount * Math.pow(1 + annualRate, years);
+function compoundImpactNet(
+  amount: number,
+  annualRate: number,
+  years: number,
+  transactionFeeRate: number,
+  capitalGainsTaxRate: number,
+): number {
+  const bruto = amount * Math.pow(1 + annualRate, years);
+  const costs = amount * transactionFeeRate;
+  const profit = Math.max(bruto - amount, 0);
+  const taxThreshold = 10_000;
+  const tax = Math.floor(profit / taxThreshold) * taxThreshold * capitalGainsTaxRate;
+  return bruto - costs - tax;
 }
 
 export function DashboardStatus() {
@@ -26,10 +38,16 @@ export function DashboardStatus() {
   const allGood = hitsGoal && (savingsOnTrack === null || savingsOnTrack);
   const mixed = hitsGoal && savingsOnTrack === false;
 
-  const targetYear = settings.startYear + rowIndexAtTarget;
+  const targetYear = BIRTH_YEAR + settings.targetAge;
   const yearsRemaining = Math.max(targetYear - currentYear, 1);
   const rate = settings.rate / 100;
-  const impactAtTarget = compoundImpact(Math.abs(savingsDiff), rate, yearsRemaining);
+  const impactAtTarget = compoundImpactNet(
+    Math.abs(savingsDiff),
+    rate,
+    yearsRemaining,
+    settings.transactionFeeRate,
+    settings.capitalGainsTaxRate,
+  );
   const surplus = projectedNet - settings.targetAmount;
 
   let icon: string;
@@ -49,16 +67,15 @@ export function DashboardStatus() {
 
     lines.push(
       { label: 'Doel', value: formatCurrency(settings.targetAmount) },
-      { label: 'Prognose netto', value: formatCurrency(projectedNet), highlight: true },
-      { label: 'Prognose bruto', value: formatCurrency(projectedBruto) },
+      { label: 'Prognose', value: formatCurrency(projectedNet), highlight: true },
       { label: 'Boven doel', value: `+${formatCurrency(surplus)}`, highlight: true },
     );
 
     if (savingsDiff > 0) {
       lines.push({ label: 'Extra inleg dit jaar', value: `+${formatCurrency(savingsDiff)}` });
-      detail = `Dat extra bedrag rendeert mee — tegen ${settings.targetAge} jaar circa ${formatCurrency(impactAtTarget)} extra eindkapitaal.`;
+      detail = `Dat extra bedrag rendeert mee — tegen ${settings.targetAge} jaar circa ${formatCurrency(impactAtTarget)} extra eindkapitaal. Bruto prognose: ${formatCurrency(projectedBruto)}.`;
     } else {
-      detail = `Stortingen volgen exact je planning. Prognose op basis van ${settings.rate}% rendement, na kosten en belasting.`;
+      detail = `Prognose op basis van ${settings.rate}% rendement, na kosten en belasting. Bruto prognose: ${formatCurrency(projectedBruto)}.`;
     }
   } else if (mixed) {
     icon = '⚠';
@@ -67,10 +84,10 @@ export function DashboardStatus() {
 
     lines.push(
       { label: 'Doel', value: formatCurrency(settings.targetAmount) },
-      { label: 'Prognose netto', value: formatCurrency(projectedNet) },
+      { label: 'Prognose', value: formatCurrency(projectedNet) },
       { label: 'Achterstand dit jaar', value: `-${formatCurrency(Math.abs(savingsDiff))}`, highlight: true },
     );
-    detail = `Dat gemiste bedrag mist ook ${yearsRemaining} jaar aan rendement — circa ${formatCurrency(impactAtTarget)} minder eindkapitaal bij ${settings.targetAge} jaar. Haal je de achterstand in, dan groeit dat bedrag alsnog mee.`;
+    detail = `Dat gemiste bedrag mist ook ${yearsRemaining} jaar aan rendement — circa ${formatCurrency(impactAtTarget)} minder eindkapitaal bij ${settings.targetAge} jaar. Bruto prognose: ${formatCurrency(projectedBruto)}.`;
   } else if (!hitsGoal) {
     icon = '✗';
     title = `Doel niet gehaald — doel ${goalLabel}`;
@@ -79,16 +96,15 @@ export function DashboardStatus() {
 
     lines.push(
       { label: 'Doel', value: formatCurrency(settings.targetAmount) },
-      { label: 'Prognose netto', value: formatCurrency(projectedNet), highlight: true },
-      { label: 'Prognose bruto', value: formatCurrency(projectedBruto) },
+      { label: 'Prognose', value: formatCurrency(projectedNet), highlight: true },
       { label: 'Tekort', value: `-${formatCurrency(shortfall)}`, highlight: true },
     );
 
     if (filledMonths > 0 && savingsDiff < 0) {
       lines.push({ label: 'Achterstand dit jaar', value: `-${formatCurrency(Math.abs(savingsDiff))}` });
-      detail = `Dat gemiste bedrag mist ook ${yearsRemaining} jaar rendement — circa ${formatCurrency(impactAtTarget)} minder eindkapitaal.`;
+      detail = `Dat gemiste bedrag mist ook ${yearsRemaining} jaar rendement — circa ${formatCurrency(impactAtTarget)} minder eindkapitaal. Bruto prognose: ${formatCurrency(projectedBruto)}.`;
     } else {
-      detail = `Verhoog je maandelijkse inleg, verlaag je doelbedrag, of verleng de looptijd.`;
+      detail = `Verhoog je maandelijkse inleg, verlaag je doelbedrag, of verleng de looptijd. Bruto prognose: ${formatCurrency(projectedBruto)}.`;
     }
   } else {
     icon = '→';
@@ -97,10 +113,9 @@ export function DashboardStatus() {
 
     lines.push(
       { label: 'Doel', value: formatCurrency(settings.targetAmount) },
-      { label: 'Prognose netto', value: formatCurrency(projectedNet) },
-      { label: 'Prognose bruto', value: formatCurrency(projectedBruto) },
+      { label: 'Prognose', value: formatCurrency(projectedNet) },
     );
-    detail = `Vul je maandelijkse stortingen in om voortgang te zien.`;
+    detail = `Vul je maandelijkse stortingen in om voortgang te zien. Bruto prognose: ${formatCurrency(projectedBruto)}.`;
   }
 
   return (

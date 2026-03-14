@@ -71,7 +71,7 @@ export function PrognoseLineChart() {
         </LineChart>
       </ResponsiveContainer>
       <p className="chart-disclaimer">
-        Grafiek toont bruto bedragen vóór kosten en belasting. Zie de kaarten hierboven voor netto bedragen.
+        Bedragen zijn na aftrek van kosten en belasting.
       </p>
     </div>
   );

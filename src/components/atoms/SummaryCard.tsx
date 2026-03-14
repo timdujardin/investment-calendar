@@ -12,7 +12,13 @@ export function SummaryCard({ label, value, sub, variant = 'blue' }: SummaryCard
       <div className={`summary-card__value summary-card__value--${variant}`}>
         {value}
       </div>
-      {sub && <div className="summary-card__sub">{sub}</div>}
+      {sub && (
+        <div className="summary-card__sub">
+          {sub.split('·').map((part, i) => (
+            <span key={i} className="summary-card__sub-line">{part.trim()}</span>
+          ))}
+        </div>
+      )}
     </div>
   );
 }

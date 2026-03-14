@@ -40,12 +40,12 @@ export function PensionPage() {
 
   const chartData = useMemo(
     () =>
-      pensionData.map((r, i) => ({
-        year: String(investmentYears[i]),
-        ingelegd: r.investedTotal,
-        winst: Math.max(r.valueTotal - r.investedTotal, 0),
+      combinedData.map((r) => ({
+        year: String(r.year),
+        netto: r.pensionNetValue,
+        terugvordering: r.pensionRecapture,
       })),
-    [pensionData, investmentYears],
+    [combinedData],
   );
 
   return (
@@ -74,21 +74,21 @@ export function PensionPage() {
               <Legend />
               <Area
                 type="monotone"
-                dataKey="ingelegd"
-                name="Ingelegd"
+                dataKey="netto"
+                name="Netto waarde"
                 stackId="1"
-                stroke="var(--color-muted)"
-                fill="var(--color-muted)"
+                stroke="var(--color-pension)"
+                fill="var(--color-pension)"
                 fillOpacity={0.35}
               />
               <Area
                 type="monotone"
-                dataKey="winst"
-                name="Winst"
+                dataKey="terugvordering"
+                name="Terugvordering"
                 stackId="1"
-                stroke="var(--color-pension)"
-                fill="var(--color-pension)"
-                fillOpacity={0.45}
+                stroke="var(--color-muted)"
+                fill="var(--color-muted)"
+                fillOpacity={0.25}
               />
             </AreaChart>
           </ResponsiveContainer>
@@ -96,21 +96,21 @@ export function PensionPage() {
 
         <div className="detail-grid">
           <div className="detail-card detail-card--highlight">
-            <span className="detail-card__label">Totaal waarde (bruto)</span>
-            <span className="detail-card__value detail-card__value--large text-pension">
-              {formatCurrency(row.valueTotal)}
-            </span>
-            <span className="detail-card__sub">
-              Ingelegd: {formatCurrency(row.investedTotal)} · Winst: +{formatCurrency(totalInterest)} (+{returnPercent}%)
-            </span>
-          </div>
-          <div className="detail-card detail-card--highlight">
-            <span className="detail-card__label">Netto waarde</span>
+            <span className="detail-card__label">Totaal waarde</span>
             <span className="detail-card__value detail-card__value--large text-pension">
               {formatCurrency(combined.pensionNetValue)}
             </span>
             <span className="detail-card__sub">
-              Bij pensionering: -{recapturePercent}% terugvordering (-{formatCurrency(combined.pensionRecapture)})
+              Bruto: {formatCurrency(row.valueTotal)} · Na {recapturePercent}% terugvordering (-{formatCurrency(combined.pensionRecapture)})
+            </span>
+          </div>
+          <div className="detail-card detail-card--highlight">
+            <span className="detail-card__label">Winst op inleg</span>
+            <span className="detail-card__value detail-card__value--large text-interest">
+              +{formatCurrency(totalInterest)} (+{returnPercent}%)
+            </span>
+            <span className="detail-card__sub">
+              Ingelegd: {formatCurrency(row.investedTotal)}
             </span>
           </div>
         </div>

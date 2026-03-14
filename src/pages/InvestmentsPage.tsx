@@ -31,15 +31,15 @@ export function InvestmentsPage() {
       ? ((row.investmentInterest / row.investmentInvested) * 100).toFixed(1)
       : '0.0';
 
-  const isTargetReached = row.totalValue >= settings.targetAmount;
-  const wasTargetReachedBefore = prevRow && prevRow.totalValue >= settings.targetAmount;
+  const isTargetReached = row.totalNetValue >= settings.targetAmount;
+  const wasTargetReachedBefore = prevRow && prevRow.totalNetValue >= settings.targetAmount;
 
   const chartData = useMemo(
     () =>
       combinedData.map((r) => ({
         year: String(r.year),
-        ingelegd: r.investmentInvested,
-        winst: Math.max(r.investmentInterest, 0),
+        netto: r.investmentNetValue,
+        kosten: r.investmentTransactionCosts + r.investmentCapitalGainsTax,
       })),
     [combinedData],
   );
@@ -70,21 +70,21 @@ export function InvestmentsPage() {
               <Legend />
               <Area
                 type="monotone"
-                dataKey="ingelegd"
-                name="Ingelegd"
+                dataKey="netto"
+                name="Netto waarde"
                 stackId="1"
-                stroke="var(--color-muted)"
-                fill="var(--color-muted)"
+                stroke="var(--color-investment)"
+                fill="var(--color-investment)"
                 fillOpacity={0.35}
               />
               <Area
                 type="monotone"
-                dataKey="winst"
-                name="Winst"
+                dataKey="kosten"
+                name="Kosten & belasting"
                 stackId="1"
-                stroke="var(--color-interest)"
-                fill="var(--color-interest)"
-                fillOpacity={0.45}
+                stroke="var(--color-muted)"
+                fill="var(--color-muted)"
+                fillOpacity={0.25}
               />
             </AreaChart>
           </ResponsiveContainer>
@@ -92,12 +92,12 @@ export function InvestmentsPage() {
 
         <div className="detail-grid">
           <div className="detail-card detail-card--highlight">
-            <span className="detail-card__label">Portefeuille waarde (bruto)</span>
+            <span className="detail-card__label">Portefeuille waarde</span>
             <span className="detail-card__value detail-card__value--large text-investment">
-              {formatCurrency(row.investmentValue)}
+              {formatCurrency(row.investmentNetValue)}
             </span>
             <span className="detail-card__sub">
-              Ingelegd: {formatCurrency(row.investmentInvested)} · Winst: +{formatCurrency(row.investmentInterest)} (+{returnOnInvestment}%)
+              Bruto: {formatCurrency(row.investmentValue)} · Na {(settings.transactionFeeRate * 100).toFixed(0)}% kosten en {(settings.capitalGainsTaxRate * 100).toFixed(0)}% meerwaardetaks
             </span>
             {isTargetReached && !wasTargetReachedBefore && (
               <span className="detail-card__badge detail-card__badge--success">
@@ -106,12 +106,12 @@ export function InvestmentsPage() {
             )}
           </div>
           <div className="detail-card detail-card--highlight">
-            <span className="detail-card__label">Netto waarde</span>
-            <span className="detail-card__value detail-card__value--large text-investment">
-              {formatCurrency(row.investmentNetValue)}
+            <span className="detail-card__label">Winst op inleg</span>
+            <span className="detail-card__value detail-card__value--large text-interest">
+              +{formatCurrency(row.investmentInterest)} (+{returnOnInvestment}%)
             </span>
             <span className="detail-card__sub">
-              Na {(settings.transactionFeeRate * 100).toFixed(0)}% kosten en {(settings.capitalGainsTaxRate * 100).toFixed(0)}% meerwaardetaks
+              Ingelegd: {formatCurrency(row.investmentInvested)}
             </span>
           </div>
         </div>

@@ -3,6 +3,7 @@ import { useSettings } from '../../contexts/SettingsContext';
 import { formatCurrency } from '../../utils/format.util';
 import { getLastRow } from '../../utils/investmentCalculation.util';
 import { SummaryCard } from '../atoms/SummaryCard';
+import { BIRTH_YEAR } from '../../../config/investment.config';
 
 export function SummaryCards() {
   const { combinedData } = useInvestment();
@@ -13,7 +14,7 @@ export function SummaryCards() {
   if (!rowTarget || !rowEnd) return null;
 
   const profitPercent = rowEnd.profitPercent;
-  const targetYear = settings.startYear + rowIndexAtTarget;
+  const targetYear = BIRTH_YEAR + settings.targetAge;
   const endYear = settings.endYear;
 
   const totalCostsEnd =
@@ -25,14 +26,14 @@ export function SummaryCards() {
     <div className="summary-cards">
       <SummaryCard
         label={`Eindstand ${targetYear} (${settings.targetAge} jaar)`}
-        value={`${formatCurrency(rowTarget.totalValue)} · netto ${formatCurrency(rowTarget.totalNetValue)}`}
-        sub={`Ingelegd: ${formatCurrency(rowTarget.investmentInvested + rowTarget.pensionInvested)} · Cash: ${formatCurrency(rowTarget.cashReserve)}`}
+        value={formatCurrency(rowTarget.totalNetValue)}
+        sub={`Bruto: ${formatCurrency(rowTarget.totalValue)} · Ingelegd: ${formatCurrency(rowTarget.investmentInvested + rowTarget.pensionInvested)} · Cash reserve: ${formatCurrency(rowTarget.cashReserve)}`}
         variant="blue"
       />
       <SummaryCard
         label={`Eindstand ${endYear} (${rowEnd.age} jaar)`}
-        value={`${formatCurrency(rowEnd.totalValue)} · netto ${formatCurrency(rowEnd.totalNetValue)}`}
-        sub={`Ingelegd: ${formatCurrency(rowEnd.investmentInvested + rowEnd.pensionInvested)} · Cash: ${formatCurrency(rowEnd.cashReserve)}`}
+        value={formatCurrency(rowEnd.totalNetValue)}
+        sub={`Bruto: ${formatCurrency(rowEnd.totalValue)} · Ingelegd: ${formatCurrency(rowEnd.investmentInvested + rowEnd.pensionInvested)} · Cash reserve: ${formatCurrency(rowEnd.cashReserve)}`}
         variant="orange"
       />
       <SummaryCard
@@ -43,8 +44,8 @@ export function SummaryCards() {
       />
       <SummaryCard
         label={`Pensioensparen op ${rowEnd.age} jaar`}
-        value={`${formatCurrency(rowEnd.pensionValue)} · netto ${formatCurrency(rowEnd.pensionNetValue)}`}
-        sub={`Na ${(settings.pensionRecaptureRate * 100).toFixed(0)}% terugvordering · Crelan ${(settings.crelanRate * 100).toFixed(1)}%/jaar, Baloise ${(settings.baloiseRate * 100).toFixed(1)}%/jaar`}
+        value={formatCurrency(rowEnd.pensionNetValue)}
+        sub={`Bruto: ${formatCurrency(rowEnd.pensionValue)} · Na ${(settings.pensionRecaptureRate * 100).toFixed(0)}% terugvordering · Crelan ${(settings.crelanRate * 100).toFixed(1)}%/jaar, Baloise ${(settings.baloiseRate * 100).toFixed(1)}%/jaar`}
         variant="purple"
       />
     </div>

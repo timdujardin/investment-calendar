@@ -13,6 +13,7 @@ import {
 import { formatCurrency, formatCurrencyCompact } from '../utils/format.util';
 import { useSavingsTracker } from '../hooks/savingsTracker.hooks';
 import { useSettings } from '../contexts/SettingsContext';
+import { DashboardStatus } from '../components/molecules/DashboardStatus';
 
 export function MonthlySavingsPage() {
   const { settings } = useSettings();
@@ -34,7 +35,6 @@ export function MonthlySavingsPage() {
   }));
 
   const lastFilledMonth = months.filter((m) => m.saved !== null).at(-1);
-  const isOnTrack = lastFilledMonth ? lastFilledMonth.isOnTrack : true;
   const difference = lastFilledMonth ? lastFilledMonth.difference : 0;
 
   return (
@@ -53,6 +53,52 @@ export function MonthlySavingsPage() {
             <option key={y} value={y}>{y}</option>
           ))}
         </select>
+      </div>
+
+      <DashboardStatus />
+
+      <div className="chart-wrap">
+        <div className="chart-title">Cumulatief gespaard vs. doel — {year}</div>
+        <ResponsiveContainer width="100%" height={240}>
+          <LineChart data={chartData} margin={{ top: 8, right: 8, left: 0, bottom: 0 }}>
+            <CartesianGrid strokeDasharray="3 3" stroke="var(--color-grid)" />
+            <XAxis dataKey="month" tick={{ fontSize: 11 }} stroke="var(--color-muted)" />
+            <YAxis
+              tickFormatter={(v) => formatCurrencyCompact(v)}
+              tick={{ fontSize: 11 }}
+              stroke="var(--color-muted)"
+            />
+            <Tooltip
+              formatter={(value) =>
+                typeof value === 'number' ? formatCurrency(value) : '—'
+              }
+              contentStyle={{
+                borderRadius: 12,
+                border: '1px solid var(--color-border)',
+              }}
+            />
+            <Legend />
+            <ReferenceLine y={totalTarget} stroke="var(--color-muted)" strokeDasharray="4 4" />
+            <Line
+              type="monotone"
+              dataKey="doel"
+              name="Doel"
+              stroke="var(--color-muted)"
+              strokeWidth={2}
+              strokeDasharray="6 3"
+              dot={false}
+            />
+            <Line
+              type="monotone"
+              dataKey="gespaard"
+              name="Gespaard"
+              stroke="var(--color-investment)"
+              strokeWidth={2.5}
+              dot={{ r: 3, fill: 'var(--color-investment)' }}
+              connectNulls={false}
+            />
+          </LineChart>
+        </ResponsiveContainer>
       </div>
 
       <header className="page-header">
@@ -131,64 +177,6 @@ export function MonthlySavingsPage() {
           </div>
         )}
 
-        {filledMonths > 0 && (
-          <div
-            className={`savings-status ${
-              isOnTrack ? 'savings-status--on-track' : 'savings-status--off-track'
-            }`}
-          >
-            <span className="savings-status__icon">{isOnTrack ? '✓' : '⚠'}</span>
-            <span className="savings-status__text">
-              {isOnTrack
-                ? `Op koers — je zit ${formatCurrency(Math.abs(difference))} voor op je doel`
-                : `Niet op koers — ${formatCurrency(Math.abs(difference))} achterstand`}
-            </span>
-          </div>
-        )}
-
-        <div className="chart-wrap">
-          <div className="chart-title">Cumulatief gespaard vs. doel — {year}</div>
-          <ResponsiveContainer width="100%" height={240}>
-            <LineChart data={chartData} margin={{ top: 8, right: 8, left: 0, bottom: 0 }}>
-              <CartesianGrid strokeDasharray="3 3" stroke="var(--color-grid)" />
-              <XAxis dataKey="month" tick={{ fontSize: 11 }} stroke="var(--color-muted)" />
-              <YAxis
-                tickFormatter={(v) => formatCurrencyCompact(v)}
-                tick={{ fontSize: 11 }}
-                stroke="var(--color-muted)"
-              />
-              <Tooltip
-                formatter={(value) =>
-                  typeof value === 'number' ? formatCurrency(value) : '—'
-                }
-                contentStyle={{
-                  borderRadius: 12,
-                  border: '1px solid var(--color-border)',
-                }}
-              />
-              <Legend />
-              <ReferenceLine y={totalTarget} stroke="var(--color-muted)" strokeDasharray="4 4" />
-              <Line
-                type="monotone"
-                dataKey="doel"
-                name="Doel"
-                stroke="var(--color-muted)"
-                strokeWidth={2}
-                strokeDasharray="6 3"
-                dot={false}
-              />
-              <Line
-                type="monotone"
-                dataKey="gespaard"
-                name="Gespaard"
-                stroke="var(--color-investment)"
-                strokeWidth={2.5}
-                dot={{ r: 3, fill: 'var(--color-investment)' }}
-                connectNulls={false}
-              />
-            </LineChart>
-          </ResponsiveContainer>
-        </div>
       </main>
     </div>
   );

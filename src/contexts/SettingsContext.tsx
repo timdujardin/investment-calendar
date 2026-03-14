@@ -103,8 +103,9 @@ export function SettingsProvider({ children }: { children: ReactNode }) {
 
   const derived = useMemo(() => {
     const projectionYears = settings.endYear - settings.startYear;
-    const rowIndexAtTarget = settings.targetAge - (settings.startYear - BIRTH_YEAR);
+    const rowIndexAtTarget = settings.targetAge - (settings.startYear - BIRTH_YEAR) + 1;
     const investmentYears: readonly (string | number)[] = [
+      `${settings.startYear} (start)`,
       `${settings.startYear} (mrt–dec)`,
       ...Array.from({ length: projectionYears }, (_, i) => settings.startYear + 1 + i),
     ];

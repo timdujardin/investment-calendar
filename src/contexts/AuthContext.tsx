@@ -1,7 +1,7 @@
 import { createContext, useCallback, useContext, useEffect, useMemo, useState, type FC, type ReactNode } from 'react';
 
-import { ENCRYPTED_WAGE_DATA, ENCRYPTION_IV, ENCRYPTION_SALT } from '@config/wage-data.config';
-import type { WageEntry } from '@/@types/wage';
+import { ENCRYPTED_BUMBA_DATA, ENCRYPTION_IV, ENCRYPTION_SALT } from '@config/wage-data.config';
+import type { BumbaEntry } from '@/@types/bumba';
 import { verifyCredentials } from '@/utils/auth.util';
 import { decryptWithKey, deriveAndExportKey, importKey } from '@/utils/crypto.util';
 
@@ -11,23 +11,23 @@ const CRYPTO_KEY = 'investment-calendar-crypto-key';
 interface AuthContextValue {
   isAuthenticated: boolean;
   isLoading: boolean;
-  wageData: WageEntry[] | null;
+  bumbaData: BumbaEntry[] | null;
   login: (username: string, password: string) => Promise<boolean>;
   logout: () => void;
 }
 
 const AuthContext = createContext<AuthContextValue | null>(null);
 
-const decryptWageData = async (aesKey: CryptoKey): Promise<WageEntry[]> => {
-  const json = await decryptWithKey(ENCRYPTED_WAGE_DATA, ENCRYPTION_IV, aesKey);
+const decryptBumbaData = async (aesKey: CryptoKey): Promise<BumbaEntry[]> => {
+  const json = await decryptWithKey(ENCRYPTED_BUMBA_DATA, ENCRYPTION_IV, aesKey);
 
-  return JSON.parse(json) as WageEntry[];
+  return JSON.parse(json) as BumbaEntry[];
 };
 
 const AuthProvider: FC<{ children: ReactNode }> = ({ children }) => {
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
-  const [wageData, setWageData] = useState<WageEntry[] | null>(null);
+  const [bumbaData, setBumbaData] = useState<BumbaEntry[] | null>(null);
 
   useEffect(() => {
     const restore = async () => {
@@ -44,9 +44,9 @@ const AuthProvider: FC<{ children: ReactNode }> = ({ children }) => {
         }
 
         const aesKey = await importKey(storedKey);
-        const data = await decryptWageData(aesKey);
+        const data = await decryptBumbaData(aesKey);
 
-        setWageData(data);
+        setBumbaData(data);
         setIsAuthenticated(true);
       } catch {
         localStorage.removeItem(SESSION_KEY);
@@ -67,11 +67,11 @@ const AuthProvider: FC<{ children: ReactNode }> = ({ children }) => {
     }
 
     const { key, raw } = await deriveAndExportKey(password, ENCRYPTION_SALT);
-    const data = await decryptWageData(key);
+    const data = await decryptBumbaData(key);
 
     localStorage.setItem(SESSION_KEY, JSON.stringify({ authenticated: true, timestamp: Date.now() }));
     localStorage.setItem(CRYPTO_KEY, raw);
-    setWageData(data);
+    setBumbaData(data);
     setIsAuthenticated(true);
 
     return true;
@@ -80,13 +80,13 @@ const AuthProvider: FC<{ children: ReactNode }> = ({ children }) => {
   const logout = useCallback(() => {
     localStorage.removeItem(SESSION_KEY);
     localStorage.removeItem(CRYPTO_KEY);
-    setWageData(null);
+    setBumbaData(null);
     setIsAuthenticated(false);
   }, []);
 
   const value = useMemo(
-    () => ({ isAuthenticated, isLoading, wageData, login, logout }),
-    [isAuthenticated, isLoading, wageData, login, logout],
+    () => ({ isAuthenticated, isLoading, bumbaData, login, logout }),
+    [isAuthenticated, isLoading, bumbaData, login, logout],
   );
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;

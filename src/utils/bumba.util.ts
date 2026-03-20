@@ -1,4 +1,5 @@
-import type { CompanyPeriod, RaiseEvent, WageEntry, YearlySummary } from '@/@types/wage';
+import type { BumbaEntry, CompanyPeriod, RaiseEvent, YearlySummary } from '@/@types/bumba';
+import { A11Y_BUMPS, A11Y_START_DATE, INDEX_ADJUSTMENTS } from '@config/bumba.config';
 
 const average = (values: number[]): number | null => {
   if (values.length === 0) {
@@ -8,12 +9,12 @@ const average = (values: number[]): number | null => {
   return values.reduce((sum, v) => sum + v, 0) / values.length;
 };
 
-export const getIncludedEntries = (data: WageEntry[]): WageEntry[] => {
+export const getIncludedEntries = (data: BumbaEntry[]): BumbaEntry[] => {
   return data.filter((e) => e.included && e.gross !== null);
 };
 
-export const getYearlySummaries = (data: WageEntry[]): YearlySummary[] => {
-  const byYear = new Map<number, WageEntry[]>();
+export const getYearlySummaries = (data: BumbaEntry[]): YearlySummary[] => {
+  const byYear = new Map<number, BumbaEntry[]>();
   for (const entry of data) {
     const list = byYear.get(entry.year) ?? [];
     list.push(entry);
@@ -48,7 +49,7 @@ export const getYearlySummaries = (data: WageEntry[]): YearlySummary[] => {
     });
 };
 
-export const getRaiseEvents = (data: WageEntry[]): RaiseEvent[] => {
+export const getRaiseEvents = (data: BumbaEntry[]): RaiseEvent[] => {
   return data
     .filter((e) => e.raise !== null && e.raise !== 0)
     .map((e) => ({
@@ -57,12 +58,13 @@ export const getRaiseEvents = (data: WageEntry[]): RaiseEvent[] => {
       month: e.month,
       percentage: e.raise!,
       newGross: e.gross,
+      ratio: e.ratio,
       note: e.note,
       company: e.company,
     }));
 };
 
-export const getCompanyPeriods = (data: WageEntry[]): CompanyPeriod[] => {
+export const getCompanyPeriods = (data: BumbaEntry[]): CompanyPeriod[] => {
   if (data.length === 0) {
     return [];
   }
@@ -105,7 +107,7 @@ export const getCompanyPeriods = (data: WageEntry[]): CompanyPeriod[] => {
   return periods;
 };
 
-export const getGrossGrowthPercent = (data: WageEntry[]): number | null => {
+export const getGrossGrowthPercent = (data: BumbaEntry[]): number | null => {
   const included = getIncludedEntries(data);
   const first = included.at(0);
   const last = included.at(-1);
@@ -116,8 +118,8 @@ export const getGrossGrowthPercent = (data: WageEntry[]): number | null => {
   return ((last.gross - first.gross) / first.gross) * 100;
 };
 
-export const groupEntriesByYear = (entries: WageEntry[]): Map<number, WageEntry[]> => {
-  const map = new Map<number, WageEntry[]>();
+export const groupEntriesByYear = (entries: BumbaEntry[]): Map<number, BumbaEntry[]> => {
+  const map = new Map<number, BumbaEntry[]>();
   for (const entry of entries) {
     const list = map.get(entry.year) ?? [];
     list.push(entry);
@@ -125,6 +127,30 @@ export const groupEntriesByYear = (entries: WageEntry[]): Map<number, WageEntry[
   }
 
   return map;
+};
+
+export const getA11yImpact = (date: string): number => {
+  if (date < A11Y_START_DATE) {
+    return 0;
+  }
+
+  let total = 0;
+
+  for (const bump of A11Y_BUMPS) {
+    if (bump.date > date) {
+      continue;
+    }
+
+    let compounded = bump.amount;
+    for (const idx of INDEX_ADJUSTMENTS) {
+      if (idx.date > bump.date && idx.date <= date) {
+        compounded *= 1 + idx.rate;
+      }
+    }
+    total += compounded;
+  }
+
+  return Math.round(total * 100) / 100;
 };
 
 export const formatPercent = (value: number): string => {

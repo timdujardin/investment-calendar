@@ -2,13 +2,13 @@ import type { FC } from 'react';
 import { CartesianGrid, Legend, Line, LineChart, ReferenceArea, Tooltip, XAxis, YAxis } from 'recharts';
 
 import ChartCard from '@/components/atoms/chart-card/ChartCard';
-import { useWageChartData } from '@/hooks/wage.hooks';
+import { useBumbaChartData } from '@/hooks/bumba.hooks';
 import { formatCurrency, formatCurrencyCompact } from '@/utils/format.util';
 
-import { LEGEND_MAP, ZONE_FILLS } from './wage-line-chart.constants';
+import { LEGEND_MAP, ZONE_FILLS } from './bumba-line-chart.constants';
 
-const WageLineChart: FC = () => {
-  const { lineChartData, companyZones } = useWageChartData();
+const BumbaLineChart: FC = () => {
+  const { lineChartData, companyZones } = useBumbaChartData();
 
   const companyLegend = (
     <div className="chart-company-legend">
@@ -49,7 +49,7 @@ const WageLineChart: FC = () => {
         />
         <Tooltip
           formatter={(value, name) =>
-            typeof value === 'number' ? [formatCurrency(value), name === 'gross' ? 'Bruto' : 'Netto'] : String(value)
+            typeof value === 'number' ? [formatCurrency(value), LEGEND_MAP[name as string] ?? name] : String(value)
           }
           contentStyle={{ borderRadius: 12, border: '1px solid var(--color-border)' }}
         />
@@ -71,9 +71,29 @@ const WageLineChart: FC = () => {
           dot={false}
           activeDot={{ r: 4 }}
         />
+        <Line
+          type="monotone"
+          dataKey="grossWithoutA11y"
+          stroke="var(--color-investment)"
+          strokeWidth={1.5}
+          strokeDasharray="6 3"
+          dot={false}
+          activeDot={{ r: 3 }}
+          connectNulls={false}
+        />
+        <Line
+          type="monotone"
+          dataKey="netWithoutA11y"
+          stroke="var(--color-success)"
+          strokeWidth={1.5}
+          strokeDasharray="6 3"
+          dot={false}
+          activeDot={{ r: 3 }}
+          connectNulls={false}
+        />
       </LineChart>
     </ChartCard>
   );
 };
 
-export { WageLineChart };
+export { BumbaLineChart };

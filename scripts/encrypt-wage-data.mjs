@@ -14,7 +14,7 @@ const source = readFileSync(configPath, 'utf-8');
 
 const stripped = source
   .replace(/^import.*;\n/gm, '')
-  .replace(/export const WAGE_DATA:\s*WageEntry\[\]\s*=\s*/, '')
+  .replace(/export const BUMBA_DATA:\s*WageEntry\[\]\s*=\s*/, '')
   .trim()
   .replace(/;$/, '');
 
@@ -42,7 +42,7 @@ const encrypted = await webcrypto.subtle.encrypt({ name: 'AES-GCM', iv }, key, n
 
 const toBase64 = (buf) => Buffer.from(buf).toString('base64');
 
-const output = `export const ENCRYPTED_WAGE_DATA = '${toBase64(encrypted)}';\n\nexport const ENCRYPTION_IV = '${toBase64(iv)}';\n\nexport const ENCRYPTION_SALT = '${toBase64(salt)}';\n`;
+const output = `export const ENCRYPTED_BUMBA_DATA = '${toBase64(encrypted)}';\n\nexport const ENCRYPTION_IV = '${toBase64(iv)}';\n\nexport const ENCRYPTION_SALT = '${toBase64(salt)}';\n`;
 
 writeFileSync(configPath, output, 'utf-8');
 console.log('Encrypted wage data written to config/wage-data.config.ts');

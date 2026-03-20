@@ -1,4 +1,4 @@
-export interface WageEntry {
+export interface BumbaEntry {
   date: string;
   year: number;
   month: number;
@@ -33,6 +33,7 @@ export interface RaiseEvent {
   month: number;
   percentage: number;
   newGross: number | null;
+  ratio: number | null;
   note: string | null;
   company: string;
 }

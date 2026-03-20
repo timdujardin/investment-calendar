@@ -21,7 +21,7 @@ const InvestmentsPage = lazy(() =>
 );
 const PensionPage = lazy(() => import('@/pages/pension/PensionPage').then((m) => ({ default: m.PensionPage })));
 const SettingsPage = lazy(() => import('@/pages/settings/SettingsPage').then((m) => ({ default: m.SettingsPage })));
-const WagePage = lazy(() => import('@/pages/wage/WagePage').then((m) => ({ default: m.WagePage })));
+const BumbaPage = lazy(() => import('@/pages/bumba/BumbaPage').then((m) => ({ default: m.BumbaPage })));
 
 const AuthenticatedApp: FC = () => {
   return (
@@ -38,7 +38,7 @@ const AuthenticatedApp: FC = () => {
                   <Route path="/investeringen" element={<InvestmentsPage />} />
                   <Route path="/pensioen" element={<PensionPage />} />
                   <Route path="/instellingen" element={<SettingsPage />} />
-                  <Route path="/loon" element={<WagePage />} />
+                  <Route path="/loon" element={<BumbaPage />} />
                 </Routes>
               </Suspense>
             </div>

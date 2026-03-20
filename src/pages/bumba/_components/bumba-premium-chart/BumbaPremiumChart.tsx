@@ -2,11 +2,11 @@ import type { FC } from 'react';
 import { Bar, BarChart, CartesianGrid, Tooltip, XAxis, YAxis } from 'recharts';
 
 import ChartCard from '@/components/atoms/chart-card/ChartCard';
-import { useWageChartData } from '@/hooks/wage.hooks';
+import { useBumbaChartData } from '@/hooks/bumba.hooks';
 import { formatCurrency, formatCurrencyCompact } from '@/utils/format.util';
 
-const WagePremiumChart: FC = () => {
-  const { premiumChartData } = useWageChartData();
+const BumbaPremiumChart: FC = () => {
+  const { premiumChartData } = useBumbaChartData();
 
   return (
     <ChartCard title="Eindejaarspremies" height={200}>
@@ -24,4 +24,4 @@ const WagePremiumChart: FC = () => {
   );
 };
 
-export { WagePremiumChart };
+export { BumbaPremiumChart };

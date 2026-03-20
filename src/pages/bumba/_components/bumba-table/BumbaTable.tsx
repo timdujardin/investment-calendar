@@ -1,13 +1,13 @@
 import { useMemo, useState, type FC } from 'react';
 
-import { useWageData } from '@/hooks/wage.hooks';
+import { useBumbaData } from '@/hooks/bumba.hooks';
+import { formatPercent, groupEntriesByYear } from '@/utils/bumba.util';
 import { formatCurrency } from '@/utils/format.util';
-import { formatPercent, groupEntriesByYear } from '@/utils/wage.util';
 
 import { MonthRow } from './_components/month-row/MonthRow';
 
-const WageTable: FC = () => {
-  const { allEntries, yearlySummaries } = useWageData();
+const BumbaTable: FC = () => {
+  const { allEntries, yearlySummaries } = useBumbaData();
   const [expandedYears, setExpandedYears] = useState<Set<number>>(new Set());
 
   const toggleYear = (year: number) => {
@@ -28,8 +28,8 @@ const WageTable: FC = () => {
   return (
     <div className="detail-section">
       <h2 className="detail-section__title">Detail per maand</h2>
-      <div className="wage-table-wrap">
-        <table className="wage-table">
+      <div className="bumba-table-wrap">
+        <table className="bumba-table">
           <thead>
             <tr>
               <th>Periode</th>
@@ -50,7 +50,7 @@ const WageTable: FC = () => {
             return (
               <tbody key={summary.year}>
                 <tr
-                  className="wage-table__year-row"
+                  className="bumba-table__year-row"
                   onClick={() => toggleYear(summary.year)}
                   role="button"
                   tabIndex={0}
@@ -62,22 +62,22 @@ const WageTable: FC = () => {
                   }}
                 >
                   <td>
-                    <span className="wage-table__chevron">{isExpanded ? '▾' : '▸'}</span>
+                    <span className="bumba-table__chevron">{isExpanded ? '▾' : '▸'}</span>
                     {summary.year}
                   </td>
-                  <td className="wage-table__cell--number">
+                  <td className="bumba-table__cell--number">
                     {summary.avgGross !== null ? formatCurrency(summary.avgGross) : '—'}
                   </td>
-                  <td className="wage-table__cell--number">
+                  <td className="bumba-table__cell--number">
                     {summary.avgNet !== null ? formatCurrency(summary.avgNet) : '—'}
                   </td>
-                  <td className="wage-table__cell--number">
+                  <td className="bumba-table__cell--number">
                     {summary.avgRatio !== null ? `${(summary.avgRatio * 100).toFixed(1)}%` : '—'}
                   </td>
-                  <td className="wage-table__cell--number">
+                  <td className="bumba-table__cell--number">
                     {summary.totalRaises !== 0 ? formatPercent(summary.totalRaises) : ''}
                   </td>
-                  <td className="wage-table__cell--number">
+                  <td className="bumba-table__cell--number">
                     {summary.premium !== null ? formatCurrency(summary.premium) : ''}
                   </td>
                   <td>{summary.company}</td>
@@ -94,4 +94,4 @@ const WageTable: FC = () => {
   );
 };
 
-export { WageTable };
+export { BumbaTable };

@@ -2,10 +2,10 @@ import type { FC } from 'react';
 import { Area, AreaChart, CartesianGrid, Tooltip, XAxis, YAxis } from 'recharts';
 
 import ChartCard from '@/components/atoms/chart-card/ChartCard';
-import { useWageChartData } from '@/hooks/wage.hooks';
+import { useBumbaChartData } from '@/hooks/bumba.hooks';
 
-const WageRatioChart: FC = () => {
-  const { ratioChartData } = useWageChartData();
+const BumbaRatioChart: FC = () => {
+  const { ratioChartData } = useBumbaChartData();
 
   return (
     <ChartCard title="Netto / bruto ratio" height={200}>
@@ -35,4 +35,4 @@ const WageRatioChart: FC = () => {
   );
 };
 
-export { WageRatioChart };
+export { BumbaRatioChart };

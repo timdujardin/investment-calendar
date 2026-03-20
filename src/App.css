@@ -522,6 +522,14 @@ body {
   flex-shrink: 0;
 }
 
+.recharts-tooltip-label {
+  color: #000 !important;
+}
+
+.recharts-tooltip-item-name {
+  color: #000 !important;
+}
+
 .chart-disclaimer {
   font-size: 0.65rem;
   line-height: 1.4;
@@ -939,8 +947,8 @@ body {
   color: var(--color-warning);
 }
 
-/* Wage table */
-.wage-table-wrap {
+/* Bumba table */
+.bumba-table-wrap {
   overflow-x: auto;
   -webkit-overflow-scrolling: touch;
   background: var(--color-surface);
@@ -948,14 +956,14 @@ body {
   box-shadow: var(--shadow);
 }
 
-.wage-table {
+.bumba-table {
   width: 100%;
   border-collapse: collapse;
   font-size: 0.75rem;
   white-space: nowrap;
 }
 
-.wage-table thead th {
+.bumba-table thead th {
   position: sticky;
   top: 0;
   background: var(--color-surface);
@@ -969,45 +977,45 @@ body {
   border-block-end: 2px solid var(--color-border);
 }
 
-.wage-table td {
+.bumba-table td {
   padding: 0.45rem 0.5rem;
   border-block-end: 1px solid var(--color-border);
   color: var(--color-text);
 }
 
-.wage-table__year-row {
+.bumba-table__year-row {
   cursor: pointer;
   background: var(--color-bg);
   font-weight: 700;
   transition: background 0.15s;
 }
 
-.wage-table__year-row:hover {
+.bumba-table__year-row:hover {
   background: var(--color-nav-hover);
 }
 
-.wage-table__year-row td {
+.bumba-table__year-row td {
   padding-block: 0.55rem;
 }
 
-.wage-table__chevron {
+.bumba-table__chevron {
   display: inline-block;
   width: 1rem;
   font-size: 0.7rem;
   color: var(--color-muted);
 }
 
-.wage-table__row--muted td {
+.bumba-table__row--muted td {
   color: var(--color-muted);
   font-style: italic;
 }
 
-.wage-table__cell--number {
+.bumba-table__cell--number {
   text-align: end;
   font-variant-numeric: tabular-nums;
 }
 
-.wage-table__cell--note {
+.bumba-table__cell--note {
   max-width: 180px;
   overflow: hidden;
   text-overflow: ellipsis;

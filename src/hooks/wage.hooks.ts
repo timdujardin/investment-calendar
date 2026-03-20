@@ -1,7 +1,7 @@
 import { useMemo } from 'react';
 
-import { WAGE_DATA } from '@config/wage-data.config';
 import { MONTH_LABELS } from '@config/wage.config';
+import { useAuth } from '@/contexts/AuthContext';
 import {
   getCompanyPeriods,
   getGrossGrowthPercent,
@@ -11,8 +11,10 @@ import {
 } from '@/utils/wage.util';
 
 export const useWageData = () => {
+  const { wageData } = useAuth();
+
   return useMemo(() => {
-    const allEntries = WAGE_DATA;
+    const allEntries = wageData!;
     const includedEntries = getIncludedEntries(allEntries);
     const yearlySummaries = getYearlySummaries(allEntries);
     const raiseEvents = getRaiseEvents(allEntries);
@@ -42,7 +44,7 @@ export const useWageData = () => {
       currentYearSummary,
       careerYears,
     };
-  }, []);
+  }, [wageData]);
 };
 
 export const useWageChartData = () => {

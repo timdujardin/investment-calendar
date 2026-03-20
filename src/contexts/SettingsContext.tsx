@@ -1,28 +1,22 @@
+import { createContext, useCallback, useContext, useMemo, useState, type FC, type ReactNode } from 'react';
+
 import {
-  createContext,
-  useContext,
-  useState,
-  useCallback,
-  useMemo,
-  type ReactNode,
-} from 'react';
-import type { InvestmentRate } from '../types/investment';
-import {
-  TARGET_AT_40 as DEFAULT_TARGET,
-  TARGET_AGE as DEFAULT_TARGET_AGE,
-  START_YEAR as DEFAULT_START_YEAR,
+  BIRTH_YEAR,
+  BALOISE_RATE as DEFAULT_BALOISE_RATE,
+  CAPITAL_GAINS_TAX_RATE as DEFAULT_CAPITAL_GAINS_TAX,
+  CASH_RESERVE as DEFAULT_CASH_RESERVE,
+  CRELAN_RATE as DEFAULT_CRELAN_RATE,
   END_YEAR as DEFAULT_END_YEAR,
   CURRENT_INVESTED_AMOUNT as DEFAULT_INVESTED,
-  CASH_RESERVE as DEFAULT_CASH_RESERVE,
   INVESTMENT_MONTHLY_2026 as DEFAULT_MONTHLY_2026,
   INVESTMENT_MONTHLY_FROM_2027 as DEFAULT_MONTHLY_FROM_2027,
-  CRELAN_RATE as DEFAULT_CRELAN_RATE,
-  BALOISE_RATE as DEFAULT_BALOISE_RATE,
   PENSION_RECAPTURE_RATE as DEFAULT_PENSION_RECAPTURE,
+  START_YEAR as DEFAULT_START_YEAR,
+  TARGET_AT_40 as DEFAULT_TARGET,
+  TARGET_AGE as DEFAULT_TARGET_AGE,
   INVESTMENT_TRANSACTION_FEE_RATE as DEFAULT_TRANSACTION_FEE,
-  CAPITAL_GAINS_TAX_RATE as DEFAULT_CAPITAL_GAINS_TAX,
-  BIRTH_YEAR,
-} from '../../config/investment.config';
+} from '@config/investment.config';
+import type { InvestmentRate } from '@/@types/investment';
 
 const STORAGE_KEY = 'investment-calendar-settings';
 
@@ -60,19 +54,22 @@ const DEFAULTS: AppSettings = {
   capitalGainsTaxRate: DEFAULT_CAPITAL_GAINS_TAX,
 };
 
-function loadSettings(): AppSettings {
+const loadSettings = (): AppSettings => {
   try {
     const raw = localStorage.getItem(STORAGE_KEY);
-    if (!raw) return { ...DEFAULTS };
+    if (!raw) {
+      return { ...DEFAULTS };
+    }
+
     return { ...DEFAULTS, ...JSON.parse(raw) };
   } catch {
     return { ...DEFAULTS };
   }
-}
+};
 
-function saveSettings(settings: AppSettings) {
+const saveSettings = (settings: AppSettings) => {
   localStorage.setItem(STORAGE_KEY, JSON.stringify(settings));
-}
+};
 
 interface SettingsContextValue {
   settings: AppSettings;
@@ -85,7 +82,7 @@ interface SettingsContextValue {
 
 const SettingsContext = createContext<SettingsContextValue | null>(null);
 
-export function SettingsProvider({ children }: { children: ReactNode }) {
+const SettingsProvider: FC<{ children: ReactNode }> = ({ children }) => {
   const [settings, setSettings] = useState<AppSettings>(loadSettings);
 
   const updateSettings = useCallback((patch: Partial<AppSettings>) => {
@@ -108,6 +105,7 @@ export function SettingsProvider({ children }: { children: ReactNode }) {
       settings.startYear,
       ...Array.from({ length: projectionYears }, (_, i) => settings.startYear + 1 + i),
     ];
+
     return { projectionYears, rowIndexAtTarget, investmentYears };
   }, [settings.startYear, settings.endYear, settings.targetAge]);
 
@@ -116,17 +114,16 @@ export function SettingsProvider({ children }: { children: ReactNode }) {
     [settings, updateSettings, resetSettings, derived],
   );
 
-  return (
-    <SettingsContext.Provider value={value}>
-      {children}
-    </SettingsContext.Provider>
-  );
-}
+  return <SettingsContext.Provider value={value}>{children}</SettingsContext.Provider>;
+};
 
-export function useSettings() {
+const useSettings = () => {
   const ctx = useContext(SettingsContext);
   if (!ctx) {
     throw new Error('useSettings must be used within SettingsProvider');
   }
+
   return ctx;
-}
+};
+
+export { SettingsProvider, useSettings };

@@ -1,22 +1,20 @@
-import {
-  createContext,
-  useContext,
-  useState,
-  useEffect,
-  useCallback,
-  type ReactNode,
-} from 'react';
+import { createContext, useCallback, useContext, useEffect, useMemo, useState, type FC, type ReactNode } from 'react';
 
 type Theme = 'light' | 'dark';
 
 const STORAGE_KEY = 'investment-calendar-theme';
 
-function getInitialTheme(): Theme {
-  if (typeof window === 'undefined') return 'light';
+const getInitialTheme = (): Theme => {
+  if (typeof window === 'undefined') {
+    return 'light';
+  }
   const stored = localStorage.getItem(STORAGE_KEY) as Theme | null;
-  if (stored === 'light' || stored === 'dark') return stored;
+  if (stored === 'light' || stored === 'dark') {
+    return stored;
+  }
+
   return window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
-}
+};
 
 interface ThemeContextValue {
   theme: Theme;
@@ -26,7 +24,7 @@ interface ThemeContextValue {
 
 const ThemeContext = createContext<ThemeContextValue | null>(null);
 
-export function ThemeProvider({ children }: { children: ReactNode }) {
+const ThemeProvider: FC<{ children: ReactNode }> = ({ children }) => {
   const [theme, setThemeState] = useState<Theme>(getInitialTheme);
 
   useEffect(() => {
@@ -57,19 +55,18 @@ export function ThemeProvider({ children }: { children: ReactNode }) {
     setTheme(theme === 'light' ? 'dark' : 'light');
   }, [theme, setTheme]);
 
-  const value: ThemeContextValue = { theme, setTheme, toggleTheme };
+  const value = useMemo<ThemeContextValue>(() => ({ theme, setTheme, toggleTheme }), [theme, setTheme, toggleTheme]);
 
-  return (
-    <ThemeContext.Provider value={value}>
-      {children}
-    </ThemeContext.Provider>
-  );
-}
+  return <ThemeContext.Provider value={value}>{children}</ThemeContext.Provider>;
+};
 
-export function useTheme() {
+const useTheme = () => {
   const ctx = useContext(ThemeContext);
   if (!ctx) {
     throw new Error('useTheme must be used within ThemeProvider');
   }
+
   return ctx;
-}
+};
+
+export { ThemeProvider, useTheme };

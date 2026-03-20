@@ -1,0 +1,10 @@
+/** @type {import("prettier").Config} */
+const config = {
+  singleQuote: true,
+  trailingComma: 'all',
+  printWidth: 120,
+  plugins: ['@ianvs/prettier-plugin-sort-imports'],
+  importOrder: ['<BUILTIN_MODULES>', '', '<THIRD_PARTY_MODULES>', '', '^@config/(.*)$', '^@/(.*)$', '', '^[.]'],
+};
+
+export default config;

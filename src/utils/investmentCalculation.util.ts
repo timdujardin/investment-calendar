@@ -1,14 +1,13 @@
-import type { PensionYearRow, CombinedYearRow } from '../types/investment';
-import type { InvestmentRate } from '../types/investment';
 import {
-  CRELAN_START_VALUE,
-  BALOISE_MONTHLY_2026,
-  BALOISE_MONTHLY_FROM_2027,
   BALOISE_ANNUAL_CONTRIBUTION,
   BALOISE_FIRST_YEAR_TOTAL,
+  BALOISE_MONTHLY_2026,
+  BALOISE_MONTHLY_FROM_2027,
   BIRTH_YEAR,
   CAPITAL_GAINS_TAX_THRESHOLD,
-} from '../../config/investment.config';
+  CRELAN_START_VALUE,
+} from '@config/investment.config';
+import type { CombinedYearRow, InvestmentRate, PensionYearRow } from '@/@types/investment';
 
 const FIRST_YEAR_MONTHS = 10;
 
@@ -17,10 +16,7 @@ interface PensionRates {
   baloiseRate: number;
 }
 
-export function calculatePensionData(
-  rates: PensionRates,
-  projectionYears: number,
-): PensionYearRow[] {
+export const calculatePensionData = (rates: PensionRates, projectionYears: number): PensionYearRow[] => {
   const rCrelan = 1 + rates.crelanRate;
   const rBaloise = 1 + rates.baloiseRate;
   const result: PensionYearRow[] = [];
@@ -55,7 +51,7 @@ export function calculatePensionData(
     });
   }
   return result;
-}
+};
 
 type SavingsData = Record<string, Record<number, number | null>>;
 
@@ -76,16 +72,17 @@ interface BuildCombinedDataParams {
   capitalGainsTaxRate: number;
 }
 
-function getMonthlyDeposit(
+const getMonthlyDeposit = (
   yearSaved: Record<number, number | null> | undefined,
   monthIndex: number,
   fallback: number,
-): number {
+): number => {
   const saved = yearSaved?.[monthIndex];
-  return saved ?? fallback;
-}
 
-function calculateInvestmentData(params: BuildCombinedDataParams) {
+  return saved ?? fallback;
+};
+
+const calculateInvestmentData = (params: BuildCombinedDataParams) => {
   const monthlyRate = params.rate / 100 / 12;
   const result: { invested: number; value: number; interest: number }[] = [];
 
@@ -120,9 +117,9 @@ function calculateInvestmentData(params: BuildCombinedDataParams) {
   }
 
   return result;
-}
+};
 
-export function buildCombinedData(params: BuildCombinedDataParams): CombinedYearRow[] {
+export const buildCombinedData = (params: BuildCombinedDataParams): CombinedYearRow[] => {
   const pensionData = calculatePensionData(params.pensionRates, params.projectionYears);
   const investmentData = calculateInvestmentData(params);
 
@@ -133,9 +130,7 @@ export function buildCombinedData(params: BuildCombinedDataParams): CombinedYear
     const investmentPensionTotal = inv.value + pension.valueTotal;
     const totalInvested = inv.invested + pension.investedTotal;
     const profitPercent =
-      totalInvested > 0
-        ? Math.round(1000 * (investmentPensionTotal - totalInvested) / totalInvested) / 10
-        : 0;
+      totalInvested > 0 ? Math.round((1000 * (investmentPensionTotal - totalInvested)) / totalInvested) / 10 : 0;
 
     const pensionRecapture = pension.valueTotal * params.pensionRecaptureRate;
     const pensionNetValue = pension.valueTotal - pensionRecapture;
@@ -146,8 +141,7 @@ export function buildCombinedData(params: BuildCombinedDataParams): CombinedYear
       Math.floor(taxableProfit / CAPITAL_GAINS_TAX_THRESHOLD) *
       CAPITAL_GAINS_TAX_THRESHOLD *
       params.capitalGainsTaxRate;
-    const investmentNetValue =
-      inv.value - investmentTransactionCosts - investmentCapitalGainsTax;
+    const investmentNetValue = inv.value - investmentTransactionCosts - investmentCapitalGainsTax;
 
     const totalNetValue = investmentNetValue + pensionNetValue + params.cashReserve;
 
@@ -172,12 +166,16 @@ export function buildCombinedData(params: BuildCombinedDataParams): CombinedYear
       totalNetValue,
     };
   });
-}
+};
 
-export function getLastRow<T>(data: T[]): T {
+export const getLastRow = <T>(data: T[]): T => {
   return data[data.length - 1];
-}
+};
 
-export function getAgeFromYear(year: number): number {
+export const getAgeFromYear = (year: number): number => {
   return year - BIRTH_YEAR;
-}
+};
+
+export const getTotalCosts = (row: CombinedYearRow): number => {
+  return row.investmentTransactionCosts + row.investmentCapitalGainsTax + row.pensionRecapture;
+};

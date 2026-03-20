@@ -1,0 +1,15 @@
+export const MONTH_LABELS = [
+  '',
+  'jan',
+  'feb',
+  'mrt',
+  'apr',
+  'mei',
+  'jun',
+  'jul',
+  'aug',
+  'sep',
+  'okt',
+  'nov',
+  'dec',
+] as const;

@@ -1,21 +1,9 @@
-import {
-  createContext,
-  useContext,
-  useState,
-  useEffect,
-  useMemo,
-  type ReactNode,
-} from 'react';
-import {
-  buildCombinedData,
-  calculatePensionData,
-} from '../utils/investmentCalculation.util';
-import { useSettings } from './SettingsContext';
-import {
-  loadSavingsData,
-  onSavingsChanged,
-} from '../hooks/savingsTracker.hooks';
-import { INVESTMENT_FIRST_YEAR_MONTHS } from '../../config/investment.config';
+import { createContext, useContext, useEffect, useMemo, useState, type FC, type ReactNode } from 'react';
+
+import { INVESTMENT_FIRST_YEAR_MONTHS } from '@config/investment.config';
+import { useSettings } from '@/contexts/SettingsContext';
+import { loadSavingsData, onSavingsChanged } from '@/hooks/savingsTracker.hooks';
+import { buildCombinedData, calculatePensionData } from '@/utils/investmentCalculation.util';
 
 interface InvestmentContextValue {
   combinedData: ReturnType<typeof buildCombinedData>;
@@ -24,7 +12,7 @@ interface InvestmentContextValue {
 
 const InvestmentContext = createContext<InvestmentContextValue | null>(null);
 
-export function InvestmentProvider({ children }: { children: ReactNode }) {
+const InvestmentProvider: FC<{ children: ReactNode }> = ({ children }) => {
   const { settings, projectionYears, investmentYears } = useSettings();
   const [savingsData, setSavingsData] = useState(loadSavingsData);
 
@@ -60,17 +48,16 @@ export function InvestmentProvider({ children }: { children: ReactNode }) {
     return { combinedData, pensionData };
   }, [settings, pensionRates, projectionYears, investmentYears, savingsData]);
 
-  return (
-    <InvestmentContext.Provider value={value}>
-      {children}
-    </InvestmentContext.Provider>
-  );
-}
+  return <InvestmentContext.Provider value={value}>{children}</InvestmentContext.Provider>;
+};
 
-export function useInvestment() {
+const useInvestment = () => {
   const ctx = useContext(InvestmentContext);
   if (!ctx) {
     throw new Error('useInvestment must be used within InvestmentProvider');
   }
+
   return ctx;
-}
+};
+
+export { InvestmentProvider, useInvestment };

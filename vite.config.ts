@@ -1,12 +1,20 @@
-import { defineConfig } from 'vite'
-import react from '@vitejs/plugin-react'
-import { VitePWA } from 'vite-plugin-pwa'
+import path from 'node:path';
+
+import react from '@vitejs/plugin-react';
+import { defineConfig } from 'vite';
+import { VitePWA } from 'vite-plugin-pwa';
 
 // https://vite.dev/config/
-const base = '/investment-calendar/'
+const base = '/investment-calendar/';
 
 export default defineConfig({
   base,
+  resolve: {
+    alias: {
+      '@': path.resolve(__dirname, './src'),
+      '@config': path.resolve(__dirname, './config'),
+    },
+  },
   build: {
     chunkSizeWarningLimit: 600,
   },
@@ -52,4 +60,4 @@ export default defineConfig({
       },
     }),
   ],
-})
+});

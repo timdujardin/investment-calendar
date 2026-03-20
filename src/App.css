@@ -26,7 +26,7 @@
   --bottom-nav-height: 64px;
 }
 
-[data-theme="dark"] {
+[data-theme='dark'] {
   --color-bg: #0f172a;
   --color-surface: #1e293b;
   --color-text: #f1f5f9;
@@ -112,6 +112,29 @@ body {
   color: var(--color-investment);
 }
 
+.app-bar__actions {
+  display: flex;
+  align-items: center;
+  gap: 0.25rem;
+}
+
+.app-bar__settings {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  inline-size: 2.5rem;
+  block-size: 2.5rem;
+  border-radius: var(--radius);
+  background: var(--color-bg);
+  text-decoration: none;
+  font-size: 1.25rem;
+  transition: background 0.2s;
+}
+
+.app-bar__settings:hover {
+  background: var(--color-border);
+}
+
 .theme-toggle {
   display: flex;
   align-items: center;
@@ -124,7 +147,9 @@ body {
   background: var(--color-bg);
   color: var(--color-text);
   cursor: pointer;
-  transition: background 0.2s, color 0.2s;
+  transition:
+    background 0.2s,
+    color 0.2s;
 }
 
 .theme-toggle:hover {
@@ -469,6 +494,32 @@ body {
   letter-spacing: 0.05em;
   color: var(--color-muted);
   margin-block-end: 0.75rem;
+}
+
+.chart-company-legend {
+  display: flex;
+  justify-content: center;
+  flex-wrap: wrap;
+  gap: 0.75rem;
+  margin-block-start: 0.5rem;
+}
+
+.chart-company-legend__item {
+  display: flex;
+  align-items: center;
+  gap: 0.3rem;
+  font-size: 0.7rem;
+  font-weight: 600;
+  color: var(--color-muted);
+}
+
+.chart-company-legend__swatch {
+  display: inline-block;
+  inline-size: 12px;
+  block-size: 12px;
+  border-radius: 3px;
+  opacity: 0.5;
+  flex-shrink: 0;
 }
 
 .chart-disclaimer {
@@ -818,7 +869,7 @@ body {
   margin: 0;
 }
 
-.settings-field__input[type="number"] {
+.settings-field__input[type='number'] {
   -moz-appearance: textfield;
 }
 
@@ -888,6 +939,83 @@ body {
   color: var(--color-warning);
 }
 
+/* Wage table */
+.wage-table-wrap {
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+  background: var(--color-surface);
+  border-radius: var(--radius);
+  box-shadow: var(--shadow);
+}
+
+.wage-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.75rem;
+  white-space: nowrap;
+}
+
+.wage-table thead th {
+  position: sticky;
+  top: 0;
+  background: var(--color-surface);
+  font-size: 0.65rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  color: var(--color-muted);
+  text-align: start;
+  padding: 0.6rem 0.5rem;
+  border-block-end: 2px solid var(--color-border);
+}
+
+.wage-table td {
+  padding: 0.45rem 0.5rem;
+  border-block-end: 1px solid var(--color-border);
+  color: var(--color-text);
+}
+
+.wage-table__year-row {
+  cursor: pointer;
+  background: var(--color-bg);
+  font-weight: 700;
+  transition: background 0.15s;
+}
+
+.wage-table__year-row:hover {
+  background: var(--color-nav-hover);
+}
+
+.wage-table__year-row td {
+  padding-block: 0.55rem;
+}
+
+.wage-table__chevron {
+  display: inline-block;
+  width: 1rem;
+  font-size: 0.7rem;
+  color: var(--color-muted);
+}
+
+.wage-table__row--muted td {
+  color: var(--color-muted);
+  font-style: italic;
+}
+
+.wage-table__cell--number {
+  text-align: end;
+  font-variant-numeric: tabular-nums;
+}
+
+.wage-table__cell--note {
+  max-width: 180px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  color: var(--color-muted);
+  font-size: 0.7rem;
+}
+
 /* Page loader (Suspense fallback) */
 .page-loader {
   display: flex;
@@ -906,5 +1034,7 @@ body {
 }
 
 @keyframes spin {
-  to { transform: rotate(360deg); }
+  to {
+    transform: rotate(360deg);
+  }
 }

@@ -28,13 +28,13 @@ const SummaryCards: FC = () => {
       <SummaryCard
         label={`Eindstand ${targetYear} (${settings.targetAge} jaar)`}
         value={formatCurrency(rowTarget.totalNetValue)}
-        sub={`Posities: ${formatCurrency(rowTarget.positionsNetValue)} · Plannen: ${formatCurrency(rowTarget.plansNetValue)} · Pensioen: ${formatCurrency(rowTarget.pensionNetValue)} · Cash: ${formatCurrency(rowTarget.cashReserve)}`}
+        sub={`Bolero: ${formatCurrency(rowTarget.positionsNetValue)} · Crelan: ${formatCurrency(rowTarget.plansNetValue)} · Baloise: ${formatCurrency(rowTarget.pensionNetValue)} · Cash: ${formatCurrency(rowTarget.cashReserve)}`}
         variant="blue"
       />
       <SummaryCard
         label={`Eindstand ${endYear} (${rowEnd.age} jaar)`}
         value={formatCurrency(rowEnd.totalNetValue)}
-        sub={`Posities: ${formatCurrency(rowEnd.positionsNetValue)} · Plannen: ${formatCurrency(rowEnd.plansNetValue)} · Pensioen: ${formatCurrency(rowEnd.pensionNetValue)} · Cash: ${formatCurrency(rowEnd.cashReserve)}`}
+        sub={`Bolero: ${formatCurrency(rowEnd.positionsNetValue)} · Crelan: ${formatCurrency(rowEnd.plansNetValue)} · Baloise: ${formatCurrency(rowEnd.pensionNetValue)} · Cash: ${formatCurrency(rowEnd.cashReserve)}`}
         variant="orange"
       />
       <SummaryCard

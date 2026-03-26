@@ -98,11 +98,11 @@ const InvestmentsPage: FC = () => {
         </div>
 
         <div className="detail-section">
-          <h2 className="detail-section__title">Posities</h2>
+          <h2 className="detail-section__title">Bolero</h2>
           <p className="detail-section__description">
-            Eenmalig belegd · {settings.rate}% rendement · Prognose einde {row.year}
+            Eenmalig belegd via KBC Bolero · {settings.rate}% rendement · Prognose einde {row.year}
           </p>
-          <ChartCard title={`Posities netto waarde — ${settings.startYear}–${settings.endYear}`} height={200}>
+          <ChartCard title={`Bolero netto waarde — ${settings.startYear}–${settings.endYear}`} height={200}>
             <LineChart data={positionsChartData} margin={{ top: 8, right: 8, left: 0, bottom: 0 }}>
               <CartesianGrid strokeDasharray="3 3" stroke="var(--color-grid)" />
               <XAxis dataKey="year" tick={{ fontSize: 11 }} stroke="var(--color-muted)" />
@@ -127,19 +127,19 @@ const InvestmentsPage: FC = () => {
                 key={pos.ticker}
                 label={pos.name}
                 value={formatCurrency(pos.amount)}
-                sub={`${pos.ticker} · ${((pos.amount / positionsTotal) * 100).toFixed(0)}% van posities`}
+                sub={`${pos.ticker} · ${((pos.amount / positionsTotal) * 100).toFixed(0)}% van Bolero`}
               />
             ))}
           </div>
           <div className="detail-grid">
             <DetailCard
-              label="Posities waarde"
+              label="Bolero waarde"
               value={formatCurrency(row.positionsNetValue)}
               sub={`Bruto: ${formatCurrency(row.positionsValue)} · Na ${(settings.transactionFeeRate * 100).toFixed(0)}% beurstaks en meerwaardetaks`}
               valueClassName="text-investment"
             />
             <DetailCard
-              label="Posities winst"
+              label="Bolero winst"
               value={`+${formatCurrency(row.positionsValue - row.positionsInvested)}`}
               sub={`Ingelegd: ${formatCurrency(row.positionsInvested)}`}
               valueClassName="text-interest"
@@ -148,11 +148,11 @@ const InvestmentsPage: FC = () => {
         </div>
 
         <div className="detail-section">
-          <h2 className="detail-section__title">Beleggingsplannen</h2>
+          <h2 className="detail-section__title">Crelan</h2>
           <p className="detail-section__description">
             Maandelijks via Crelan · {settings.rate}% rendement · Prognose einde {row.year}
           </p>
-          <ChartCard title={`Plannen netto waarde — ${settings.startYear}–${settings.endYear}`} height={200}>
+          <ChartCard title={`Crelan netto waarde — ${settings.startYear}–${settings.endYear}`} height={200}>
             <LineChart data={plansChartData} margin={{ top: 8, right: 8, left: 0, bottom: 0 }}>
               <CartesianGrid strokeDasharray="3 3" stroke="var(--color-grid)" />
               <XAxis dataKey="year" tick={{ fontSize: 11 }} stroke="var(--color-muted)" />
@@ -183,7 +183,7 @@ const InvestmentsPage: FC = () => {
           </div>
           <div className="detail-grid">
             <DetailCard
-              label="Plannen waarde"
+              label="Crelan waarde"
               value={formatCurrency(row.plansNetValue)}
               sub={`Bruto: ${formatCurrency(row.plansValue)} · Na uitstapkosten -${formatCurrency(row.plansExitFees)}`}
               valueClassName="text-investment"
@@ -207,25 +207,25 @@ const InvestmentsPage: FC = () => {
           </p>
           <div className="detail-grid">
             <DetailCard
-              label="Beurstaks + makelaar (posities)"
+              label="Beurstaks + makelaar (Bolero)"
               value={`-${formatCurrency(row.positionsTransactionCosts)}`}
               sub={`${(settings.transactionFeeRate * 100).toFixed(0)}% op ${formatCurrency(row.positionsInvested)} inleg`}
               valueClassName="text-warn"
             />
             <DetailCard
-              label="Meerwaardetaks (posities)"
+              label="Meerwaardetaks (Bolero)"
               value={`-${formatCurrency(row.positionsCapitalGainsTax)}`}
               sub={`${(settings.capitalGainsTaxRate * 100).toFixed(0)}% per €10.000 winst`}
               valueClassName="text-warn"
             />
             <DetailCard
-              label="Instapkosten (plannen)"
+              label="Instapkosten (Crelan)"
               value={`-${formatCurrency(row.plansEntryFees)}`}
               sub={`${avgEntryFeePercent}% per storting — al afgehouden`}
               valueClassName="text-warn"
             />
             <DetailCard
-              label="Uitstapkosten (plannen)"
+              label="Uitstapkosten (Crelan)"
               value={`-${formatCurrency(row.plansExitFees)}`}
               sub="Op bruto waarde bij verkoop"
               valueClassName="text-warn"

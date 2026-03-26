@@ -10,7 +10,7 @@ const PrognoseLineChart: FC = () => {
 
   return (
     <ChartCard
-      title="Prognose — Investering & Pensioensparen"
+      title="Prognose — Bolero/Crelan & Pensioensparen"
       disclaimer="Bedragen zijn na aftrek van kosten en belasting."
     >
       <LineChart data={chartData} margin={{ top: 8, right: 8, left: 0, bottom: 0 }}>
@@ -28,7 +28,7 @@ const PrognoseLineChart: FC = () => {
         <Line
           type="monotone"
           dataKey="investments"
-          name="Investments"
+          name="Bolero + Crelan"
           stroke="var(--color-investment)"
           strokeWidth={2}
           dot={false}

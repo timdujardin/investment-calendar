@@ -19,7 +19,7 @@ const AppHeader: FC = () => {
       </p>
       <div className="app-header__pills">
         <span className="pill">
-          📈 Posities: {formatCurrency(positionsTotal)} · Beleggingsplan: €{nominalMonthly}/mnd
+          📈 Bolero: {formatCurrency(positionsTotal)} · Crelan: €{nominalMonthly}/mnd
         </span>
         <span className="pill">
           🏦 Pensioensparen: Crelan {(settings.crelanRate * 100).toFixed(1)}%/jaar + Baloise{' '}

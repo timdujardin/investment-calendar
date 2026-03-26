@@ -135,7 +135,7 @@ const SettingsPage: FC = () => {
             </button>
           </div>
           <span className="settings-field__hint">
-            Totaal posities: {formatCurrency(positionsTotal)}
+            Totaal Bolero: {formatCurrency(positionsTotal)}
           </span>
 
           <h3 className="settings-section__subtitle">Kosten Bolero</h3>

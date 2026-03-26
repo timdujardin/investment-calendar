@@ -2,10 +2,12 @@ import type { FC } from 'react';
 
 import { useSettings } from '@/contexts/SettingsContext';
 import { formatCurrency } from '@/utils/format.util';
-import { getAgeFromYear } from '@/utils/investmentCalculation.util';
+import { getAgeFromYear, getNominalMonthlyTotal } from '@/utils/investmentCalculation.util';
 
 const AppHeader: FC = () => {
-  const { settings } = useSettings();
+  const { settings, positionsTotal } = useSettings();
+
+  const nominalMonthly = getNominalMonthlyTotal(settings.monthlyPlans);
 
   return (
     <header className="app-header">
@@ -17,8 +19,7 @@ const AppHeader: FC = () => {
       </p>
       <div className="app-header__pills">
         <span className="pill">
-          📈 Investering: €{settings.investmentMonthlyFirstYear}/mnd ({settings.startYear}) · €
-          {settings.investmentMonthly}/mnd (vanaf {settings.startYear + 1})
+          📈 Posities: {formatCurrency(positionsTotal)} · Beleggingsplan: €{nominalMonthly}/mnd
         </span>
         <span className="pill">
           🏦 Pensioensparen: Crelan {(settings.crelanRate * 100).toFixed(1)}%/jaar + Baloise{' '}

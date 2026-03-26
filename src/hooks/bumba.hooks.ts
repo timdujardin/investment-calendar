@@ -52,7 +52,9 @@ export const useBumbaData = () => {
     const netWithoutA11y =
       grossWithoutA11y !== null && lastRatio !== null ? Math.round(grossWithoutA11y * lastRatio * 100) / 100 : null;
     const netA11yImpact =
-      lastEntry?.net != null && netWithoutA11y !== null ? Math.round((lastEntry.net - netWithoutA11y) * 100) / 100 : null;
+      lastEntry?.net != null && netWithoutA11y !== null
+        ? Math.round((lastEntry.net - netWithoutA11y) * 100) / 100
+        : null;
 
     return {
       allEntries,
@@ -169,9 +171,11 @@ export const useBumbaChartData = () => {
 
     const existingRaiseDates = new Set(raiseEvents.map((e) => e.date));
     for (const bump of A11Y_BUMPS) {
-      if (existingRaiseDates.has(bump.date)) continue;
+      if (existingRaiseDates.has(bump.date)) 
+{continue;}
       const entry = includedEntries.find((e) => e.date === bump.date);
-      if (!entry || entry.gross == null) continue;
+      if (!entry || entry.gross == null) 
+{continue;}
 
       const pct = (bump.amount / (entry.gross - bump.amount)) * 100;
 

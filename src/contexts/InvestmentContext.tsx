@@ -13,7 +13,7 @@ interface InvestmentContextValue {
 const InvestmentContext = createContext<InvestmentContextValue | null>(null);
 
 const InvestmentProvider: FC<{ children: ReactNode }> = ({ children }) => {
-  const { settings, projectionYears, investmentYears } = useSettings();
+  const { settings, positionsTotal, projectionYears, investmentYears } = useSettings();
   const [savingsData, setSavingsData] = useState(loadSavingsData);
 
   useEffect(() => {
@@ -30,11 +30,10 @@ const InvestmentProvider: FC<{ children: ReactNode }> = ({ children }) => {
       rate: settings.rate,
       pensionRates,
       cashReserve: settings.cashReserve,
-      startingValue: settings.currentInvestedAmount,
+      positionsTotal,
+      monthlyPlans: settings.monthlyPlans,
       projectionYears,
       firstYearMonths: INVESTMENT_FIRST_YEAR_MONTHS,
-      monthlyFirstYear: settings.investmentMonthlyFirstYear,
-      monthlyAfterFirstYear: settings.investmentMonthly,
       savingsData,
       startYear: settings.startYear,
       investmentYears,
@@ -46,7 +45,7 @@ const InvestmentProvider: FC<{ children: ReactNode }> = ({ children }) => {
     const pensionData = calculatePensionData(pensionRates, projectionYears);
 
     return { combinedData, pensionData };
-  }, [settings, pensionRates, projectionYears, investmentYears, savingsData]);
+  }, [settings, pensionRates, positionsTotal, projectionYears, investmentYears, savingsData]);
 
   return <InvestmentContext.Provider value={value}>{children}</InvestmentContext.Provider>;
 };

@@ -8,14 +8,18 @@ import { useCurrentYearIndex, YearSelector } from '@/components/atoms/year-selec
 import { useSettings } from '@/contexts/SettingsContext';
 import { useInvestmentChartData, useInvestmentPageData } from '@/hooks/investment.hooks';
 import { formatCurrency, formatCurrencyCompact } from '@/utils/format.util';
+import { getEffectiveMonthlyTotal, getWeightedEntryFeeRate } from '@/utils/investmentCalculation.util';
 
 const InvestmentsPage: FC = () => {
-  const { settings } = useSettings();
+  const { settings, positionsTotal } = useSettings();
   const defaultIndex = useCurrentYearIndex();
   const [yearIndex, setYearIndex] = useState(defaultIndex);
   const { row, prevRow, yearGrowth, returnOnInvestment, isTargetReached, wasTargetReachedBefore } =
     useInvestmentPageData(yearIndex);
   const chartData = useInvestmentChartData();
+
+  const effectiveMonthly = getEffectiveMonthlyTotal(settings.monthlyPlans);
+  const avgEntryFeePercent = (getWeightedEntryFeeRate(settings.monthlyPlans) * 100).toFixed(1);
 
   return (
     <div className="page">
@@ -64,8 +68,7 @@ const InvestmentsPage: FC = () => {
             value={formatCurrency(row.investmentNetValue)}
             sub={
               <>
-                Bruto: {formatCurrency(row.investmentValue)} · Na {(settings.transactionFeeRate * 100).toFixed(0)}%
-                kosten en {(settings.capitalGainsTaxRate * 100).toFixed(0)}% meerwaardetaks
+                Bruto: {formatCurrency(row.investmentValue)} · Na kosten, belasting en uitstapkosten
               </>
             }
             highlight
@@ -88,42 +91,108 @@ const InvestmentsPage: FC = () => {
         </div>
 
         <div className="detail-section">
-          <h2 className="detail-section__title">Inleg & rendement</h2>
+          <h2 className="detail-section__title">Posities</h2>
+          <p className="detail-section__description">
+            Eenmalig belegd · {settings.rate}% rendement · Prognose einde {row.year}
+          </p>
           <div className="detail-grid">
-            <DetailCard label="Totaal ingelegd" value={formatCurrency(row.investmentInvested)} />
+            {settings.positions.map((pos) => (
+              <DetailCard
+                key={pos.ticker}
+                label={pos.name}
+                value={formatCurrency(pos.amount)}
+                sub={`${pos.ticker} · ${((pos.amount / positionsTotal) * 100).toFixed(0)}% van posities`}
+              />
+            ))}
+          </div>
+          <div className="detail-grid">
             <DetailCard
-              label="Rente-winst"
-              value={`+${formatCurrency(row.investmentInterest)}`}
+              label="Posities waarde"
+              value={formatCurrency(row.positionsNetValue)}
+              sub={`Bruto: ${formatCurrency(row.positionsValue)} · Na ${(settings.transactionFeeRate * 100).toFixed(0)}% beurstaks en meerwaardetaks`}
+              valueClassName="text-investment"
+            />
+            <DetailCard
+              label="Posities winst"
+              value={`+${formatCurrency(row.positionsValue - row.positionsInvested)}`}
+              sub={`Ingelegd: ${formatCurrency(row.positionsInvested)}`}
               valueClassName="text-interest"
             />
           </div>
         </div>
 
         <div className="detail-section">
-          <h2 className="detail-section__title">Kosten & belasting</h2>
+          <h2 className="detail-section__title">Beleggingsplannen</h2>
+          <p className="detail-section__description">
+            Maandelijks via Crelan · {settings.rate}% rendement · Prognose einde {row.year}
+          </p>
+          <div className="detail-grid">
+            {settings.monthlyPlans.map((plan) => (
+              <DetailCard
+                key={plan.isin}
+                label={plan.name}
+                value={`€${plan.monthlyAmount}/mnd`}
+                sub={`${plan.isin} · Effectief €${(plan.monthlyAmount * (1 - plan.entryFeeRate)).toFixed(2)}/mnd na ${(plan.entryFeeRate * 100).toFixed(1)}% instapkost`}
+              />
+            ))}
+          </div>
           <div className="detail-grid">
             <DetailCard
-              label="Beurstaks + makelaarskosten"
-              value={`-${formatCurrency(row.investmentTransactionCosts)}`}
-              sub={`${(settings.transactionFeeRate * 100).toFixed(0)}% op ${formatCurrency(row.investmentInvested)} inleg`}
-              valueClassName="text-warn"
+              label="Plannen waarde"
+              value={formatCurrency(row.plansNetValue)}
+              sub={`Bruto: ${formatCurrency(row.plansValue)} · Na uitstapkosten -${formatCurrency(row.plansExitFees)}`}
+              valueClassName="text-investment"
             />
             <DetailCard
-              label="Meerwaardetaks"
-              value={`-${formatCurrency(row.investmentCapitalGainsTax)}`}
-              sub={`${(settings.capitalGainsTaxRate * 100).toFixed(0)}% per €10.000 winst`}
-              valueClassName="text-warn"
+              label="Effectief belegd"
+              value={formatCurrency(row.plansEffectiveInvested)}
+              sub={`Nominaal: ${formatCurrency(row.plansInvested)} · Instapkosten: -${formatCurrency(row.plansEntryFees)}`}
             />
           </div>
           <p className="detail-section__disclaimer">
-            Meerwaardetaks wordt berekend op elke volledige schijf van €10.000 winst. Huidige winst:{' '}
-            {formatCurrency(Math.max(row.investmentInterest, 0))} — belastbare schijven:{' '}
-            {Math.floor(Math.max(row.investmentInterest, 0) / 10_000)}.
+            Maandelijks €{row.investmentMonthly} bruto, effectief €{effectiveMonthly.toFixed(2)} na {avgEntryFeePercent}%
+            instapkost (beheerd door Crelan).
           </p>
         </div>
 
         <div className="detail-section">
+          <h2 className="detail-section__title">Kosten & belasting</h2>
+          <p className="detail-section__description">
+            Geschatte kosten bij verkoop einde {row.year}
+          </p>
+          <div className="detail-grid">
+            <DetailCard
+              label="Beurstaks + makelaar (posities)"
+              value={`-${formatCurrency(row.positionsTransactionCosts)}`}
+              sub={`${(settings.transactionFeeRate * 100).toFixed(0)}% op ${formatCurrency(row.positionsInvested)} inleg`}
+              valueClassName="text-warn"
+            />
+            <DetailCard
+              label="Meerwaardetaks (posities)"
+              value={`-${formatCurrency(row.positionsCapitalGainsTax)}`}
+              sub={`${(settings.capitalGainsTaxRate * 100).toFixed(0)}% per €10.000 winst`}
+              valueClassName="text-warn"
+            />
+            <DetailCard
+              label="Instapkosten (plannen)"
+              value={`-${formatCurrency(row.plansEntryFees)}`}
+              sub={`${avgEntryFeePercent}% per storting — al afgehouden`}
+              valueClassName="text-warn"
+            />
+            <DetailCard
+              label="Uitstapkosten (plannen)"
+              value={`-${formatCurrency(row.plansExitFees)}`}
+              sub="Op bruto waarde bij verkoop"
+              valueClassName="text-warn"
+            />
+          </div>
+        </div>
+
+        <div className="detail-section">
           <h2 className="detail-section__title">Groei</h2>
+          <p className="detail-section__description">
+            Bruto groei op basis van {settings.rate}% jaarlijks rendement
+          </p>
           <div className="detail-grid">
             <DetailCard
               label="Groei dit jaar"

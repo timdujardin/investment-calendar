@@ -8,7 +8,8 @@ import { formatCurrency } from '@/utils/format.util';
 const PATTERN_SIZE = 6;
 
 const getFill = (isIndexation: boolean, isNegative: boolean): string => {
-  if (isNegative) return 'var(--color-warning)';
+  if (isNegative) 
+{return 'var(--color-warning)';}
 
   return isIndexation ? 'url(#pattern-indexatie)' : 'var(--color-success)';
 };
@@ -58,12 +59,15 @@ const BumbaRaiseChart: FC = () => {
         <YAxis tickFormatter={(v: number) => `${v.toFixed(0)}%`} tick={{ fontSize: 11 }} stroke="var(--color-muted)" />
         <Tooltip
           formatter={(value, _name, props) => {
-            if (typeof value !== 'number') return String(value);
+            if (typeof value !== 'number') 
+{return String(value);}
             const { isIndexation, euroGross, euroNet } = props.payload ?? {};
             const label = isIndexation ? 'Indexatie' : 'Opslag';
             const parts = [`${value.toFixed(2)}%`];
-            if (euroGross != null) parts.push(`bruto ${formatCurrency(euroGross)}`);
-            if (euroNet != null) parts.push(`netto ${formatCurrency(euroNet)}`);
+            if (euroGross != null) 
+{parts.push(`bruto ${formatCurrency(euroGross)}`);}
+            if (euroNet != null) 
+{parts.push(`netto ${formatCurrency(euroNet)}`);}
 
             return [parts.join(' · '), label];
           }}
@@ -71,7 +75,10 @@ const BumbaRaiseChart: FC = () => {
         />
         <Bar dataKey="percentage" radius={[4, 4, 0, 0]}>
           {raiseChartData.map((entry, i) => (
-            <Cell key={i} fill={entry.percentage != null ? getFill(entry.isIndexation, entry.percentage < 0) : 'transparent'} />
+            <Cell
+              key={i}
+              fill={entry.percentage != null ? getFill(entry.isIndexation, entry.percentage < 0) : 'transparent'}
+            />
           ))}
         </Bar>
       </BarChart>

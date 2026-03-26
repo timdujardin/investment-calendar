@@ -1,5 +1,5 @@
-import type { BumbaEntry, CompanyPeriod, RaiseEvent, YearlySummary } from '@/@types/bumba';
 import { A11Y_BUMPS, A11Y_START_DATE, INDEX_ADJUSTMENTS } from '@config/bumba.config';
+import type { BumbaEntry, CompanyPeriod, RaiseEvent, YearlySummary } from '@/@types/bumba';
 
 const average = (values: number[]): number | null => {
   if (values.length === 0) {

@@ -7,7 +7,13 @@ import {
   CAPITAL_GAINS_TAX_THRESHOLD,
   CRELAN_START_VALUE,
 } from '@config/investment.config';
-import type { CombinedYearRow, InvestmentRate, PensionYearRow } from '@/@types/investment';
+import type {
+  CombinedYearRow,
+  ExitFeeSchedule,
+  InvestmentRate,
+  MonthlyInvestmentPlan,
+  PensionYearRow,
+} from '@/@types/investment';
 
 const FIRST_YEAR_MONTHS = 10;
 
@@ -55,15 +61,14 @@ export const calculatePensionData = (rates: PensionRates, projectionYears: numbe
 
 type SavingsData = Record<string, Record<number, number | null>>;
 
-interface BuildCombinedDataParams {
+export interface BuildCombinedDataParams {
   rate: InvestmentRate;
   pensionRates: PensionRates;
   cashReserve: number;
-  startingValue: number;
+  positionsTotal: number;
+  monthlyPlans: MonthlyInvestmentPlan[];
   projectionYears: number;
   firstYearMonths: number;
-  monthlyFirstYear: number;
-  monthlyAfterFirstYear: number;
   savingsData: SavingsData;
   startYear: number;
   investmentYears: readonly number[];
@@ -82,38 +87,108 @@ const getMonthlyDeposit = (
   return saved ?? fallback;
 };
 
-const calculateInvestmentData = (params: BuildCombinedDataParams) => {
-  const monthlyRate = params.rate / 100 / 12;
-  const result: { invested: number; value: number; interest: number }[] = [];
+const getExitFeeRate = (holdingYears: number, exitFees: ExitFeeSchedule[]): number => {
+  let rate = exitFees[0]?.rate ?? 0;
+  for (const fee of exitFees) {
+    if (holdingYears >= fee.afterYears) {
+      rate = fee.rate;
+    }
+  }
+  return rate;
+};
 
-  let value = params.startingValue;
-  let invested = params.startingValue;
+const getWeightedExitFeeRate = (holdingYears: number, plans: MonthlyInvestmentPlan[]): number => {
+  const totalMonthly = plans.reduce((sum, p) => sum + p.monthlyAmount, 0);
+  if (totalMonthly === 0) return 0;
 
-  const startMonthIndex = 12 - params.firstYearMonths;
-  const firstYearKey = String(params.startYear);
-  const firstYearSaved = params.savingsData[firstYearKey];
+  let weightedRate = 0;
+  for (const plan of plans) {
+    const weight = plan.monthlyAmount / totalMonthly;
+    weightedRate += weight * getExitFeeRate(holdingYears, plan.exitFees);
+  }
+  return weightedRate;
+};
+
+interface StreamRow {
+  invested: number;
+  value: number;
+  interest: number;
+}
+
+const calculatePositionsGrowth = (
+  positionsTotal: number,
+  rate: InvestmentRate,
+  projectionYears: number,
+  firstYearMonths: number,
+): StreamRow[] => {
+  const monthlyRate = rate / 100 / 12;
+  const result: StreamRow[] = [];
+  const invested = positionsTotal;
+  let value = positionsTotal;
+
+  for (let m = 0; m < firstYearMonths; m++) {
+    value *= 1 + monthlyRate;
+  }
+  result.push({ invested, value, interest: value - invested });
+
+  for (let y = 1; y <= projectionYears; y++) {
+    for (let m = 0; m < 12; m++) {
+      value *= 1 + monthlyRate;
+    }
+    result.push({ invested, value, interest: value - invested });
+  }
+
+  return result;
+};
+
+interface PlansStreamRow extends StreamRow {
+  effectiveInvested: number;
+}
+
+const calculatePlansGrowth = (
+  rate: InvestmentRate,
+  nominalMonthly: number,
+  entryFeeRate: number,
+  projectionYears: number,
+  firstYearMonths: number,
+  savingsData: SavingsData,
+  startYear: number,
+): PlansStreamRow[] => {
+  const monthlyRate = rate / 100 / 12;
+  const entryMultiplier = 1 - entryFeeRate;
+  const result: PlansStreamRow[] = [];
+
+  let value = 0;
+  let invested = 0;
+  let effectiveInvested = 0;
+
+  const startMonthIndex = 12 - firstYearMonths;
+  const firstYearKey = String(startYear);
+  const firstYearSaved = savingsData[firstYearKey];
 
   for (let m = startMonthIndex; m < 12; m++) {
     value *= 1 + monthlyRate;
-    const deposit = getMonthlyDeposit(firstYearSaved, m, params.monthlyFirstYear);
-    value += deposit;
-    invested += deposit;
+    const nominal = getMonthlyDeposit(firstYearSaved, m, nominalMonthly);
+    const effective = nominal * entryMultiplier;
+    value += effective;
+    invested += nominal;
+    effectiveInvested += effective;
   }
+  result.push({ invested, effectiveInvested, value, interest: value - effectiveInvested });
 
-  result.push({ invested, value, interest: value - invested });
-
-  for (let y = 1; y <= params.projectionYears; y++) {
-    const yearKey = String(params.startYear + y);
-    const yearSaved = params.savingsData[yearKey];
+  for (let y = 1; y <= projectionYears; y++) {
+    const yearKey = String(startYear + y);
+    const yearSaved = savingsData[yearKey];
 
     for (let m = 0; m < 12; m++) {
       value *= 1 + monthlyRate;
-      const deposit = getMonthlyDeposit(yearSaved, m, params.monthlyAfterFirstYear);
-      value += deposit;
-      invested += deposit;
+      const nominal = getMonthlyDeposit(yearSaved, m, nominalMonthly);
+      const effective = nominal * entryMultiplier;
+      value += effective;
+      invested += nominal;
+      effectiveInvested += effective;
     }
-
-    result.push({ invested, value, interest: value - invested });
+    result.push({ invested, effectiveInvested, value, interest: value - effectiveInvested });
   }
 
   return result;
@@ -121,48 +196,100 @@ const calculateInvestmentData = (params: BuildCombinedDataParams) => {
 
 export const buildCombinedData = (params: BuildCombinedDataParams): CombinedYearRow[] => {
   const pensionData = calculatePensionData(params.pensionRates, params.projectionYears);
-  const investmentData = calculateInvestmentData(params);
 
-  return investmentData.map((inv, i) => {
+  const positionsData = calculatePositionsGrowth(
+    params.positionsTotal,
+    params.rate,
+    params.projectionYears,
+    params.firstYearMonths,
+  );
+
+  const totalNominalMonthly = params.monthlyPlans.reduce((sum, p) => sum + p.monthlyAmount, 0);
+  const totalWeightedMonthly = params.monthlyPlans.reduce((sum, p) => sum + p.monthlyAmount * p.entryFeeRate, 0);
+  const avgEntryFeeRate = totalNominalMonthly > 0 ? totalWeightedMonthly / totalNominalMonthly : 0;
+
+  const plansData = calculatePlansGrowth(
+    params.rate,
+    totalNominalMonthly,
+    avgEntryFeeRate,
+    params.projectionYears,
+    params.firstYearMonths,
+    params.savingsData,
+    params.startYear,
+  );
+
+  return positionsData.map((pos, i) => {
+    const plan = plansData[i];
     const pension = pensionData[i];
     const year = params.investmentYears[i];
     const age = year - BIRTH_YEAR;
-    const investmentPensionTotal = inv.value + pension.valueTotal;
-    const totalInvested = inv.invested + pension.investedTotal;
-    const profitPercent =
-      totalInvested > 0 ? Math.round((1000 * (investmentPensionTotal - totalInvested)) / totalInvested) / 10 : 0;
+
+    const positionsTransactionCosts = pos.invested * params.transactionFeeRate;
+    const positionsTaxableProfit = Math.max(pos.interest, 0);
+    const positionsCapitalGainsTax =
+      Math.floor(positionsTaxableProfit / CAPITAL_GAINS_TAX_THRESHOLD) *
+      CAPITAL_GAINS_TAX_THRESHOLD *
+      params.capitalGainsTaxRate;
+    const positionsNetValue = pos.value - positionsTransactionCosts - positionsCapitalGainsTax;
+
+    const holdingYears = i + params.firstYearMonths / 12;
+    const exitFeeRate = getWeightedExitFeeRate(holdingYears, params.monthlyPlans);
+    const plansEntryFees = plan.invested - plan.effectiveInvested;
+    const plansExitFees = plan.value * exitFeeRate;
+    const plansNetValue = plan.value - plansExitFees;
+
+    const investmentInvested = pos.invested + plan.invested;
+    const investmentValue = pos.value + plan.value;
+    const investmentInterest = pos.interest + plan.interest;
+    const investmentTransactionCosts = positionsTransactionCosts + plansExitFees;
+    const investmentCapitalGainsTax = positionsCapitalGainsTax;
+    const investmentNetValue = positionsNetValue + plansNetValue;
 
     const pensionRecapture = pension.valueTotal * params.pensionRecaptureRate;
     const pensionNetValue = pension.valueTotal - pensionRecapture;
 
-    const investmentTransactionCosts = inv.invested * params.transactionFeeRate;
-    const taxableProfit = Math.max(inv.interest, 0);
-    const investmentCapitalGainsTax =
-      Math.floor(taxableProfit / CAPITAL_GAINS_TAX_THRESHOLD) *
-      CAPITAL_GAINS_TAX_THRESHOLD *
-      params.capitalGainsTaxRate;
-    const investmentNetValue = inv.value - investmentTransactionCosts - investmentCapitalGainsTax;
-
+    const totalValue = investmentValue + pension.valueTotal + params.cashReserve;
+    const totalInvested = investmentInvested + pension.investedTotal;
+    const profitPercent =
+      totalInvested > 0
+        ? Math.round((1000 * (investmentValue + pension.valueTotal - totalInvested)) / totalInvested) / 10
+        : 0;
     const totalNetValue = investmentNetValue + pensionNetValue + params.cashReserve;
 
     return {
       year,
       age,
-      investmentInvested: inv.invested,
-      investmentValue: inv.value,
-      investmentInterest: inv.interest,
-      pensionInvested: pension.investedTotal,
-      pensionValue: pension.valueTotal,
-      cashReserve: params.cashReserve,
-      totalValue: investmentPensionTotal + params.cashReserve,
-      profitPercent,
-      investmentMonthly: i === 0 ? params.monthlyFirstYear : params.monthlyAfterFirstYear,
-      pensionMonthly: i === 0 ? BALOISE_MONTHLY_2026 : BALOISE_MONTHLY_FROM_2027,
-      pensionRecapture,
-      pensionNetValue,
+
+      positionsInvested: pos.invested,
+      positionsValue: pos.value,
+      positionsTransactionCosts,
+      positionsCapitalGainsTax,
+      positionsNetValue,
+
+      plansInvested: plan.invested,
+      plansEffectiveInvested: plan.effectiveInvested,
+      plansValue: plan.value,
+      plansEntryFees,
+      plansExitFees,
+      plansNetValue,
+
+      investmentInvested,
+      investmentValue,
+      investmentInterest,
       investmentTransactionCosts,
       investmentCapitalGainsTax,
       investmentNetValue,
+      investmentMonthly: totalNominalMonthly,
+
+      pensionInvested: pension.investedTotal,
+      pensionValue: pension.valueTotal,
+      pensionMonthly: i === 0 ? BALOISE_MONTHLY_2026 : BALOISE_MONTHLY_FROM_2027,
+      pensionRecapture,
+      pensionNetValue,
+
+      cashReserve: params.cashReserve,
+      totalValue,
+      profitPercent,
       totalNetValue,
     };
   });
@@ -177,5 +304,26 @@ export const getAgeFromYear = (year: number): number => {
 };
 
 export const getTotalCosts = (row: CombinedYearRow): number => {
-  return row.investmentTransactionCosts + row.investmentCapitalGainsTax + row.pensionRecapture;
+  return (
+    row.positionsTransactionCosts +
+    row.positionsCapitalGainsTax +
+    row.plansEntryFees +
+    row.plansExitFees +
+    row.pensionRecapture
+  );
 };
+
+export const getNominalMonthlyTotal = (plans: MonthlyInvestmentPlan[]): number =>
+  plans.reduce((sum, p) => sum + p.monthlyAmount, 0);
+
+export const getEffectiveMonthlyTotal = (plans: MonthlyInvestmentPlan[]): number =>
+  plans.reduce((sum, p) => sum + p.monthlyAmount * (1 - p.entryFeeRate), 0);
+
+export const getWeightedEntryFeeRate = (plans: MonthlyInvestmentPlan[]): number => {
+  const totalMonthly = getNominalMonthlyTotal(plans);
+  if (totalMonthly === 0) return 0;
+  return plans.reduce((sum, p) => sum + p.entryFeeRate * p.monthlyAmount, 0) / totalMonthly;
+};
+
+export const removeAtIndex = <T>(items: T[], index: number): T[] =>
+  items.filter((_, i) => i !== index);

@@ -418,6 +418,13 @@ body {
   font-weight: 700;
 }
 
+.detail-section__description {
+  font-size: 0.72rem;
+  color: var(--color-muted);
+  margin-block-start: 0.15rem;
+  margin-block-end: 0.4rem;
+}
+
 /* Summary cards */
 .summary-cards {
   display: grid;
@@ -812,6 +819,16 @@ body {
   text-transform: uppercase;
   letter-spacing: 0.05em;
   color: var(--color-muted);
+}
+
+.settings-section__subtitle {
+  font-size: 0.68rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  color: var(--color-muted);
+  margin-block-start: 0.75rem;
+  opacity: 0.8;
 }
 
 .settings-field {

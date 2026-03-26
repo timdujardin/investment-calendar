@@ -7,16 +7,17 @@ import {
   CASH_RESERVE as DEFAULT_CASH_RESERVE,
   CRELAN_RATE as DEFAULT_CRELAN_RATE,
   END_YEAR as DEFAULT_END_YEAR,
-  CURRENT_INVESTED_AMOUNT as DEFAULT_INVESTED,
   INVESTMENT_MONTHLY_2026 as DEFAULT_MONTHLY_2026,
   INVESTMENT_MONTHLY_FROM_2027 as DEFAULT_MONTHLY_FROM_2027,
+  INVESTMENT_POSITIONS as DEFAULT_POSITIONS,
+  MONTHLY_INVESTMENT_PLANS as DEFAULT_PLANS,
   PENSION_RECAPTURE_RATE as DEFAULT_PENSION_RECAPTURE,
   START_YEAR as DEFAULT_START_YEAR,
   TARGET_AT_40 as DEFAULT_TARGET,
   TARGET_AGE as DEFAULT_TARGET_AGE,
   INVESTMENT_TRANSACTION_FEE_RATE as DEFAULT_TRANSACTION_FEE,
 } from '@config/investment.config';
-import type { InvestmentRate } from '@/@types/investment';
+import type { InvestmentPosition, InvestmentRate, MonthlyInvestmentPlan } from '@/@types/investment';
 
 const STORAGE_KEY = 'investment-calendar-settings';
 
@@ -26,7 +27,8 @@ export interface AppSettings {
   targetAge: number;
   startYear: number;
   endYear: number;
-  currentInvestedAmount: number;
+  positions: InvestmentPosition[];
+  monthlyPlans: MonthlyInvestmentPlan[];
   cashReserve: number;
   investmentMonthlyFirstYear: number;
   investmentMonthly: number;
@@ -43,7 +45,8 @@ const DEFAULTS: AppSettings = {
   targetAge: DEFAULT_TARGET_AGE,
   startYear: DEFAULT_START_YEAR,
   endYear: DEFAULT_END_YEAR,
-  currentInvestedAmount: DEFAULT_INVESTED,
+  positions: DEFAULT_POSITIONS,
+  monthlyPlans: DEFAULT_PLANS,
   cashReserve: DEFAULT_CASH_RESERVE,
   investmentMonthlyFirstYear: DEFAULT_MONTHLY_2026,
   investmentMonthly: DEFAULT_MONTHLY_FROM_2027,
@@ -73,6 +76,7 @@ const saveSettings = (settings: AppSettings) => {
 
 interface SettingsContextValue {
   settings: AppSettings;
+  positionsTotal: number;
   updateSettings: (patch: Partial<AppSettings>) => void;
   resetSettings: () => void;
   projectionYears: number;
@@ -105,9 +109,10 @@ const SettingsProvider: FC<{ children: ReactNode }> = ({ children }) => {
       settings.startYear,
       ...Array.from({ length: projectionYears }, (_, i) => settings.startYear + 1 + i),
     ];
+    const positionsTotal = settings.positions.reduce((sum, p) => sum + p.amount, 0);
 
-    return { projectionYears, rowIndexAtTarget, investmentYears };
-  }, [settings.startYear, settings.endYear, settings.targetAge]);
+    return { projectionYears, rowIndexAtTarget, investmentYears, positionsTotal };
+  }, [settings.startYear, settings.endYear, settings.targetAge, settings.positions]);
 
   const value = useMemo(
     () => ({ settings, updateSettings, resetSettings, ...derived }),

@@ -221,8 +221,9 @@ export const buildLineChartData = (
 };
 
 export const buildCompanyZones = (lineChartData: LineChartEntry[]): CompanyZone[] => {
-  if (lineChartData.length === 0) 
-{return [];}
+  if (lineChartData.length === 0) {
+    return [];
+  }
 
   const zones: CompanyZone[] = [];
   let zoneStart = 0;
@@ -270,12 +271,14 @@ export const buildRaiseItems = (raiseEvents: RaiseEvent[], includedEntries: Bumb
   const existingDates = new Set(raiseEvents.map((e) => e.date));
 
   for (const bump of A11Y_BUMPS) {
-    if (existingDates.has(bump.date)) 
-{continue;}
+    if (existingDates.has(bump.date)) {
+      continue;
+    }
 
     const entry = includedEntries.find((e) => e.date === bump.date);
-    if (!entry || entry.gross == null) 
-{continue;}
+    if (!entry || entry.gross == null) {
+      continue;
+    }
 
     const pct = (bump.amount / (entry.gross - bump.amount)) * 100;
 

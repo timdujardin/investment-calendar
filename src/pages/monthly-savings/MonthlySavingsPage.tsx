@@ -12,8 +12,9 @@ import { DashboardStatus } from './_components/dashboard-status/DashboardStatus'
 import { targetSummaryValue, trackerCell, trackerCellStatus } from './MonthlySavingsPage.styles';
 
 const getTrackerStatus = (saved: number | null, target: number): 'ok' | 'warn' | null => {
-  if (saved === null) 
-{return null;}
+  if (saved === null) {
+    return null;
+  }
 
   return saved >= target ? 'ok' : 'warn';
 };

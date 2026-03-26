@@ -1,15 +1,21 @@
-const AUTH_SALT = 'investment-calendar-auth-salt-2026';
+const AUTH_SALT_B64 = 'cjEXv5/fQsHsJMJZuQTgew==';
+const PBKDF2_ITERATIONS = 100_000;
 
 const EXPECTED_USERNAME = 'admin';
 // eslint-disable-next-line sonarjs/no-hardcoded-passwords
-const EXPECTED_PASSWORD_HASH = '5d67e05b14b164d38fb4057a92de328c3838207ab1e8029f1141803e7d73fe00';
+const EXPECTED_PASSWORD_HASH = 'ba25f74f8d692c64ae11c1a96e3291fa199c079167d31d2a4b9cd8ad70c3c899';
 
 export const hashPassword = async (password: string): Promise<string> => {
   const encoder = new TextEncoder();
-  const data = encoder.encode(AUTH_SALT + password);
-  const buffer = await crypto.subtle.digest('SHA-256', data);
+  const keyMaterial = await crypto.subtle.importKey('raw', encoder.encode(password), 'PBKDF2', false, ['deriveBits']);
+  const salt = Uint8Array.from(atob(AUTH_SALT_B64), (c) => c.charCodeAt(0));
+  const bits = await crypto.subtle.deriveBits(
+    { name: 'PBKDF2', salt, iterations: PBKDF2_ITERATIONS, hash: 'SHA-256' },
+    keyMaterial,
+    256,
+  );
 
-  return Array.from(new Uint8Array(buffer))
+  return Array.from(new Uint8Array(bits))
     .map((b) => b.toString(16).padStart(2, '0'))
     .join('');
 };

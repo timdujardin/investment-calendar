@@ -7,6 +7,7 @@ import { useSavingsTracker } from '@/hooks/savingsTracker.hooks';
 import { formatCurrency } from '@/utils/format.util';
 
 import { compoundImpactNet } from './dashboard-status.callbacks';
+import { dashboardStatus, dashboardStatusRow } from './DashboardStatus.styles';
 
 // eslint-disable-next-line sonarjs/cognitive-complexity
 const DashboardStatus: FC = () => {
@@ -107,7 +108,7 @@ const DashboardStatus: FC = () => {
   }
 
   return (
-    <div className={`dashboard-status dashboard-status--${variant}`}>
+    <div className={dashboardStatus({ variant })}>
       <div className="dashboard-status__header">
         <span className="dashboard-status__icon">{icon}</span>
         <span className="dashboard-status__title">{title}</span>
@@ -115,7 +116,7 @@ const DashboardStatus: FC = () => {
       <table className="dashboard-status__table">
         <tbody>
           {lines.map((l) => (
-            <tr key={l.label} className={l.highlight ? 'dashboard-status__row--highlight' : ''}>
+            <tr key={l.label} className={dashboardStatusRow({ highlight: l.highlight })}>
               <td className="dashboard-status__cell-label">{l.label}</td>
               <td className="dashboard-status__cell-value">{l.value}</td>
             </tr>

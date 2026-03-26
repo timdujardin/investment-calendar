@@ -45,7 +45,9 @@ const BumbaPage: FC = () => {
           </div>
           <div className="summary-card">
             <div className="summary-card__label">Start loon</div>
-            <div className="summary-card__value">{firstEntry?.net != null ? formatCurrency(firstEntry.net) : '—'}</div>
+            <div className="summary-card__value">
+              {firstEntry?.net != null ? formatCurrency(Math.round(firstEntry.net / 100) * 100) : '—'}
+            </div>
             <div className="summary-card__sub">
               bruto {firstEntry?.gross != null ? formatCurrency(Math.round(firstEntry.gross / 100) * 100) : '—'}
               <br />

@@ -1,4 +1,4 @@
-import { useMemo, useState, type FC } from 'react';
+import { useCallback, useMemo, useState, type FC } from 'react';
 
 import { useBumbaData } from '@/hooks/bumba.hooks';
 import { formatPercent, groupEntriesByYear } from '@/utils/bumba.util';
@@ -10,7 +10,7 @@ const BumbaTable: FC = () => {
   const { allEntries, yearlySummaries } = useBumbaData();
   const [expandedYears, setExpandedYears] = useState<Set<number>>(new Set());
 
-  const toggleYear = (year: number) => {
+  const toggleYear = useCallback((year: number) => {
     setExpandedYears((prev) => {
       const next = new Set(prev);
       if (next.has(year)) {
@@ -21,7 +21,7 @@ const BumbaTable: FC = () => {
 
       return next;
     });
-  };
+  }, []);
 
   const entriesByYear = useMemo(() => groupEntriesByYear(allEntries), [allEntries]);
 

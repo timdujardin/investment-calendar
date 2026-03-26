@@ -3,13 +3,14 @@ import { Bar, BarChart, CartesianGrid, Cell, Tooltip, XAxis, YAxis } from 'recha
 
 import ChartCard from '@/components/atoms/chart-card/ChartCard';
 import { useBumbaChartData } from '@/hooks/bumba.hooks';
-import { formatCurrency } from '@/utils/format.util';
+import { formatCurrency, formatPercentTick } from '@/utils/format.util';
 
 const PATTERN_SIZE = 6;
 
 const getFill = (isIndexation: boolean, isNegative: boolean): string => {
-  if (isNegative) 
-{return 'var(--color-warning)';}
+  if (isNegative) {
+    return 'var(--color-warning)';
+  }
 
   return isIndexation ? 'url(#pattern-indexatie)' : 'var(--color-success)';
 };
@@ -56,18 +57,21 @@ const BumbaRaiseChart: FC = () => {
         <ChartPatterns />
         <CartesianGrid strokeDasharray="3 3" stroke="var(--color-grid)" />
         <XAxis dataKey="date" tick={{ fontSize: 10 }} stroke="var(--color-muted)" interval="preserveStartEnd" />
-        <YAxis tickFormatter={(v: number) => `${v.toFixed(0)}%`} tick={{ fontSize: 11 }} stroke="var(--color-muted)" />
+        <YAxis tickFormatter={formatPercentTick} tick={{ fontSize: 11 }} stroke="var(--color-muted)" />
         <Tooltip
           formatter={(value, _name, props) => {
-            if (typeof value !== 'number') 
-{return String(value);}
+            if (typeof value !== 'number') {
+              return String(value);
+            }
             const { isIndexation, euroGross, euroNet } = props.payload ?? {};
             const label = isIndexation ? 'Indexatie' : 'Opslag';
             const parts = [`${value.toFixed(2)}%`];
-            if (euroGross != null) 
-{parts.push(`bruto ${formatCurrency(euroGross)}`);}
-            if (euroNet != null) 
-{parts.push(`netto ${formatCurrency(euroNet)}`);}
+            if (euroGross != null) {
+              parts.push(`bruto ${formatCurrency(euroGross)}`);
+            }
+            if (euroNet != null) {
+              parts.push(`netto ${formatCurrency(euroNet)}`);
+            }
 
             return [parts.join(' · '), label];
           }}

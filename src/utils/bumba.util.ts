@@ -1,4 +1,4 @@
-import { A11Y_BUMPS, A11Y_START_DATE, INDEX_ADJUSTMENTS } from '@config/bumba.config';
+import { A11Y_BUMPS, A11Y_START_DATE, INDEX_ADJUSTMENTS, MONTH_LABELS } from '@config/bumba.config';
 import type { BumbaEntry, CompanyPeriod, RaiseEvent, YearlySummary } from '@/@types/bumba';
 
 const average = (values: number[]): number | null => {
@@ -157,4 +157,156 @@ export const formatPercent = (value: number): string => {
   const sign = value >= 0 ? '+' : '';
 
   return `${sign}${(value * 100).toFixed(1)}%`;
+};
+
+export interface LineChartEntry {
+  date: string;
+  gross: number | null;
+  net: number | null;
+  ratio: number | null;
+  company: string;
+  grossWithoutA11y: number | null;
+  netWithoutA11y: number | null;
+}
+
+export interface CompanyZone {
+  startDate: string;
+  endDate: string;
+  company: string;
+  index: number;
+}
+
+export interface RaiseItem {
+  sortKey: string;
+  month: number;
+  year: number;
+  percentage: number;
+  note: string | null;
+  isIndexation: boolean;
+  euroGross: number | null;
+  euroNet: number | null;
+}
+
+const formatChartDate = (month: number, year: number): string => `${MONTH_LABELS[month]} '${String(year).slice(2)}`;
+
+export const buildLineChartData = (
+  entries: BumbaEntry[],
+  ratioCarryForwardMonths: ReadonlySet<string>,
+): LineChartEntry[] => {
+  const result: LineChartEntry[] = [];
+  let prevRatio: number | null = null;
+
+  for (const e of entries) {
+    const isA11y = e.date >= A11Y_START_DATE;
+    const effectiveRatio = ratioCarryForwardMonths.has(e.date) && prevRatio !== null ? prevRatio : e.ratio;
+    const grossWo = isA11y && e.gross !== null ? Math.round((e.gross - getA11yImpact(e.date)) * 100) / 100 : null;
+
+    result.push({
+      date: formatChartDate(e.month, e.year),
+      gross: e.gross,
+      net: e.net,
+      ratio: e.ratio !== null ? e.ratio * 100 : null,
+      company: e.company,
+      grossWithoutA11y: grossWo,
+      netWithoutA11y:
+        grossWo !== null && effectiveRatio !== null ? Math.round(grossWo * effectiveRatio * 100) / 100 : null,
+    });
+
+    if (e.ratio !== null) {
+      prevRatio = e.ratio;
+    }
+  }
+
+  return result;
+};
+
+export const buildCompanyZones = (lineChartData: LineChartEntry[]): CompanyZone[] => {
+  if (lineChartData.length === 0) 
+{return [];}
+
+  const zones: CompanyZone[] = [];
+  let zoneStart = 0;
+  let zoneCompany = lineChartData[0].company;
+
+  for (let i = 1; i <= lineChartData.length; i++) {
+    if (i === lineChartData.length || lineChartData[i].company !== zoneCompany) {
+      zones.push({
+        startDate: lineChartData[zoneStart].date,
+        endDate: lineChartData[i - 1].date,
+        company: zoneCompany,
+        index: zones.length,
+      });
+      if (i < lineChartData.length) {
+        zoneStart = i;
+        zoneCompany = lineChartData[i].company;
+      }
+    }
+  }
+
+  return zones;
+};
+
+export const buildRaiseItems = (raiseEvents: RaiseEvent[], includedEntries: BumbaEntry[]): RaiseItem[] => {
+  const items: RaiseItem[] = raiseEvents.map((e) => {
+    const isIndexation = e.note != null && /index/i.test(e.note);
+    const euroGross =
+      e.newGross != null && e.percentage !== 0
+        ? Math.round((e.newGross - e.newGross / (1 + e.percentage)) * 100) / 100
+        : null;
+    const euroNet = euroGross != null && e.ratio != null ? Math.round(euroGross * e.ratio * 100) / 100 : null;
+
+    return {
+      sortKey: e.date,
+      month: e.month,
+      year: e.year,
+      percentage: e.percentage * 100,
+      note: e.note,
+      isIndexation,
+      euroGross,
+      euroNet,
+    };
+  });
+
+  const existingDates = new Set(raiseEvents.map((e) => e.date));
+
+  for (const bump of A11Y_BUMPS) {
+    if (existingDates.has(bump.date)) 
+{continue;}
+
+    const entry = includedEntries.find((e) => e.date === bump.date);
+    if (!entry || entry.gross == null) 
+{continue;}
+
+    const pct = (bump.amount / (entry.gross - bump.amount)) * 100;
+
+    items.push({
+      sortKey: bump.date,
+      month: entry.month,
+      year: entry.year,
+      percentage: Math.round(pct * 100) / 100,
+      note: 'a11y',
+      isIndexation: false,
+      euroGross: bump.amount,
+      euroNet: entry.ratio != null ? Math.round(bump.amount * entry.ratio * 100) / 100 : null,
+    });
+  }
+
+  return items;
+};
+
+export const buildRaiseChartData = (includedEntries: BumbaEntry[], raiseItems: RaiseItem[]) => {
+  const byDate = new Map(raiseItems.map((item) => [item.sortKey, item]));
+
+  return includedEntries.map((e) => {
+    const item = byDate.get(e.date);
+
+    return {
+      date: formatChartDate(e.month, e.year),
+      percentage: item?.percentage ?? null,
+      note: item?.note ?? null,
+      isIndexation: item?.isIndexation ?? false,
+      euroGross: item?.euroGross ?? null,
+      euroNet: item?.euroNet ?? null,
+    };
+  });
 };

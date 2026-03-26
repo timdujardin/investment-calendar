@@ -12,8 +12,6 @@ export const INVESTMENT_POSITIONS: InvestmentPosition[] = [
   { name: 'Ivanhoe Mines Ltd', ticker: 'IVN.TO', amount: 6_000 },
 ];
 
-export const CURRENT_INVESTED_AMOUNT = INVESTMENT_POSITIONS.reduce((sum, p) => sum + p.amount, 0);
-
 export const MONTHLY_INVESTMENT_PLANS: MonthlyInvestmentPlan[] = [
   {
     name: 'Amundi Funds China Equity A EUR Cap',

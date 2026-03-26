@@ -12,7 +12,7 @@ import {
   usePlansChartData,
   usePositionsChartData,
 } from '@/hooks/investment.hooks';
-import { formatCurrency, formatCurrencyCompact } from '@/utils/format.util';
+import { formatCurrency, formatCurrencyCompact, formatTooltipCurrency } from '@/utils/format.util';
 import { getEffectiveMonthlyTotal, getWeightedEntryFeeRate } from '@/utils/investmentCalculation.util';
 
 const InvestmentsPage: FC = () => {
@@ -44,7 +44,7 @@ const InvestmentsPage: FC = () => {
             <XAxis dataKey="year" tick={{ fontSize: 11 }} stroke="var(--color-muted)" />
             <YAxis tickFormatter={formatCurrencyCompact} tick={{ fontSize: 11 }} stroke="var(--color-muted)" />
             <Tooltip
-              formatter={(value) => (typeof value === 'number' ? formatCurrency(value) : String(value))}
+              formatter={formatTooltipCurrency}
               contentStyle={{ borderRadius: 12, border: '1px solid var(--color-border)' }}
             />
             <Legend />
@@ -75,6 +75,8 @@ const InvestmentsPage: FC = () => {
             value={formatCurrency(row.investmentNetValue)}
             sub={
               <>
+                {formatCurrency(row.positionsNetValue)} Bolero + {formatCurrency(row.plansNetValue)} Crelan
+                <br />
                 Bruto: {formatCurrency(row.investmentValue)} · Na kosten, belasting en uitstapkosten
               </>
             }
@@ -108,7 +110,7 @@ const InvestmentsPage: FC = () => {
               <XAxis dataKey="year" tick={{ fontSize: 11 }} stroke="var(--color-muted)" />
               <YAxis tickFormatter={formatCurrencyCompact} tick={{ fontSize: 11 }} stroke="var(--color-muted)" />
               <Tooltip
-                formatter={(value) => (typeof value === 'number' ? formatCurrency(value) : String(value))}
+                formatter={formatTooltipCurrency}
                 contentStyle={{ borderRadius: 12, border: '1px solid var(--color-border)' }}
               />
               <Line
@@ -158,7 +160,7 @@ const InvestmentsPage: FC = () => {
               <XAxis dataKey="year" tick={{ fontSize: 11 }} stroke="var(--color-muted)" />
               <YAxis tickFormatter={formatCurrencyCompact} tick={{ fontSize: 11 }} stroke="var(--color-muted)" />
               <Tooltip
-                formatter={(value) => (typeof value === 'number' ? formatCurrency(value) : String(value))}
+                formatter={formatTooltipCurrency}
                 contentStyle={{ borderRadius: 12, border: '1px solid var(--color-border)' }}
               />
               <Line
@@ -195,16 +197,14 @@ const InvestmentsPage: FC = () => {
             />
           </div>
           <p className="detail-section__disclaimer">
-            Maandelijks €{row.investmentMonthly} bruto, effectief €{effectiveMonthly.toFixed(2)} na {avgEntryFeePercent}%
-            instapkost (beheerd door Crelan).
+            Maandelijks €{row.investmentMonthly} bruto, effectief €{effectiveMonthly.toFixed(2)} na {avgEntryFeePercent}
+            % instapkost (beheerd door Crelan).
           </p>
         </div>
 
         <div className="detail-section">
           <h2 className="detail-section__title">Kosten & belasting</h2>
-          <p className="detail-section__description">
-            Geschatte kosten bij verkoop einde {row.year}
-          </p>
+          <p className="detail-section__description">Geschatte kosten bij verkoop einde {row.year}</p>
           <div className="detail-grid">
             <DetailCard
               label="Beurstaks + makelaar (Bolero)"
@@ -235,9 +235,7 @@ const InvestmentsPage: FC = () => {
 
         <div className="detail-section">
           <h2 className="detail-section__title">Groei</h2>
-          <p className="detail-section__description">
-            Bruto groei op basis van {settings.rate}% jaarlijks rendement
-          </p>
+          <p className="detail-section__description">Bruto groei op basis van {settings.rate}% jaarlijks rendement</p>
           <div className="detail-grid">
             <DetailCard
               label="Groei dit jaar"

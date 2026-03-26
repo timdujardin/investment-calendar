@@ -3,7 +3,7 @@ import { CartesianGrid, Legend, Line, LineChart, Tooltip, XAxis, YAxis } from 'r
 
 import ChartCard from '@/components/atoms/chart-card/ChartCard';
 import { useChartData } from '@/hooks/investment.hooks';
-import { formatCurrencyCompact } from '@/utils/format.util';
+import { formatCurrencyCompact, formatTooltipCurrencyCompact } from '@/utils/format.util';
 
 const PrognoseLineChart: FC = () => {
   const chartData = useChartData();
@@ -16,9 +16,9 @@ const PrognoseLineChart: FC = () => {
       <LineChart data={chartData} margin={{ top: 8, right: 8, left: 0, bottom: 0 }}>
         <CartesianGrid strokeDasharray="3 3" stroke="var(--color-grid)" />
         <XAxis dataKey="year" tick={{ fontSize: 11 }} stroke="var(--color-muted)" />
-        <YAxis tickFormatter={(v) => formatCurrencyCompact(v)} tick={{ fontSize: 11 }} stroke="var(--color-muted)" />
+        <YAxis tickFormatter={formatCurrencyCompact} tick={{ fontSize: 11 }} stroke="var(--color-muted)" />
         <Tooltip
-          formatter={(value) => (typeof value === 'number' ? formatCurrencyCompact(value) : String(value))}
+          formatter={formatTooltipCurrencyCompact}
           contentStyle={{
             borderRadius: 12,
             border: '1px solid var(--color-border)',

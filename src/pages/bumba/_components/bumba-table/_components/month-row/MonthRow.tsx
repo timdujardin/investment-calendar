@@ -6,13 +6,14 @@ import { formatCurrency } from '@/utils/format.util';
 
 import type { MonthRowProps } from '../../bumba-table.types';
 import { formatBumbaCell } from '../../bumba-table.util';
+import { monthRow } from './MonthRow.styles';
 
 const MonthRow: FC<MonthRowProps> = ({ entry }) => {
   const muted = !entry.included;
   const empty = entry.gross === null && entry.net === null;
 
   return (
-    <tr className={muted ? 'bumba-table__row--muted' : ''}>
+    <tr className={monthRow({ muted })}>
       <td>{MONTH_LABELS[entry.month]}</td>
       <td className="bumba-table__cell--number">{formatBumbaCell(empty, entry.gross)}</td>
       <td className="bumba-table__cell--number">{formatBumbaCell(empty, entry.net)}</td>

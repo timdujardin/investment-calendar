@@ -3,6 +3,7 @@ import { Area, AreaChart, CartesianGrid, Tooltip, XAxis, YAxis } from 'recharts'
 
 import ChartCard from '@/components/atoms/chart-card/ChartCard';
 import { useBumbaChartData } from '@/hooks/bumba.hooks';
+import { formatPercentTick } from '@/utils/format.util';
 
 const BumbaRatioChart: FC = () => {
   const { ratioChartData } = useBumbaChartData();
@@ -13,7 +14,7 @@ const BumbaRatioChart: FC = () => {
         <CartesianGrid strokeDasharray="3 3" stroke="var(--color-grid)" />
         <XAxis dataKey="date" tick={{ fontSize: 10 }} stroke="var(--color-muted)" interval="preserveStartEnd" />
         <YAxis
-          tickFormatter={(v: number) => `${v.toFixed(0)}%`}
+          tickFormatter={formatPercentTick}
           tick={{ fontSize: 11 }}
           stroke="var(--color-muted)"
           domain={['auto', 'auto']}

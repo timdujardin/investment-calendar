@@ -5,14 +5,11 @@ import type { InvestmentPosition, MonthlyInvestmentPlan } from '@/@types/investm
 import PageHeader from '@/components/atoms/page-header/PageHeader';
 import { useSettings } from '@/contexts/SettingsContext';
 import { formatCurrency } from '@/utils/format.util';
-import {
-  getEffectiveMonthlyTotal,
-  getNominalMonthlyTotal,
-  removeAtIndex,
-} from '@/utils/investmentCalculation.util';
+import { getEffectiveMonthlyTotal, getNominalMonthlyTotal, removeAtIndex } from '@/utils/investmentCalculation.util';
 
 import { NumericInput } from './_components/numeric-input/NumericInput';
 import { fromPercent, RATE_OPTIONS, toPercent } from './settings.constants';
+import { rateButton } from './SettingsPage.styles';
 
 const SettingsPage: FC = () => {
   const { settings, positionsTotal, updateSettings, resetSettings } = useSettings();
@@ -41,7 +38,9 @@ const SettingsPage: FC = () => {
 
   const updatePlanMonthly = useCallback(
     (index: number, monthlyAmount: number) => {
-      const next = settings.monthlyPlans.map((p, i): MonthlyInvestmentPlan => (i === index ? { ...p, monthlyAmount } : p));
+      const next = settings.monthlyPlans.map(
+        (p, i): MonthlyInvestmentPlan => (i === index ? { ...p, monthlyAmount } : p),
+      );
       updateSettings({ monthlyPlans: next });
     },
     [settings.monthlyPlans, updateSettings],
@@ -52,8 +51,12 @@ const SettingsPage: FC = () => {
       <PageHeader title="⚙️ Instellingen" subtitle="Pas je beleggings- en pensioeninstellingen aan" />
 
       <main className="page__main">
+        <h2 className="settings-section__title">Projectie-instellingen</h2>
         <section className="settings-section">
-          <h2 className="settings-section__title">Rendement</h2>
+          <span className="settings-field__hint">
+            Rendement wordt toegepast op Bolero-posities en Crelan-beleggingsplannen. Pensioensparen heeft eigen vaste
+            rentetarieven.
+          </span>
           <div className="settings-field">
             <label className="settings-field__label">Winstpercentage</label>
             <div className="settings-rate-group" role="radiogroup" aria-label="Winstpercentage">
@@ -61,7 +64,7 @@ const SettingsPage: FC = () => {
                 <button
                   key={r}
                   type="button"
-                  className={`settings-rate-group__btn ${settings.rate === r ? 'settings-rate-group__btn--active' : ''}`}
+                  className={rateButton({ active: settings.rate === r })}
                   onClick={() => updateSettings({ rate: r })}
                   aria-checked={settings.rate === r}
                   role="radio"
@@ -71,10 +74,86 @@ const SettingsPage: FC = () => {
               ))}
             </div>
           </div>
+
+          <hr className="settings-section__divider" />
+
+          <div className="settings-field-row">
+            <div className="settings-field">
+              <label className="settings-field__label" htmlFor="target-amount">
+                Doelbedrag
+              </label>
+              <div className="settings-field__input-wrap">
+                <span className="settings-field__prefix">€</span>
+                <NumericInput
+                  id="target-amount"
+                  className="settings-field__input"
+                  inputMode="numeric"
+                  min="0"
+                  step="1000"
+                  numericValue={settings.targetAmount}
+                  onCommit={(v) => updateSettings({ targetAmount: v })}
+                />
+              </div>
+            </div>
+            <div className="settings-field">
+              <label className="settings-field__label" htmlFor="target-age">
+                Doelleeftijd
+              </label>
+              <div className="settings-field__input-wrap">
+                <NumericInput
+                  id="target-age"
+                  className="settings-field__input"
+                  inputMode="numeric"
+                  min="30"
+                  max="70"
+                  numericValue={settings.targetAge}
+                  onCommit={(v) => updateSettings({ targetAge: v })}
+                />
+                <span className="settings-field__suffix">jaar</span>
+              </div>
+            </div>
+          </div>
+          <span className="settings-field__hint">
+            Doel: {formatCurrency(settings.targetAmount)} tegen {settings.targetAge} jaar
+          </span>
+
+          <div className="settings-field-row">
+            <div className="settings-field">
+              <label className="settings-field__label" htmlFor="start-year">
+                Startjaar
+              </label>
+              <NumericInput
+                id="start-year"
+                className="settings-field__input"
+                inputMode="numeric"
+                min="2020"
+                max="2060"
+                numericValue={settings.startYear}
+                onCommit={(v) => updateSettings({ startYear: v })}
+              />
+            </div>
+            <div className="settings-field">
+              <label className="settings-field__label" htmlFor="end-year">
+                Eindjaar
+              </label>
+              <NumericInput
+                id="end-year"
+                className="settings-field__input"
+                inputMode="numeric"
+                min="2030"
+                max="2080"
+                numericValue={settings.endYear}
+                onCommit={(v) => updateSettings({ endYear: v })}
+              />
+            </div>
+          </div>
+          <span className="settings-field__hint">
+            Projectie: {settings.endYear - settings.startYear} jaar ({settings.startYear}–{settings.endYear})
+          </span>
         </section>
 
+        <h2 className="settings-section__title">Bolero</h2>
         <section className="settings-section">
-          <h2 className="settings-section__title">KBC Bolero</h2>
           <span className="settings-field__hint">Individuele posities beheerd via KBC Bolero</span>
 
           {settings.positions.map((pos, i) => (
@@ -135,11 +214,8 @@ const SettingsPage: FC = () => {
               + Positie toevoegen
             </button>
           </div>
-          <span className="settings-field__hint">
-            Totaal Bolero: {formatCurrency(positionsTotal)}
-          </span>
+          <span className="settings-field__hint">Totaal Bolero: {formatCurrency(positionsTotal)}</span>
 
-          <h3 className="settings-section__subtitle">Kosten Bolero</h3>
           <div className="settings-field-row">
             <div className="settings-field">
               <label className="settings-field__label" htmlFor="transaction-fee">
@@ -160,6 +236,7 @@ const SettingsPage: FC = () => {
                 />
                 <span className="settings-field__suffix">%</span>
               </div>
+              <span className="settings-field__hint">% op elke storting</span>
             </div>
             <div className="settings-field">
               <label className="settings-field__label" htmlFor="capital-gains-tax">
@@ -180,47 +257,42 @@ const SettingsPage: FC = () => {
                 />
                 <span className="settings-field__suffix">%</span>
               </div>
+              <span className="settings-field__hint">% per €10.000 winst</span>
             </div>
           </div>
-          <span className="settings-field__hint">
-            Beurstaks bij storting · Meerwaardetaks per €10.000 winst
-          </span>
         </section>
 
+        <h2 className="settings-section__title">Crelan</h2>
         <section className="settings-section">
-          <h2 className="settings-section__title">Crelan</h2>
-          <span className="settings-field__hint">Beleggingsplannen en pensioensparen beheerd door Crelan</span>
+          <span className="settings-field__hint">
+            Beleggingsplannen beheerd door Crelan · Totaal: €{nominalMonthly}/mnd bruto · €{effectiveMonthly.toFixed(2)}
+            /mnd effectief
+          </span>
 
-          <h3 className="settings-section__subtitle">Beleggingsplannen</h3>
           {settings.monthlyPlans.map((plan, i) => (
             <div key={plan.isin} className="settings-plan-item">
               <div className="settings-field">
                 <label className="settings-field__label">{plan.name}</label>
                 <span className="settings-field__hint">ISIN: {plan.isin}</span>
               </div>
-              <div className="settings-field-row">
-                <div className="settings-field">
-                  <label className="settings-field__label" htmlFor={`plan-monthly-${i}`}>
-                    Maandbedrag
-                  </label>
-                  <div className="settings-field__input-wrap">
-                    <span className="settings-field__prefix">€</span>
-                    <NumericInput
-                      id={`plan-monthly-${i}`}
-                      className="settings-field__input"
-                      inputMode="numeric"
-                      min="0"
-                      step="25"
-                      numericValue={plan.monthlyAmount}
-                      onCommit={(v) => updatePlanMonthly(i, v)}
-                    />
-                    <span className="settings-field__suffix">/mnd</span>
-                  </div>
+              <div className="settings-field">
+                <label className="settings-field__label" htmlFor={`plan-monthly-${i}`}>
+                  Maandbedrag
+                </label>
+                <div className="settings-field__input-wrap">
+                  <span className="settings-field__prefix">€</span>
+                  <NumericInput
+                    id={`plan-monthly-${i}`}
+                    className="settings-field__input"
+                    inputMode="numeric"
+                    min="0"
+                    step="25"
+                    numericValue={plan.monthlyAmount}
+                    onCommit={(v) => updatePlanMonthly(i, v)}
+                  />
+                  <span className="settings-field__suffix">/mnd</span>
                 </div>
-                <div className="settings-field">
-                  <label className="settings-field__label">Instapkost</label>
-                  <div className="settings-field__value-display">{(plan.entryFeeRate * 100).toFixed(1)}%</div>
-                </div>
+                <span className="settings-field__hint">Instapkost: {(plan.entryFeeRate * 100).toFixed(1)}% (vast)</span>
               </div>
               <span className="settings-field__hint">
                 Effectief €{(plan.monthlyAmount * (1 - plan.entryFeeRate)).toFixed(2)}/mnd · Uitstapkosten:{' '}
@@ -228,72 +300,13 @@ const SettingsPage: FC = () => {
               </span>
             </div>
           ))}
-          <span className="settings-field__hint">
-            Totaal: €{nominalMonthly}/mnd bruto · €{effectiveMonthly.toFixed(2)}/mnd effectief
-          </span>
-
-          <h3 className="settings-section__subtitle">Pensioensparen Crelan</h3>
-          <div className="settings-field">
-            <span className="settings-field__label">Rendement</span>
-            <span className="settings-field__value">{(CRELAN_RATE * 100).toFixed(2)}%/jaar (vast)</span>
-            <span className="settings-field__hint">Eenmalige storting — groeit enkel op rente</span>
-          </div>
         </section>
 
+        <h2 className="settings-section__title">Pensioensparen</h2>
         <section className="settings-section">
-          <h2 className="settings-section__title">Baloise</h2>
-          <span className="settings-field__hint">Pensioensparen beheerd door Baloise</span>
-
-          <div className="settings-field">
-            <label className="settings-field__label" htmlFor="baloise-rate">
-              Rendement
-            </label>
-            <div className="settings-field__input-wrap">
-              <NumericInput
-                id="baloise-rate"
-                className="settings-field__input"
-                inputMode="decimal"
-                min="0"
-                max="20"
-                step="0.25"
-                numericValue={settings.baloiseRate}
-                toDisplay={toPercent}
-                fromDisplay={fromPercent}
-                onCommit={(v) => updateSettings({ baloiseRate: v })}
-              />
-              <span className="settings-field__suffix">%/jaar</span>
-            </div>
-            <span className="settings-field__hint">Maandelijkse bijdrage met samengesteld rendement</span>
-          </div>
-        </section>
-
-        <section className="settings-section">
-          <h2 className="settings-section__title">Cash reserve</h2>
-          <div className="settings-field">
-            <label className="settings-field__label" htmlFor="cash-reserve">
-              Cash reserve
-            </label>
-            <div className="settings-field__input-wrap">
-              <span className="settings-field__prefix">€</span>
-              <NumericInput
-                id="cash-reserve"
-                className="settings-field__input"
-                inputMode="numeric"
-                min="0"
-                step="500"
-                numericValue={settings.cashReserve}
-                onCommit={(v) => updateSettings({ cashReserve: v })}
-              />
-            </div>
-            <span className="settings-field__hint">Vast bedrag zonder rendement, telt mee bij totalen</span>
-          </div>
-        </section>
-
-        <section className="settings-section">
-          <h2 className="settings-section__title">Pensioen terugvordering</h2>
           <div className="settings-field">
             <label className="settings-field__label" htmlFor="pension-recapture">
-              Terugvorderingspercentage
+              Terugvordering
             </label>
             <div className="settings-field__input-wrap">
               <NumericInput
@@ -314,84 +327,53 @@ const SettingsPage: FC = () => {
               Geldt voor alle pensioenspaarbedragen (Crelan + Baloise) bij uitkering
             </span>
           </div>
+
+          <div className="settings-field">
+            <label className="settings-field__label" htmlFor="baloise-rate">
+              Baloise rendement
+            </label>
+            <div className="settings-field__input-wrap">
+              <NumericInput
+                id="baloise-rate"
+                className="settings-field__input"
+                inputMode="decimal"
+                min="0"
+                max="20"
+                step="0.25"
+                numericValue={settings.baloiseRate}
+                toDisplay={toPercent}
+                fromDisplay={fromPercent}
+                onCommit={(v) => updateSettings({ baloiseRate: v })}
+              />
+              <span className="settings-field__suffix">%/jaar</span>
+            </div>
+            <span className="settings-field__hint">Maandelijkse bijdrage met samengesteld rendement</span>
+          </div>
+          <span className="settings-field__hint">
+            Crelan rendement: {(CRELAN_RATE * 100).toFixed(2)}%/jaar (vast) — eenmalige storting, groeit enkel op rente
+          </span>
         </section>
 
+        <h2 className="settings-section__title">Cash reserve</h2>
         <section className="settings-section">
-          <h2 className="settings-section__title">Doelstelling</h2>
           <div className="settings-field">
-            <label className="settings-field__label" htmlFor="target-amount">
-              Doelbedrag
+            <label className="settings-field__label" htmlFor="cash-reserve">
+              Bedrag
             </label>
             <div className="settings-field__input-wrap">
               <span className="settings-field__prefix">€</span>
               <NumericInput
-                id="target-amount"
+                id="cash-reserve"
                 className="settings-field__input"
                 inputMode="numeric"
                 min="0"
-                step="1000"
-                numericValue={settings.targetAmount}
-                onCommit={(v) => updateSettings({ targetAmount: v })}
+                step="500"
+                numericValue={settings.cashReserve}
+                onCommit={(v) => updateSettings({ cashReserve: v })}
               />
             </div>
-            <span className="settings-field__hint">
-              Huidige doel: {formatCurrency(settings.targetAmount)} tegen {settings.targetAge} jaar
-            </span>
+            <span className="settings-field__hint">Vast bedrag zonder rendement, telt mee bij totalen</span>
           </div>
-          <div className="settings-field">
-            <label className="settings-field__label" htmlFor="target-age">
-              Doelleeftijd
-            </label>
-            <div className="settings-field__input-wrap">
-              <NumericInput
-                id="target-age"
-                className="settings-field__input"
-                inputMode="numeric"
-                min="30"
-                max="70"
-                numericValue={settings.targetAge}
-                onCommit={(v) => updateSettings({ targetAge: v })}
-              />
-              <span className="settings-field__suffix">jaar</span>
-            </div>
-          </div>
-        </section>
-
-        <section className="settings-section">
-          <h2 className="settings-section__title">Periode</h2>
-          <div className="settings-field-row">
-            <div className="settings-field">
-              <label className="settings-field__label" htmlFor="start-year">
-                Startjaar
-              </label>
-              <NumericInput
-                id="start-year"
-                className="settings-field__input"
-                inputMode="numeric"
-                min="2020"
-                max="2060"
-                numericValue={settings.startYear}
-                onCommit={(v) => updateSettings({ startYear: v })}
-              />
-            </div>
-            <div className="settings-field">
-              <label className="settings-field__label" htmlFor="end-year">
-                Eindjaar
-              </label>
-              <NumericInput
-                id="end-year"
-                className="settings-field__input"
-                inputMode="numeric"
-                min="2030"
-                max="2080"
-                numericValue={settings.endYear}
-                onCommit={(v) => updateSettings({ endYear: v })}
-              />
-            </div>
-          </div>
-          <span className="settings-field__hint">
-            Projectie: {settings.endYear - settings.startYear} jaar ({settings.startYear}–{settings.endYear})
-          </span>
         </section>
 
         <div className="settings-actions">

@@ -17,7 +17,7 @@ import PageHeader from '@/components/atoms/page-header/PageHeader';
 import { useCurrentYearIndex, YearSelector } from '@/components/atoms/year-selector/YearSelector';
 import { useSettings } from '@/contexts/SettingsContext';
 import { usePensionChartData, usePensionPageData } from '@/hooks/investment.hooks';
-import { formatCurrency, formatCurrencyCompact } from '@/utils/format.util';
+import { formatCurrency, formatCurrencyCompact, formatTooltipCurrency } from '@/utils/format.util';
 import { getAgeFromYear } from '@/utils/investmentCalculation.util';
 
 const PensionPage: FC = () => {
@@ -45,7 +45,7 @@ const PensionPage: FC = () => {
             <XAxis dataKey="year" tick={{ fontSize: 11 }} stroke="var(--color-muted)" />
             <YAxis tickFormatter={formatCurrencyCompact} tick={{ fontSize: 11 }} stroke="var(--color-muted)" />
             <Tooltip
-              formatter={(value) => (typeof value === 'number' ? formatCurrency(value) : String(value))}
+              formatter={formatTooltipCurrency}
               contentStyle={{ borderRadius: 12, border: '1px solid var(--color-border)' }}
             />
             <Legend />

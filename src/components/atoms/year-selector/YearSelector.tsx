@@ -1,5 +1,5 @@
 /* eslint-disable react-refresh/only-export-components */
-import type { FC } from 'react';
+import { useCallback, type ChangeEvent, type FC } from 'react';
 
 import { useSettings } from '@/contexts/SettingsContext';
 import { getAgeFromYear } from '@/utils/investmentCalculation.util';
@@ -20,17 +20,14 @@ const useCurrentYearIndex = () => {
 const YearSelector: FC<YearSelectorProps> = ({ value, onChange }) => {
   const { investmentYears } = useSettings();
 
+  const handleChange = useCallback((e: ChangeEvent<HTMLSelectElement>) => onChange(Number(e.target.value)), [onChange]);
+
   return (
     <div className="year-selector">
       <label className="year-selector__label" htmlFor="year-select">
         Selecteer jaar
       </label>
-      <select
-        id="year-select"
-        className="year-selector__select"
-        value={value}
-        onChange={(e) => onChange(Number(e.target.value))}
-      >
+      <select id="year-select" className="year-selector__select" value={value} onChange={handleChange}>
         {investmentYears.map((year, i) => (
           <option key={i} value={i}>
             {year} — {getAgeFromYear(year)} jaar

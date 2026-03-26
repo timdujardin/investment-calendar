@@ -15,6 +15,14 @@ export const formatCurrencyCompact = (value: number): string => {
   return formatCurrency(value);
 };
 
+export const formatTooltipCurrency = (value: unknown): string =>
+  typeof value === 'number' ? formatCurrency(value) : String(value);
+
+export const formatTooltipCurrencyCompact = (value: unknown): string =>
+  typeof value === 'number' ? formatCurrencyCompact(value) : String(value);
+
+export const formatPercentTick = (v: number): string => `${v.toFixed(0)}%`;
+
 export const formatDifference = (diff: number): string => {
   const prefix = diff >= 0 ? '+' : '';
 

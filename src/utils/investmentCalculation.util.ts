@@ -99,7 +99,9 @@ const getExitFeeRate = (holdingYears: number, exitFees: ExitFeeSchedule[]): numb
 
 const getWeightedExitFeeRate = (holdingYears: number, plans: MonthlyInvestmentPlan[]): number => {
   const totalMonthly = plans.reduce((sum, p) => sum + p.monthlyAmount, 0);
-  if (totalMonthly === 0) return 0;
+  if (totalMonthly === 0) {
+    return 0;
+  }
 
   let weightedRate = 0;
   for (const plan of plans) {
@@ -321,9 +323,11 @@ export const getEffectiveMonthlyTotal = (plans: MonthlyInvestmentPlan[]): number
 
 export const getWeightedEntryFeeRate = (plans: MonthlyInvestmentPlan[]): number => {
   const totalMonthly = getNominalMonthlyTotal(plans);
-  if (totalMonthly === 0) return 0;
+  if (totalMonthly === 0) {
+    return 0;
+  }
+
   return plans.reduce((sum, p) => sum + p.entryFeeRate * p.monthlyAmount, 0) / totalMonthly;
 };
 
-export const removeAtIndex = <T>(items: T[], index: number): T[] =>
-  items.filter((_, i) => i !== index);
+export const removeAtIndex = <T>(items: T[], index: number): T[] => items.filter((_, i) => i !== index);

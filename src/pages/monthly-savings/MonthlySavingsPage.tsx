@@ -6,9 +6,17 @@ import ChartCard from '@/components/atoms/chart-card/ChartCard';
 import PageHeader from '@/components/atoms/page-header/PageHeader';
 import { useSettings } from '@/contexts/SettingsContext';
 import { useSavingsTracker } from '@/hooks/savingsTracker.hooks';
-import { formatCurrency, formatCurrencyCompact, formatDifference } from '@/utils/format.util';
+import { formatCurrency, formatCurrencyCompact, formatDifference, formatTooltipCurrency } from '@/utils/format.util';
 
 import { DashboardStatus } from './_components/dashboard-status/DashboardStatus';
+import { targetSummaryValue, trackerCell, trackerCellStatus } from './MonthlySavingsPage.styles';
+
+const getTrackerStatus = (saved: number | null, target: number): 'ok' | 'warn' | null => {
+  if (saved === null) 
+{return null;}
+
+  return saved >= target ? 'ok' : 'warn';
+};
 
 const MonthlySavingsPage: FC = () => {
   const { settings } = useSettings();
@@ -50,9 +58,9 @@ const MonthlySavingsPage: FC = () => {
         <LineChart data={chartData} margin={{ top: 8, right: 8, left: 0, bottom: 0 }}>
           <CartesianGrid strokeDasharray="3 3" stroke="var(--color-grid)" />
           <XAxis dataKey="month" tick={{ fontSize: 11 }} stroke="var(--color-muted)" />
-          <YAxis tickFormatter={(v) => formatCurrencyCompact(v)} tick={{ fontSize: 11 }} stroke="var(--color-muted)" />
+          <YAxis tickFormatter={formatCurrencyCompact} tick={{ fontSize: 11 }} stroke="var(--color-muted)" />
           <Tooltip
-            formatter={(value) => (typeof value === 'number' ? formatCurrency(value) : '—')}
+            formatter={formatTooltipCurrency}
             contentStyle={{ borderRadius: 12, border: '1px solid var(--color-border)' }}
           />
           <Legend />
@@ -86,15 +94,7 @@ const MonthlySavingsPage: FC = () => {
       <main className="page__main">
         <div className="tracker-grid">
           {months.map((m) => (
-            <div
-              key={m.monthIndex}
-              className={[
-                'tracker-cell',
-                m.saved !== null && (m.saved >= m.target ? 'tracker-cell--ok' : 'tracker-cell--warn'),
-              ]
-                .filter(Boolean)
-                .join(' ')}
-            >
+            <div key={m.monthIndex} className={trackerCell({ status: getTrackerStatus(m.saved, m.target) })}>
               <span className="tracker-cell__month">{m.label}</span>
               <input
                 className="tracker-cell__input"
@@ -112,9 +112,9 @@ const MonthlySavingsPage: FC = () => {
               />
               {m.saved !== null && (
                 <span
-                  className={`tracker-cell__status ${
-                    m.saved >= m.target ? 'tracker-cell__status--ok' : 'tracker-cell__status--warn'
-                  }`}
+                  className={trackerCellStatus({
+                    status: m.saved >= m.target ? 'ok' : 'warn',
+                  })}
                 >
                   {m.saved >= m.target ? '✓' : formatDifference(m.saved - m.target)}
                 </span>
@@ -138,9 +138,9 @@ const MonthlySavingsPage: FC = () => {
               <div className="target-summary__row target-summary__row--total">
                 <span className="target-summary__label">Verschil</span>
                 <span
-                  className={`target-summary__value target-summary__value--bold ${
-                    difference >= 0 ? 'target-summary__value--positive' : 'target-summary__value--negative'
-                  }`}
+                  className={targetSummaryValue({
+                    polarity: difference >= 0 ? 'positive' : 'negative',
+                  })}
                 >
                   {difference >= 0 ? '+' : ''}
                   {formatCurrency(difference)}

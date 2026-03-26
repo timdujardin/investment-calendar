@@ -177,7 +177,7 @@ const InvestmentsPage: FC = () => {
                 key={plan.isin}
                 label={plan.name}
                 value={`€${plan.monthlyAmount}/mnd`}
-                sub={`${plan.isin} · Effectief €${(plan.monthlyAmount * (1 - plan.entryFeeRate)).toFixed(2)}/mnd na ${(plan.entryFeeRate * 100).toFixed(1)}% instapkost`}
+                sub={`ISIN: ${plan.isin} · Effectief €${(plan.monthlyAmount * (1 - plan.entryFeeRate)).toFixed(2)}/mnd na ${(plan.entryFeeRate * 100).toFixed(1)}% instapkost`}
               />
             ))}
           </div>

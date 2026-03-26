@@ -1,5 +1,6 @@
 import { useCallback, type FC } from 'react';
 
+import { CRELAN_RATE } from '@config/investment.config';
 import type { InvestmentPosition, MonthlyInvestmentPlan } from '@/@types/investment';
 import PageHeader from '@/components/atoms/page-header/PageHeader';
 import { useSettings } from '@/contexts/SettingsContext';
@@ -195,7 +196,7 @@ const SettingsPage: FC = () => {
             <div key={plan.isin} className="settings-plan-item">
               <div className="settings-field">
                 <label className="settings-field__label">{plan.name}</label>
-                <span className="settings-field__hint">{plan.isin}</span>
+                <span className="settings-field__hint">ISIN: {plan.isin}</span>
               </div>
               <div className="settings-field-row">
                 <div className="settings-field">
@@ -233,24 +234,8 @@ const SettingsPage: FC = () => {
 
           <h3 className="settings-section__subtitle">Pensioensparen Crelan</h3>
           <div className="settings-field">
-            <label className="settings-field__label" htmlFor="crelan-rate">
-              Rendement
-            </label>
-            <div className="settings-field__input-wrap">
-              <NumericInput
-                id="crelan-rate"
-                className="settings-field__input"
-                inputMode="decimal"
-                min="0"
-                max="20"
-                step="0.25"
-                numericValue={settings.crelanRate}
-                toDisplay={toPercent}
-                fromDisplay={fromPercent}
-                onCommit={(v) => updateSettings({ crelanRate: v })}
-              />
-              <span className="settings-field__suffix">%/jaar</span>
-            </div>
+            <span className="settings-field__label">Rendement</span>
+            <span className="settings-field__value">{(CRELAN_RATE * 100).toFixed(2)}%/jaar (vast)</span>
             <span className="settings-field__hint">Eenmalige storting — groeit enkel op rente</span>
           </div>
         </section>

@@ -5,10 +5,8 @@ import {
   BALOISE_RATE as DEFAULT_BALOISE_RATE,
   CAPITAL_GAINS_TAX_RATE as DEFAULT_CAPITAL_GAINS_TAX,
   CASH_RESERVE as DEFAULT_CASH_RESERVE,
-  CRELAN_RATE as DEFAULT_CRELAN_RATE,
   END_YEAR as DEFAULT_END_YEAR,
-  INVESTMENT_MONTHLY_2026 as DEFAULT_MONTHLY_2026,
-  INVESTMENT_MONTHLY_FROM_2027 as DEFAULT_MONTHLY_FROM_2027,
+  INVESTMENT_MONTHLY as DEFAULT_MONTHLY,
   INVESTMENT_POSITIONS as DEFAULT_POSITIONS,
   MONTHLY_INVESTMENT_PLANS as DEFAULT_PLANS,
   PENSION_RECAPTURE_RATE as DEFAULT_PENSION_RECAPTURE,
@@ -30,9 +28,7 @@ export interface AppSettings {
   positions: InvestmentPosition[];
   monthlyPlans: MonthlyInvestmentPlan[];
   cashReserve: number;
-  investmentMonthlyFirstYear: number;
   investmentMonthly: number;
-  crelanRate: number;
   baloiseRate: number;
   pensionRecaptureRate: number;
   transactionFeeRate: number;
@@ -48,9 +44,7 @@ const DEFAULTS: AppSettings = {
   positions: DEFAULT_POSITIONS,
   monthlyPlans: DEFAULT_PLANS,
   cashReserve: DEFAULT_CASH_RESERVE,
-  investmentMonthlyFirstYear: DEFAULT_MONTHLY_2026,
-  investmentMonthly: DEFAULT_MONTHLY_FROM_2027,
-  crelanRate: DEFAULT_CRELAN_RATE,
+  investmentMonthly: DEFAULT_MONTHLY,
   baloiseRate: DEFAULT_BALOISE_RATE,
   pensionRecaptureRate: DEFAULT_PENSION_RECAPTURE,
   transactionFeeRate: DEFAULT_TRANSACTION_FEE,

@@ -1,7 +1,16 @@
 import { useState, type FC } from 'react';
 import { Area, AreaChart, CartesianGrid, Legend, Tooltip, XAxis, YAxis } from 'recharts';
 
-import { BALOISE_MONTHLY_2026, BALOISE_MONTHLY_FROM_2027, CRELAN_START_VALUE } from '@config/investment.config';
+import {
+  BALOISE_FUND_NAME,
+  BALOISE_ISIN,
+  BALOISE_MONTHLY_2026,
+  BALOISE_MONTHLY_FROM_2027,
+  CRELAN_PENSION_FUND_NAME,
+  CRELAN_PENSION_ISIN,
+  CRELAN_RATE,
+  CRELAN_START_VALUE,
+} from '@config/investment.config';
 import ChartCard from '@/components/atoms/chart-card/ChartCard';
 import DetailCard from '@/components/atoms/detail-card/DetailCard';
 import PageHeader from '@/components/atoms/page-header/PageHeader';
@@ -26,7 +35,7 @@ const PensionPage: FC = () => {
 
       <PageHeader
         title={`🏦 Pensioensparen — ${year}`}
-        subtitle={`${age} jaar · Crelan ${(settings.crelanRate * 100).toFixed(1)}%/jaar + Baloise ${(settings.baloiseRate * 100).toFixed(1)}%/jaar`}
+        subtitle={`${age} jaar · Crelan ${(CRELAN_RATE * 100).toFixed(2)}%/jaar + Baloise ${(settings.baloiseRate * 100).toFixed(1)}%/jaar`}
       />
 
       <main className="page__main">
@@ -84,7 +93,10 @@ const PensionPage: FC = () => {
         </div>
 
         <div className="detail-section">
-          <h2 className="detail-section__title">Crelan ({(settings.crelanRate * 100).toFixed(1)}%/jaar)</h2>
+          <h2 className="detail-section__title">Crelan ({(CRELAN_RATE * 100).toFixed(2)}%/jaar)</h2>
+          <p className="detail-section__description">
+            {CRELAN_PENSION_FUND_NAME} · ISIN: {CRELAN_PENSION_ISIN}
+          </p>
           <div className="detail-grid">
             <DetailCard
               label="Ingelegd"
@@ -103,6 +115,9 @@ const PensionPage: FC = () => {
 
         <div className="detail-section">
           <h2 className="detail-section__title">Baloise ({(settings.baloiseRate * 100).toFixed(1)}%/jaar)</h2>
+          <p className="detail-section__description">
+            {BALOISE_FUND_NAME} · ISIN: {BALOISE_ISIN}
+          </p>
           <div className="detail-grid">
             <DetailCard label="Ingelegd" value={formatCurrency(row.investedBaloise)} sub={`€${baloiseMonthly}/mnd`} />
             <DetailCard

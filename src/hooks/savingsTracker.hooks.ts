@@ -52,7 +52,7 @@ export const useSavingsTracker = (year: number) => {
   const { settings } = useSettings();
   const [data, setData] = useState<MonthlySavingsRecord>(loadSavingsData);
 
-  const target = year <= settings.startYear ? settings.investmentMonthlyFirstYear : settings.investmentMonthly;
+  const target = settings.investmentMonthly;
 
   const setSaved = useCallback(
     (monthIndex: number, value: number | null) => {

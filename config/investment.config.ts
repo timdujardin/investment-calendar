@@ -43,12 +43,16 @@ export const MONTHLY_INVESTMENT_PLANS: MonthlyInvestmentPlan[] = [
 
 export const CASH_RESERVE = 8_500;
 export const INVESTMENT_FIRST_YEAR_MONTHS = 10; // mrt–dec
-export const INVESTMENT_MONTHLY_2026 = 500;
-export const INVESTMENT_MONTHLY_FROM_2027 = 500;
+export const INVESTMENT_MONTHLY = 500;
 
-export const CRELAN_RATE = 0.05;
-export const BALOISE_RATE = 0.075;
+export const CRELAN_PENSION_FUND_NAME = 'BNP Paribas B Pension Balanced Classic Cap';
+export const CRELAN_PENSION_ISIN = 'BE0026480963';
+export const CRELAN_RATE = 0.0261;
 export const CRELAN_START_VALUE = 7_646.63;
+
+export const BALOISE_FUND_NAME = 'Baloise Save Plan';
+export const BALOISE_ISIN = 'FR0011253624';
+export const BALOISE_RATE = 0.075;
 
 export const BALOISE_MONTHLY_2026 = 105;
 export const BALOISE_MONTHLY_FROM_2027 = 87.5;

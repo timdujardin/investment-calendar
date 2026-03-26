@@ -1,5 +1,6 @@
 import type { FC } from 'react';
 
+import { CRELAN_RATE } from '@config/investment.config';
 import { useSettings } from '@/contexts/SettingsContext';
 import { formatCurrency } from '@/utils/format.util';
 import { getAgeFromYear, getNominalMonthlyTotal } from '@/utils/investmentCalculation.util';
@@ -22,7 +23,7 @@ const AppHeader: FC = () => {
           📈 Bolero: {formatCurrency(positionsTotal)} · Crelan: €{nominalMonthly}/mnd
         </span>
         <span className="pill">
-          🏦 Pensioensparen: Crelan {(settings.crelanRate * 100).toFixed(1)}%/jaar + Baloise{' '}
+          🏦 Pensioensparen: Crelan {(CRELAN_RATE * 100).toFixed(2)}%/jaar + Baloise{' '}
           {(settings.baloiseRate * 100).toFixed(1)}%/jaar
         </span>
         <span className="pill">

@@ -1,6 +1,6 @@
 import type { FC } from 'react';
 
-import { BIRTH_YEAR } from '@config/investment.config';
+import { BIRTH_YEAR, CRELAN_RATE } from '@config/investment.config';
 import SummaryCard from '@/components/atoms/summary-card/SummaryCard';
 import { useInvestment } from '@/contexts/InvestmentContext';
 import { useSettings } from '@/contexts/SettingsContext';
@@ -28,13 +28,13 @@ const SummaryCards: FC = () => {
       <SummaryCard
         label={`Eindstand ${targetYear} (${settings.targetAge} jaar)`}
         value={formatCurrency(rowTarget.totalNetValue)}
-        sub={`Bolero: ${formatCurrency(rowTarget.positionsNetValue)} · Crelan: ${formatCurrency(rowTarget.plansNetValue)} · Baloise: ${formatCurrency(rowTarget.pensionNetValue)} · Cash: ${formatCurrency(rowTarget.cashReserve)}`}
+        sub={`Bolero: ${formatCurrency(rowTarget.positionsNetValue)} · Crelan: ${formatCurrency(rowTarget.plansNetValue)} · Pensioensparen: ${formatCurrency(rowTarget.pensionNetValue)} · Cash: ${formatCurrency(rowTarget.cashReserve)}`}
         variant="blue"
       />
       <SummaryCard
         label={`Eindstand ${endYear} (${rowEnd.age} jaar)`}
         value={formatCurrency(rowEnd.totalNetValue)}
-        sub={`Bolero: ${formatCurrency(rowEnd.positionsNetValue)} · Crelan: ${formatCurrency(rowEnd.plansNetValue)} · Baloise: ${formatCurrency(rowEnd.pensionNetValue)} · Cash: ${formatCurrency(rowEnd.cashReserve)}`}
+        sub={`Bolero: ${formatCurrency(rowEnd.positionsNetValue)} · Crelan: ${formatCurrency(rowEnd.plansNetValue)} · Pensioensparen: ${formatCurrency(rowEnd.pensionNetValue)} · Cash: ${formatCurrency(rowEnd.cashReserve)}`}
         variant="orange"
       />
       <SummaryCard
@@ -46,7 +46,7 @@ const SummaryCards: FC = () => {
       <SummaryCard
         label={`Pensioensparen op ${rowEnd.age} jaar`}
         value={formatCurrency(rowEnd.pensionNetValue)}
-        sub={`Bruto: ${formatCurrency(rowEnd.pensionValue)} · Na ${(settings.pensionRecaptureRate * 100).toFixed(0)}% terugvordering · Crelan ${(settings.crelanRate * 100).toFixed(1)}%/jaar, Baloise ${(settings.baloiseRate * 100).toFixed(1)}%/jaar`}
+        sub={`Bruto: ${formatCurrency(rowEnd.pensionValue)} · Na ${(settings.pensionRecaptureRate * 100).toFixed(0)}% terugvordering · Crelan ${(CRELAN_RATE * 100).toFixed(2)}%/jaar, Baloise ${(settings.baloiseRate * 100).toFixed(1)}%/jaar`}
         variant="purple"
       />
     </div>

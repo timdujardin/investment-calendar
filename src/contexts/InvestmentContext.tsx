@@ -1,6 +1,6 @@
 import { createContext, useContext, useEffect, useMemo, useState, type FC, type ReactNode } from 'react';
 
-import { INVESTMENT_FIRST_YEAR_MONTHS } from '@config/investment.config';
+import { CRELAN_RATE, INVESTMENT_FIRST_YEAR_MONTHS } from '@config/investment.config';
 import { useSettings } from '@/contexts/SettingsContext';
 import { loadSavingsData, onSavingsChanged } from '@/hooks/savingsTracker.hooks';
 import { buildCombinedData, calculatePensionData } from '@/utils/investmentCalculation.util';
@@ -21,8 +21,8 @@ const InvestmentProvider: FC<{ children: ReactNode }> = ({ children }) => {
   }, []);
 
   const pensionRates = useMemo(
-    () => ({ crelanRate: settings.crelanRate, baloiseRate: settings.baloiseRate }),
-    [settings.crelanRate, settings.baloiseRate],
+    () => ({ crelanRate: CRELAN_RATE, baloiseRate: settings.baloiseRate }),
+    [settings.baloiseRate],
   );
 
   const value = useMemo(() => {

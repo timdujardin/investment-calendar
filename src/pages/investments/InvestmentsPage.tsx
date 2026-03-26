@@ -1,12 +1,17 @@
 import { useState, type FC } from 'react';
-import { Area, AreaChart, CartesianGrid, Legend, Tooltip, XAxis, YAxis } from 'recharts';
+import { Area, AreaChart, CartesianGrid, Legend, Line, LineChart, Tooltip, XAxis, YAxis } from 'recharts';
 
 import ChartCard from '@/components/atoms/chart-card/ChartCard';
 import DetailCard from '@/components/atoms/detail-card/DetailCard';
 import PageHeader from '@/components/atoms/page-header/PageHeader';
 import { useCurrentYearIndex, YearSelector } from '@/components/atoms/year-selector/YearSelector';
 import { useSettings } from '@/contexts/SettingsContext';
-import { useInvestmentChartData, useInvestmentPageData } from '@/hooks/investment.hooks';
+import {
+  useInvestmentChartData,
+  useInvestmentPageData,
+  usePlansChartData,
+  usePositionsChartData,
+} from '@/hooks/investment.hooks';
 import { formatCurrency, formatCurrencyCompact } from '@/utils/format.util';
 import { getEffectiveMonthlyTotal, getWeightedEntryFeeRate } from '@/utils/investmentCalculation.util';
 
@@ -17,6 +22,8 @@ const InvestmentsPage: FC = () => {
   const { row, prevRow, yearGrowth, returnOnInvestment, isTargetReached, wasTargetReachedBefore } =
     useInvestmentPageData(yearIndex);
   const chartData = useInvestmentChartData();
+  const positionsChartData = usePositionsChartData();
+  const plansChartData = usePlansChartData();
 
   const effectiveMonthly = getEffectiveMonthlyTotal(settings.monthlyPlans);
   const avgEntryFeePercent = (getWeightedEntryFeeRate(settings.monthlyPlans) * 100).toFixed(1);
@@ -95,6 +102,25 @@ const InvestmentsPage: FC = () => {
           <p className="detail-section__description">
             Eenmalig belegd · {settings.rate}% rendement · Prognose einde {row.year}
           </p>
+          <ChartCard title={`Posities netto waarde — ${settings.startYear}–${settings.endYear}`} height={200}>
+            <LineChart data={positionsChartData} margin={{ top: 8, right: 8, left: 0, bottom: 0 }}>
+              <CartesianGrid strokeDasharray="3 3" stroke="var(--color-grid)" />
+              <XAxis dataKey="year" tick={{ fontSize: 11 }} stroke="var(--color-muted)" />
+              <YAxis tickFormatter={formatCurrencyCompact} tick={{ fontSize: 11 }} stroke="var(--color-muted)" />
+              <Tooltip
+                formatter={(value) => (typeof value === 'number' ? formatCurrency(value) : String(value))}
+                contentStyle={{ borderRadius: 12, border: '1px solid var(--color-border)' }}
+              />
+              <Line
+                type="monotone"
+                dataKey="netto"
+                name="Netto waarde"
+                stroke="var(--color-investment)"
+                strokeWidth={2}
+                dot={false}
+              />
+            </LineChart>
+          </ChartCard>
           <div className="detail-grid">
             {settings.positions.map((pos) => (
               <DetailCard
@@ -126,6 +152,25 @@ const InvestmentsPage: FC = () => {
           <p className="detail-section__description">
             Maandelijks via Crelan · {settings.rate}% rendement · Prognose einde {row.year}
           </p>
+          <ChartCard title={`Plannen netto waarde — ${settings.startYear}–${settings.endYear}`} height={200}>
+            <LineChart data={plansChartData} margin={{ top: 8, right: 8, left: 0, bottom: 0 }}>
+              <CartesianGrid strokeDasharray="3 3" stroke="var(--color-grid)" />
+              <XAxis dataKey="year" tick={{ fontSize: 11 }} stroke="var(--color-muted)" />
+              <YAxis tickFormatter={formatCurrencyCompact} tick={{ fontSize: 11 }} stroke="var(--color-muted)" />
+              <Tooltip
+                formatter={(value) => (typeof value === 'number' ? formatCurrency(value) : String(value))}
+                contentStyle={{ borderRadius: 12, border: '1px solid var(--color-border)' }}
+              />
+              <Line
+                type="monotone"
+                dataKey="netto"
+                name="Netto waarde"
+                stroke="var(--color-pension)"
+                strokeWidth={2}
+                dot={false}
+              />
+            </LineChart>
+          </ChartCard>
           <div className="detail-grid">
             {settings.monthlyPlans.map((plan) => (
               <DetailCard

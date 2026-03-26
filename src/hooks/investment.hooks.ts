@@ -47,6 +47,32 @@ export const useInvestmentChartData = () => {
   );
 };
 
+export const usePositionsChartData = () => {
+  const { combinedData } = useInvestment();
+
+  return useMemo(
+    () =>
+      combinedData.map((r) => ({
+        year: String(r.year),
+        netto: r.positionsNetValue,
+      })),
+    [combinedData],
+  );
+};
+
+export const usePlansChartData = () => {
+  const { combinedData } = useInvestment();
+
+  return useMemo(
+    () =>
+      combinedData.map((r) => ({
+        year: String(r.year),
+        netto: r.plansNetValue,
+      })),
+    [combinedData],
+  );
+};
+
 export const usePensionPageData = (yearIndex: number) => {
   const { pensionData, combinedData } = useInvestment();
   const { investmentYears, settings } = useSettings();

@@ -48,7 +48,7 @@ export const CRELAN_PENSION_ISIN = 'BE0026480963';
 export const CRELAN_RATE = 0.0261;
 export const CRELAN_START_VALUE = 7_646.63;
 
-export const BALOISE_FUND_NAME = 'Baloise Save Plan';
+export const BALOISE_FUND_NAME = 'R-co Valor';
 export const BALOISE_ISIN = 'FR0011253624';
 export const BALOISE_RATE = 0.075;
 

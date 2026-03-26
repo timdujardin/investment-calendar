@@ -76,6 +76,8 @@ const PensionPage: FC = () => {
             value={formatCurrency(combined.pensionNetValue)}
             sub={
               <>
+                {formatCurrency(row.valueCrelan)} Crelan + {formatCurrency(row.valueBaloise)} Baloise
+                <br />
                 Bruto: {formatCurrency(row.valueTotal)} · Na {recapturePercent}% terugvordering (-
                 {formatCurrency(combined.pensionRecapture)})
               </>

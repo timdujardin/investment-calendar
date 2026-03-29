@@ -7,7 +7,7 @@ import { decryptWithKey, deriveAndExportKey, importKey } from '@/utils/crypto.ut
 
 const SESSION_KEY = 'investment-calendar-auth';
 const CRYPTO_KEY = 'investment-calendar-crypto-key';
-const SESSION_MAX_AGE_MS = 24 * 60 * 60 * 1000;
+const SESSION_MAX_AGE_MS = 7 * 24 * 60 * 60 * 1000;
 
 interface AuthContextValue {
   isAuthenticated: boolean;
@@ -33,10 +33,8 @@ const AuthProvider: FC<{ children: ReactNode }> = ({ children }) => {
   useEffect(() => {
     const restore = async () => {
       try {
-        localStorage.removeItem(CRYPTO_KEY);
-
         const session = localStorage.getItem(SESSION_KEY);
-        const storedKey = sessionStorage.getItem(CRYPTO_KEY);
+        const storedKey = localStorage.getItem(CRYPTO_KEY);
         if (!session || !storedKey) {
           return;
         }
@@ -49,7 +47,7 @@ const AuthProvider: FC<{ children: ReactNode }> = ({ children }) => {
         const elapsed = Date.now() - (parsed.timestamp ?? 0);
         if (elapsed > SESSION_MAX_AGE_MS) {
           localStorage.removeItem(SESSION_KEY);
-          sessionStorage.removeItem(CRYPTO_KEY);
+          localStorage.removeItem(CRYPTO_KEY);
           return;
         }
 
@@ -60,7 +58,7 @@ const AuthProvider: FC<{ children: ReactNode }> = ({ children }) => {
         setIsAuthenticated(true);
       } catch {
         localStorage.removeItem(SESSION_KEY);
-        sessionStorage.removeItem(CRYPTO_KEY);
+        localStorage.removeItem(CRYPTO_KEY);
       } finally {
         setIsLoading(false);
       }
@@ -80,7 +78,7 @@ const AuthProvider: FC<{ children: ReactNode }> = ({ children }) => {
     const data = await decryptBumbaData(key);
 
     localStorage.setItem(SESSION_KEY, JSON.stringify({ authenticated: true, timestamp: Date.now() }));
-    sessionStorage.setItem(CRYPTO_KEY, raw);
+    localStorage.setItem(CRYPTO_KEY, raw);
     setBumbaData(data);
     setIsAuthenticated(true);
 
@@ -89,7 +87,7 @@ const AuthProvider: FC<{ children: ReactNode }> = ({ children }) => {
 
   const logout = useCallback(() => {
     localStorage.removeItem(SESSION_KEY);
-    sessionStorage.removeItem(CRYPTO_KEY);
+    localStorage.removeItem(CRYPTO_KEY);
     setBumbaData(null);
     setIsAuthenticated(false);
   }, []);

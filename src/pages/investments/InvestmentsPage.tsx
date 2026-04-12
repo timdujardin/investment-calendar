@@ -145,8 +145,9 @@ const InvestmentsPage: FC = () => {
                       Bolero
                       {annualDividend != null && quarterlyEur != null && (
                         <>
-                          <br />~{formatCurrency(quarterlyEur)}/kwartaal · ~{formatCurrency(annualDividend)}/jaar ·{' '}
-                          {formatCurrency(pos.dividendReceived ?? 0)} ontvangen
+                          <br />
+                          Dividend: ~{formatCurrency(quarterlyEur)}/kwartaal · ~{formatCurrency(annualDividend)}
+                          /jaar · {formatCurrency(pos.dividendReceived ?? 0)} ontvangen
                         </>
                       )}
                     </>

@@ -10,6 +10,7 @@ import {
 import type {
   CombinedYearRow,
   ExitFeeSchedule,
+  InvestmentPosition,
   InvestmentRate,
   MonthlyInvestmentPlan,
   PensionYearRow,
@@ -328,6 +329,13 @@ export const getWeightedEntryFeeRate = (plans: MonthlyInvestmentPlan[]): number 
   }
 
   return plans.reduce((sum, p) => sum + p.entryFeeRate * p.monthlyAmount, 0) / totalMonthly;
+};
+
+export const calculateAnnualDividend = (position: InvestmentPosition, cadToEur: number): number | null => {
+  if (!position.shares || !position.dividendPerShare || !position.dividendFrequencyPerYear) {
+    return null;
+  }
+  return position.shares * position.dividendPerShare * position.dividendFrequencyPerYear * cadToEur;
 };
 
 export const removeAtIndex = <T>(items: T[], index: number): T[] => items.filter((_, i) => i !== index);

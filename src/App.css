@@ -842,6 +842,19 @@ body {
   padding-block-end: 0;
 }
 
+.settings-position-group {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  padding-block-end: 0.75rem;
+  border-bottom: 1px solid var(--color-border);
+}
+
+.settings-position-group:last-child {
+  border-bottom: none;
+  padding-block-end: 0;
+}
+
 .settings-field {
   display: flex;
   flex-direction: column;

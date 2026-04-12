@@ -3,6 +3,7 @@ import { createContext, useCallback, useContext, useMemo, useState, type FC, typ
 import {
   BIRTH_YEAR,
   BALOISE_RATE as DEFAULT_BALOISE_RATE,
+  CAD_TO_EUR as DEFAULT_CAD_TO_EUR,
   CAPITAL_GAINS_TAX_RATE as DEFAULT_CAPITAL_GAINS_TAX,
   CASH_RESERVE as DEFAULT_CASH_RESERVE,
   END_YEAR as DEFAULT_END_YEAR,
@@ -33,6 +34,7 @@ export interface AppSettings {
   pensionRecaptureRate: number;
   transactionFeeRate: number;
   capitalGainsTaxRate: number;
+  cadToEur: number;
 }
 
 const DEFAULTS: AppSettings = {
@@ -49,6 +51,7 @@ const DEFAULTS: AppSettings = {
   pensionRecaptureRate: DEFAULT_PENSION_RECAPTURE,
   transactionFeeRate: DEFAULT_TRANSACTION_FEE,
   capitalGainsTaxRate: DEFAULT_CAPITAL_GAINS_TAX,
+  cadToEur: DEFAULT_CAD_TO_EUR,
 };
 
 const loadSettings = (): AppSettings => {

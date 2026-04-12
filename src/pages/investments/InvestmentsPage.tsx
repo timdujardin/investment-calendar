@@ -13,7 +13,11 @@ import {
   usePositionsChartData,
 } from '@/hooks/investment.hooks';
 import { formatCurrency, formatCurrencyCompact, formatTooltipCurrency } from '@/utils/format.util';
-import { getEffectiveMonthlyTotal, getWeightedEntryFeeRate } from '@/utils/investmentCalculation.util';
+import {
+  calculateAnnualDividend,
+  getEffectiveMonthlyTotal,
+  getWeightedEntryFeeRate,
+} from '@/utils/investmentCalculation.util';
 
 const InvestmentsPage: FC = () => {
   const { settings, positionsTotal } = useSettings();
@@ -124,14 +128,32 @@ const InvestmentsPage: FC = () => {
             </LineChart>
           </ChartCard>
           <div className="detail-grid">
-            {settings.positions.map((pos) => (
-              <DetailCard
-                key={pos.ticker}
-                label={pos.name}
-                value={formatCurrency(pos.amount)}
-                sub={`${pos.ticker} · ${((pos.amount / positionsTotal) * 100).toFixed(0)}% van Bolero`}
-              />
-            ))}
+            {settings.positions.map((pos) => {
+              const annualDividend = calculateAnnualDividend(pos, settings.cadToEur);
+              const quarterlyEur =
+                pos.dividendPerShare && pos.shares
+                  ? pos.dividendPerShare * pos.shares * settings.cadToEur
+                  : null;
+              return (
+                <DetailCard
+                  key={pos.ticker}
+                  label={pos.name}
+                  value={formatCurrency(pos.amount)}
+                  sub={
+                    <>
+                      {pos.ticker} · {pos.shares} aandelen · {((pos.amount / positionsTotal) * 100).toFixed(0)}% van
+                      Bolero
+                      {annualDividend != null && quarterlyEur != null && (
+                        <>
+                          <br />~{formatCurrency(quarterlyEur)}/kwartaal · ~{formatCurrency(annualDividend)}/jaar ·{' '}
+                          {formatCurrency(pos.dividendReceived ?? 0)} ontvangen
+                        </>
+                      )}
+                    </>
+                  }
+                />
+              );
+            })}
           </div>
           <div className="detail-grid">
             <DetailCard

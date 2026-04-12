@@ -4,6 +4,10 @@ export interface InvestmentPosition {
   name: string;
   ticker: string;
   amount: number;
+  shares: number;
+  dividendPerShare?: number;
+  dividendFrequencyPerYear?: number;
+  dividendReceived?: number;
 }
 
 export interface ExitFeeSchedule {

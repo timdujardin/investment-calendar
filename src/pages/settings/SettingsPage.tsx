@@ -26,7 +26,7 @@ const SettingsPage: FC = () => {
   );
 
   const addPosition = useCallback(() => {
-    updateSettings({ positions: [...settings.positions, { name: '', ticker: '', amount: 0 }] });
+    updateSettings({ positions: [...settings.positions, { name: '', ticker: '', amount: 0, shares: 0 }] });
   }, [settings.positions, updateSettings]);
 
   const removePosition = useCallback(
@@ -156,65 +156,178 @@ const SettingsPage: FC = () => {
         <section className="settings-section">
           <span className="settings-field__hint">Individuele posities beheerd via KBC Bolero</span>
 
-          {settings.positions.map((pos, i) => (
-            <div key={i} className="settings-field-row settings-field-row--3col">
-              <div className="settings-field">
-                <label className="settings-field__label" htmlFor={`pos-name-${i}`}>
-                  Naam
-                </label>
-                <input
-                  id={`pos-name-${i}`}
-                  className="settings-field__input"
-                  type="text"
-                  value={pos.name}
-                  onChange={(e) => updatePosition(i, { name: e.target.value })}
-                />
-              </div>
-              <div className="settings-field">
-                <label className="settings-field__label" htmlFor={`pos-ticker-${i}`}>
-                  Ticker
-                </label>
-                <input
-                  id={`pos-ticker-${i}`}
-                  className="settings-field__input"
-                  type="text"
-                  value={pos.ticker}
-                  onChange={(e) => updatePosition(i, { ticker: e.target.value })}
-                />
-              </div>
-              <div className="settings-field">
-                <label className="settings-field__label" htmlFor={`pos-amount-${i}`}>
-                  Bedrag
-                </label>
-                <div className="settings-field__input-wrap">
-                  <span className="settings-field__prefix">€</span>
-                  <NumericInput
-                    id={`pos-amount-${i}`}
-                    className="settings-field__input"
-                    inputMode="numeric"
-                    min="0"
-                    step="500"
-                    numericValue={pos.amount}
-                    onCommit={(v) => updatePosition(i, { amount: v })}
-                  />
-                  <button
-                    type="button"
-                    className="settings-field__remove-btn"
-                    onClick={() => removePosition(i)}
-                    aria-label={`Verwijder ${pos.name || 'positie'}`}
-                  >
-                    ✕
-                  </button>
+          {settings.positions.map((pos, i) => {
+            const hasDividend =
+              pos.dividendPerShare != null || pos.dividendFrequencyPerYear != null || pos.dividendReceived != null;
+
+            return (
+              <div key={i} className="settings-position-group">
+                <div className="settings-field-row settings-field-row--3col">
+                  <div className="settings-field">
+                    <label className="settings-field__label" htmlFor={`pos-name-${i}`}>
+                      Naam
+                    </label>
+                    <input
+                      id={`pos-name-${i}`}
+                      className="settings-field__input"
+                      type="text"
+                      value={pos.name}
+                      onChange={(e) => updatePosition(i, { name: e.target.value })}
+                    />
+                  </div>
+                  <div className="settings-field">
+                    <label className="settings-field__label" htmlFor={`pos-ticker-${i}`}>
+                      Ticker
+                    </label>
+                    <input
+                      id={`pos-ticker-${i}`}
+                      className="settings-field__input"
+                      type="text"
+                      value={pos.ticker}
+                      onChange={(e) => updatePosition(i, { ticker: e.target.value })}
+                    />
+                  </div>
+                  <div className="settings-field">
+                    <label className="settings-field__label" htmlFor={`pos-amount-${i}`}>
+                      Bedrag
+                    </label>
+                    <div className="settings-field__input-wrap">
+                      <span className="settings-field__prefix">€</span>
+                      <NumericInput
+                        id={`pos-amount-${i}`}
+                        className="settings-field__input"
+                        inputMode="numeric"
+                        min="0"
+                        step="500"
+                        numericValue={pos.amount}
+                        onCommit={(v) => updatePosition(i, { amount: v })}
+                      />
+                      <button
+                        type="button"
+                        className="settings-field__remove-btn"
+                        onClick={() => removePosition(i)}
+                        aria-label={`Verwijder ${pos.name || 'positie'}`}
+                      >
+                        ✕
+                      </button>
+                    </div>
+                  </div>
                 </div>
+
+                <div className="settings-field-row">
+                  <div className="settings-field">
+                    <label className="settings-field__label" htmlFor={`pos-shares-${i}`}>
+                      Aandelen
+                    </label>
+                    <NumericInput
+                      id={`pos-shares-${i}`}
+                      className="settings-field__input"
+                      inputMode="numeric"
+                      min="0"
+                      step="1"
+                      numericValue={pos.shares}
+                      onCommit={(v) => updatePosition(i, { shares: v })}
+                    />
+                  </div>
+                </div>
+
+                {hasDividend && (
+                  <div className="settings-field-row settings-field-row--3col">
+                    <div className="settings-field">
+                      <label className="settings-field__label" htmlFor={`pos-div-${i}`}>
+                        Dividend/aandeel
+                      </label>
+                      <div className="settings-field__input-wrap">
+                        <span className="settings-field__prefix">CA$</span>
+                        <NumericInput
+                          id={`pos-div-${i}`}
+                          className="settings-field__input"
+                          inputMode="decimal"
+                          min="0"
+                          step="0.01"
+                          numericValue={pos.dividendPerShare ?? 0}
+                          onCommit={(v) => updatePosition(i, { dividendPerShare: v })}
+                        />
+                      </div>
+                    </div>
+                    <div className="settings-field">
+                      <label className="settings-field__label" htmlFor={`pos-freq-${i}`}>
+                        Uitkeringen/jaar
+                      </label>
+                      <NumericInput
+                        id={`pos-freq-${i}`}
+                        className="settings-field__input"
+                        inputMode="numeric"
+                        min="0"
+                        max="12"
+                        step="1"
+                        numericValue={pos.dividendFrequencyPerYear ?? 0}
+                        onCommit={(v) => updatePosition(i, { dividendFrequencyPerYear: v })}
+                      />
+                    </div>
+                    <div className="settings-field">
+                      <label className="settings-field__label" htmlFor={`pos-divrecv-${i}`}>
+                        Ontvangen
+                      </label>
+                      <div className="settings-field__input-wrap">
+                        <span className="settings-field__prefix">€</span>
+                        <NumericInput
+                          id={`pos-divrecv-${i}`}
+                          className="settings-field__input"
+                          inputMode="decimal"
+                          min="0"
+                          step="1"
+                          numericValue={pos.dividendReceived ?? 0}
+                          onCommit={(v) => updatePosition(i, { dividendReceived: v })}
+                        />
+                      </div>
+                    </div>
+                  </div>
+                )}
+
+                {!hasDividend && (
+                  <div className="settings-field-row">
+                    <button
+                      type="button"
+                      className="settings-actions__add"
+                      onClick={() =>
+                        updatePosition(i, { dividendPerShare: 0, dividendFrequencyPerYear: 4, dividendReceived: 0 })
+                      }
+                    >
+                      + Dividend toevoegen
+                    </button>
+                  </div>
+                )}
               </div>
-            </div>
-          ))}
+            );
+          })}
           <div className="settings-field-row">
             <button type="button" className="settings-actions__add" onClick={addPosition}>
               + Positie toevoegen
             </button>
           </div>
           <span className="settings-field__hint">Totaal Bolero: {formatCurrency(positionsTotal)}</span>
+
+          <hr className="settings-section__divider" />
+
+          <div className="settings-field-row">
+            <div className="settings-field">
+              <label className="settings-field__label" htmlFor="cad-to-eur">
+                Wisselkoers CAD → EUR
+              </label>
+              <NumericInput
+                id="cad-to-eur"
+                className="settings-field__input"
+                inputMode="decimal"
+                min="0"
+                max="2"
+                step="0.01"
+                numericValue={settings.cadToEur}
+                onCommit={(v) => updateSettings({ cadToEur: v })}
+              />
+              <span className="settings-field__hint">1 CAD = {settings.cadToEur} EUR — voor dividendprognose</span>
+            </div>
+          </div>
 
           <div className="settings-field-row">
             <div className="settings-field">

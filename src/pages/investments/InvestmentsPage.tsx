@@ -12,12 +12,7 @@ import {
   usePlansChartData,
   usePositionsChartData,
 } from '@/hooks/investment.hooks';
-import {
-  formatCurrency,
-  formatCurrencyCompact,
-  formatTooltipCurrency,
-  getGainLossClass,
-} from '@/utils/format.util';
+import { formatCurrency, formatCurrencyCompact, formatTooltipCurrency, getGainLossClass } from '@/utils/format.util';
 import {
   calculateAnnualDividend,
   getEffectiveMonthlyTotal,
@@ -101,7 +96,7 @@ const InvestmentsPage: FC = () => {
           />
           <DetailCard
             label="Winst op inleg"
-            value={`${row.investmentInterest >= 0 ? '+' : ''}${formatCurrency(row.investmentInterest)} (${returnOnInvestment >= 0 ? '+' : ''}${returnOnInvestment}%)`}
+            value={`${row.investmentInterest >= 0 ? '+' : ''}${formatCurrency(row.investmentInterest)} (${Number(returnOnInvestment) >= 0 ? '+' : ''}${returnOnInvestment}%)`}
             sub={`Ingelegd: ${formatCurrency(row.investmentInvested)}`}
             highlight
             valueClassName={`detail-card__value--large ${getGainLossClass(row.investmentInterest)}`}
@@ -136,9 +131,7 @@ const InvestmentsPage: FC = () => {
             {settings.positions.map((pos) => {
               const annualDividend = calculateAnnualDividend(pos, settings.cadToEur);
               const quarterlyEur =
-                pos.dividendPerShare && pos.shares
-                  ? pos.dividendPerShare * pos.shares * settings.cadToEur
-                  : null;
+                pos.dividendPerShare && pos.shares ? pos.dividendPerShare * pos.shares * settings.cadToEur : null;
 
               return (
                 <DetailCard
@@ -274,9 +267,9 @@ const InvestmentsPage: FC = () => {
             />
             <DetailCard
               label="Rendement op inleg"
-              value={`${returnOnInvestment >= 0 ? '+' : ''}${returnOnInvestment}%`}
+              value={`${Number(returnOnInvestment) >= 0 ? '+' : ''}${returnOnInvestment}%`}
               sub={`€${row.investmentMonthly}/mnd storting`}
-              valueClassName={getGainLossClass(returnOnInvestment)}
+              valueClassName={getGainLossClass(Number(returnOnInvestment))}
             />
           </div>
         </div>

@@ -106,8 +106,7 @@ export const BALOISE_FIRST_AUTO_DATE_ISO = '2026-05-13';
 const baloiseFirstAutoMonth = Number(BALOISE_FIRST_AUTO_DATE_ISO.split('-')[1]);
 
 /** Aantal automatische stortingen €105 in 2026 (mei t/m dec). */
-export const BALOISE_AUTO_PAYMENT_COUNT_2026 =
-  Number.isNaN(baloiseFirstAutoMonth) ? 0 : 12 - baloiseFirstAutoMonth + 1;
+export const BALOISE_AUTO_PAYMENT_COUNT_2026 = Number.isNaN(baloiseFirstAutoMonth) ? 0 : 12 - baloiseFirstAutoMonth + 1;
 
 export const BALOISE_MONTHLY_2026 = 105;
 export const BALOISE_MONTHLY_FROM_2027 = 87.5;

@@ -1,9 +1,6 @@
 import { memo, useMemo, type FC } from 'react';
 
-import {
-  BALOISE_YAHOO_CHART_SYMBOL,
-  BALOISE_YAHOO_QUOTE_URL,
-} from '@config/investment.config';
+import { BALOISE_YAHOO_CHART_SYMBOL, BALOISE_YAHOO_QUOTE_URL } from '@config/investment.config';
 import DetailCard from '@/components/atoms/detail-card/DetailCard';
 import { useBaloiseYahooChart } from '@/hooks/baloiseQuote.hooks';
 import { computeBaloisePosition } from '@/utils/baloisePositionPnl.util';
@@ -56,14 +53,7 @@ const BaloiseLivePosition: FC = () => {
     return null;
   }
 
-  const {
-    invested,
-    units,
-    value,
-    pnl,
-    pnlPercent,
-    lastNav,
-  } = position;
+  const { invested, units, value, pnl, pnlPercent, lastNav } = position;
   const pnlClass = pnl >= 0 ? 'text-gain' : 'text-loss';
   const navLabel = lastNav != null ? formatCurrency(lastNav) : '—';
   const hasPosition = units > 0 && lastNav != null;
@@ -83,28 +73,14 @@ const BaloiseLivePosition: FC = () => {
   return (
     <div className="baloise-live-position">
       <div className="detail-grid">
-        <DetailCard
-          label="Ingelegd tot vandaag"
-          value={formatCurrency(invested)}
-          sub={unitsSub}
-        />
-        <DetailCard
-          label="Actuele waarde"
-          value={hasPosition ? formatCurrency(value) : '—'}
-          sub={valueSub}
-        />
+        <DetailCard label="Ingelegd tot vandaag" value={formatCurrency(invested)} sub={unitsSub} />
+        <DetailCard label="Actuele waarde" value={hasPosition ? formatCurrency(value) : '—'} sub={valueSub} />
       </div>
       <p className="detail-section__disclaimer">
-        Berekend op je opgegeven premies (elke {13}e van de maand) met de NAV van de Yahoo-handelsdag op
-        (of vlak vóór) de stortingsdatum. Kleine afwijking t.o.v. het officiële Baloise-overzicht is
-        normaal (Baloise gebruikt een eigen dag-NAV en koopt soms met enkele dagen vertraging). Geen
-        beleggingsadvies.{' '}
-        <a
-          className="baloise-live__link"
-          href={BALOISE_YAHOO_QUOTE_URL}
-          target="_blank"
-          rel="noreferrer"
-        >
+        Berekend op je opgegeven premies (elke {13}e van de maand) met de NAV van de Yahoo-handelsdag op (of vlak vóór)
+        de stortingsdatum. Kleine afwijking t.o.v. het officiële Baloise-overzicht is normaal (Baloise gebruikt een
+        eigen dag-NAV en koopt soms met enkele dagen vertraging). Geen beleggingsadvies.{' '}
+        <a className="baloise-live__link" href={BALOISE_YAHOO_QUOTE_URL} target="_blank" rel="noreferrer">
           Yahoo Finance — {BALOISE_YAHOO_CHART_SYMBOL}
         </a>
       </p>

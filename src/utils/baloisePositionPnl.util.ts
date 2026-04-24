@@ -64,11 +64,9 @@ const toIsoDate = (date: Date): string => {
   return `${y}-${m}-${d}`;
 };
 
-const startOfDay = (date: Date): number =>
-  new Date(date.getFullYear(), date.getMonth(), date.getDate()).getTime();
+const startOfDay = (date: Date): number => new Date(date.getFullYear(), date.getMonth(), date.getDate()).getTime();
 
-const autoAmountForYear = (year: number): number =>
-  year >= 2027 ? BALOISE_MONTHLY_FROM_2027 : BALOISE_MONTHLY_2026;
+const autoAmountForYear = (year: number): number => (year >= 2027 ? BALOISE_MONTHLY_FROM_2027 : BALOISE_MONTHLY_2026);
 
 /**
  * Bouwt het volledige stortingsschema tot en met `today`: eerst de manueel doorgegeven

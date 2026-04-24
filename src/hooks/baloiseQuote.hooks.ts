@@ -1,14 +1,7 @@
 import { useEffect, useState } from 'react';
 
-import {
-  BALOISE_YAHOO_CHART_RANGE,
-  BALOISE_YAHOO_CHART_SYMBOL,
-} from '@config/investment.config';
-import {
-  fetchFundChartJson,
-  parseFundQuoteResponse,
-  type BaloiseParsedChart,
-} from '@/utils/baloiseYahooChart.util';
+import { BALOISE_YAHOO_CHART_RANGE, BALOISE_YAHOO_CHART_SYMBOL } from '@config/investment.config';
+import { fetchFundChartJson, parseFundQuoteResponse, type BaloiseParsedChart } from '@/utils/baloiseYahooChart.util';
 
 export type BaloiseQuoteState =
   | { status: 'idle' | 'loading' }
@@ -25,11 +18,7 @@ export const useBaloiseYahooChart = (): BaloiseQuoteState => {
     const load = async (): Promise<void> => {
       setState({ status: 'loading' });
       try {
-        const raw = await fetchFundChartJson(
-          BALOISE_YAHOO_CHART_SYMBOL,
-          BALOISE_YAHOO_CHART_RANGE,
-          ac.signal,
-        );
+        const raw = await fetchFundChartJson(BALOISE_YAHOO_CHART_SYMBOL, BALOISE_YAHOO_CHART_RANGE, ac.signal);
         if (cancelled) {
           return;
         }

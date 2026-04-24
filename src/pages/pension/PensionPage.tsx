@@ -19,9 +19,9 @@ import {
 } from '@config/investment.config';
 import ChartCard from '@/components/atoms/chart-card/ChartCard';
 import DetailCard from '@/components/atoms/detail-card/DetailCard';
-import { BaloiseLivePosition } from '@/components/molecules/baloise-live-position/BaloiseLivePosition';
 import PageHeader from '@/components/atoms/page-header/PageHeader';
 import { useCurrentYearIndex, YearSelector } from '@/components/atoms/year-selector/YearSelector';
+import { BaloiseLivePosition } from '@/components/molecules/baloise-live-position/BaloiseLivePosition';
 import { useSettings } from '@/contexts/SettingsContext';
 import { usePensionChartData, usePensionPageData } from '@/hooks/investment.hooks';
 import {
@@ -104,7 +104,7 @@ const PensionPage: FC = () => {
           />
           <DetailCard
             label="Winst op inleg"
-            value={`${totalInterest >= 0 ? '+' : ''}${formatCurrency(totalInterest)} (${returnPercent >= 0 ? '+' : ''}${returnPercent}%)`}
+            value={`${totalInterest >= 0 ? '+' : ''}${formatCurrency(totalInterest)} (${Number(returnPercent) >= 0 ? '+' : ''}${returnPercent}%)`}
             sub={`Ingelegd: ${formatCurrency(row.investedTotal)}`}
             highlight
             valueClassName={`detail-card__value--large ${getGainLossClass(totalInterest)}`}
@@ -145,12 +145,16 @@ const PensionPage: FC = () => {
             {BALOISE_FUND_NAME} · ISIN: {BALOISE_ISIN}
             <br />
             {formatCurrency(BALOISE_OPENING_INVESTED_EUR)} stond er vóór automatische incasso; vanaf{' '}
-            {formatIsoDateNl(BALOISE_FIRST_AUTO_DATE_ISO)} elke maand €{BALOISE_MONTHLY_2026} tot eind 2026.
-            Vanaf 2027 elke {BALOISE_DEPOSIT_DAY_OF_MONTH}e €{BALOISE_MONTHLY_FROM_2027}. De projectie gebruikt
-            maandrente uit je jaarpct en één storting per maand.
+            {formatIsoDateNl(BALOISE_FIRST_AUTO_DATE_ISO)} elke maand €{BALOISE_MONTHLY_2026} tot eind 2026. Vanaf 2027
+            elke {BALOISE_DEPOSIT_DAY_OF_MONTH}e €{BALOISE_MONTHLY_FROM_2027}. De projectie gebruikt maandrente uit je
+            jaarpct en één storting per maand.
           </p>
           <div className="detail-grid">
-            <DetailCard label="Ingelegd (projectie)" value={formatCurrency(row.investedBaloise)} sub={baloiseInvestedSub} />
+            <DetailCard
+              label="Ingelegd (projectie)"
+              value={formatCurrency(row.investedBaloise)}
+              sub={baloiseInvestedSub}
+            />
             <DetailCard
               label="Waarde (projectie)"
               value={formatCurrency(row.valueBaloise)}

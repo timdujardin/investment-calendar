@@ -231,7 +231,8 @@ const SettingsPage: FC = () => {
                   </div>
                 </div>
 
-                {hasDividend ? <div className="settings-field-row settings-field-row--3col">
+                {hasDividend ? (
+                  <div className="settings-field-row settings-field-row--3col">
                     <div className="settings-field">
                       <label className="settings-field__label" htmlFor={`pos-div-${i}`}>
                         Dividend/aandeel
@@ -281,7 +282,8 @@ const SettingsPage: FC = () => {
                         />
                       </div>
                     </div>
-                  </div> : null}
+                  </div>
+                ) : null}
 
                 {!hasDividend && (
                   <div className="settings-field-row">

@@ -60,10 +60,7 @@ const isWorkerFundQuoteBody = (raw: unknown): raw is WorkerFundQuoteBody => {
 
   const o = raw as Record<string, unknown>;
 
-  return (
-    (o.source === 'finnhub' || o.source === 'yahoo') &&
-    Array.isArray(o.rows)
-  );
+  return (o.source === 'finnhub' || o.source === 'yahoo') && Array.isArray(o.rows);
 };
 
 const quoteApiErrorMessage = (raw: unknown, status: number): string => {
@@ -99,11 +96,7 @@ export const normalizeQuoteApiBase = (raw: string | undefined): string | undefin
 /**
  * Haalt koersdata op: productie via Worker (`VITE_QUOTE_API_URL`), lokaal anders Yahoo via Vite-proxy.
  */
-export async function fetchFundChartJson(
-  symbol: string,
-  range: string,
-  signal?: AbortSignal,
-): Promise<unknown> {
+export async function fetchFundChartJson(symbol: string, range: string, signal?: AbortSignal): Promise<unknown> {
   const base = normalizeQuoteApiBase(import.meta.env.VITE_QUOTE_API_URL);
 
   if (base) {
@@ -129,9 +122,7 @@ export async function fetchFundChartJson(
     return res.json();
   }
 
-  throw new Error(
-    'VITE_QUOTE_API_URL ontbreekt. Deploy de Worker en zet de URL in .env — zie README.',
-  );
+  throw new Error('VITE_QUOTE_API_URL ontbreekt. Deploy de Worker en zet de URL in .env — zie README.');
 }
 
 export const parseFundQuoteResponse = (raw: unknown): BaloiseParsedChart => {
@@ -164,10 +155,7 @@ const pickReferenceNav = (meta: YahooChartMeta | undefined, rows: BaloiseChartRo
   return null;
 };
 
-const pickYahooBarClose = (
-  rawClose: number | null | undefined,
-  rawAdj: number | null | undefined,
-): number | null => {
+const pickYahooBarClose = (rawClose: number | null | undefined, rawAdj: number | null | undefined): number | null => {
   if (typeof rawClose === 'number' && !Number.isNaN(rawClose)) {
     return rawClose;
   }
@@ -215,8 +203,7 @@ export const parseYahooChartEnvelope = (raw: unknown): BaloiseParsedChart => {
 
   const lastRowNav = rows.length > 0 ? rows[rows.length - 1].nav : null;
   const metaPrice = result.meta?.regularMarketPrice;
-  const lastNav =
-    typeof metaPrice === 'number' && !Number.isNaN(metaPrice) ? metaPrice : lastRowNav;
+  const lastNav = typeof metaPrice === 'number' && !Number.isNaN(metaPrice) ? metaPrice : lastRowNav;
 
   return {
     rows,

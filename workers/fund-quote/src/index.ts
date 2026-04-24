@@ -101,10 +101,7 @@ function rangeToFromToSec(range: string): { from: number; to: number } {
   }
 }
 
-function pickReferenceNav(
-  meta: YahooResult['meta'] | undefined,
-  rows: FundQuoteRow[],
-): number | null {
+function pickReferenceNav(meta: YahooResult['meta'] | undefined, rows: FundQuoteRow[]): number | null {
   const fromMeta = meta?.chartPreviousClose ?? meta?.previousClose;
   if (typeof fromMeta === 'number' && !Number.isNaN(fromMeta)) {
     return fromMeta;
@@ -176,8 +173,7 @@ async function fetchYahooFundQuote(symbol: string, range: string): Promise<FundQ
   const rows = yahooRowsFromResult(result);
   const lastRowNav = rows.length > 0 ? rows[rows.length - 1].nav : null;
   const metaPrice = result.meta?.regularMarketPrice;
-  const lastNav =
-    typeof metaPrice === 'number' && !Number.isNaN(metaPrice) ? metaPrice : lastRowNav;
+  const lastNav = typeof metaPrice === 'number' && !Number.isNaN(metaPrice) ? metaPrice : lastRowNav;
 
   return {
     source: 'yahoo',
@@ -188,11 +184,7 @@ async function fetchYahooFundQuote(symbol: string, range: string): Promise<FundQ
   };
 }
 
-async function fetchFinnhubFundQuote(
-  symbol: string,
-  range: string,
-  token: string,
-): Promise<FundQuoteBody | null> {
+async function fetchFinnhubFundQuote(symbol: string, range: string, token: string): Promise<FundQuoteBody | null> {
   const { from, to } = rangeToFromToSec(range);
   const url = `https://finnhub.io/api/v1/stock/candle?symbol=${encodeURIComponent(symbol)}&resolution=D&from=${from}&to=${to}&token=${encodeURIComponent(token)}`;
   const res = await fetch(url);

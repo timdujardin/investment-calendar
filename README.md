@@ -23,6 +23,37 @@ npm run build
 
 Icons are auto-generated from `public/favicon.svg` before each build. To regenerate manually: `npm run pwa:icons`.
 
+## Fondskoers (live) — Cloudflare Worker
+
+De pensioenpagina haalt koersdata op via een **eigen Worker**, niet rechtstreeks vanuit de browser (CORS / betrouwbaarheid).
+
+1. Deploy de Worker: zie [`workers/fund-quote/README.md`](workers/fund-quote/README.md).
+2. Maak een `.env` in de projectroot (of gebruik je CI-secrets) met:
+
+   ```bash
+   VITE_QUOTE_API_URL=https://jouw-worker.workers.dev
+   ```
+
+   Gebruik de basis-URL **zonder** slash op het einde.
+
+3. `npm run build` — de URL wordt in de frontend ingebakken.
+
+**Lokaal zonder Worker:** `npm run dev` gebruikt de Vite-proxy naar Yahoo. Zonder `VITE_QUOTE_API_URL` faalt een productiebuild bewust met een duidelijke fout (zet de Worker-URL voor je deploy).
+
+Finnhub API-key staat **alleen** als `wrangler secret put FINNHUB_API_KEY`, nooit in git.
+
+**GitHub Pages:** voeg in het repository onder Settings → Secrets and variables → Actions een secret **`VITE_QUOTE_API_URL`** toe met je Worker-basis-URL. De workflow [`.github/workflows/deploy.yml`](.github/workflows/deploy.yml) geeft die door aan `npm run build`.
+
+### Geen fondskoers op de pensioenpagina?
+
+1. **GitHub Pages:** bestaat het secret **`VITE_QUOTE_API_URL`** echt, en heb je **ná** het toevoegen opnieuw gedeployed? De URL wordt bij **build** ingevrozen; alleen `.env` lokaal helpt de live site niet.
+2. **Juiste URL:** gebruik de basis van de Worker, bv. `https://investment-calendar-fund-quote.jouw-subdomein.workers.dev` — **zonder** `/quote` aan het einde (de app plakt `/quote` zelf).
+3. **Worker:** opnieuw deployen na `wrangler secret put FINNHUB_API_KEY`. Test in de browser:  
+   `https://jouw-worker…/quote?symbol=FR0011253624.PA&range=1y` — je zou JSON met `rows` moeten zien.
+4. **Lokaal:** na wijziging van `.env` even `npm run dev` herstarten.
+
+**UCITS / bepaalde fondsen:** Yahoo’s chart-API geeft soms **geen historische dagelijkse punten** (wel `regularMarketPrice` in metadata). De app toont dan een **snapshot** (laatste koers + % vs. vorig slot) i.p.v. een lijngrafiek — dat is een beperking van de databron, geen fout in je Worker.
+
 Currently, two official plugins are available:
 
 - [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Oxc](https://oxc.rs)

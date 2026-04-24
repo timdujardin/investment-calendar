@@ -1,0 +1,13 @@
+{
+  "name": "investment-calendar-fund-quote",
+  "private": true,
+  "scripts": {
+    "deploy": "wrangler deploy",
+    "dev": "wrangler dev"
+  },
+  "devDependencies": {
+    "@cloudflare/workers-types": "^4.20250224.0",
+    "typescript": "~5.9.3",
+    "wrangler": "^4.28.0"
+  }
+}

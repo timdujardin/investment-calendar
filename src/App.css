@@ -12,6 +12,7 @@
   --color-success: #10b981;
   --color-warning: #f59e0b;
   --color-orange: #f97316;
+  --color-loss: #dc2626;
   --color-interest: #0ea5e9;
   --color-status-on-bg: #dcfce7;
   --color-status-on-text: #15803d;
@@ -39,6 +40,7 @@
   --color-success: #34d399;
   --color-warning: #fbbf24;
   --color-orange: #fb923c;
+  --color-loss: #f87171;
   --color-interest: #38bdf8;
   --color-status-on-bg: rgba(52, 211, 153, 0.2);
   --color-status-on-text: var(--color-success);
@@ -546,6 +548,39 @@ body {
   text-align: center;
 }
 
+.baloise-live__link {
+  display: inline-block;
+  margin-block-start: 0.25rem;
+  font-size: 0.8rem;
+  font-weight: 500;
+  color: var(--color-investment);
+}
+
+.baloise-live-position {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.baloise-live-position__status {
+  font-size: 0.875rem;
+  color: var(--color-muted);
+  margin-block: 0.25rem 0;
+}
+
+.baloise-live-position__status--error {
+  color: var(--color-warn, #e67e22);
+}
+
+.detail-section__subtitle {
+  font-size: 0.9rem;
+  font-weight: 600;
+  color: var(--color-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  margin-block: 1rem 0.25rem;
+}
+
 /* Page layout */
 .page {
   display: flex;
@@ -742,6 +777,22 @@ body {
 .text-warn {
   color: var(--color-warn, #e67e22);
   font-weight: 600;
+}
+
+.text-gain {
+  color: var(--color-success);
+  font-weight: 600;
+}
+
+.text-loss {
+  color: var(--color-loss);
+  font-weight: 600;
+}
+
+.detail-card__sub--pnl {
+  font-size: 0.75rem;
+  font-variant-numeric: tabular-nums;
+  margin-block-start: 0.15rem;
 }
 
 .detail-section__disclaimer {

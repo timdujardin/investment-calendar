@@ -10,7 +10,7 @@ import globals from 'globals';
 import tseslint from 'typescript-eslint';
 
 export default defineConfig([
-  globalIgnores(['dist', 'scripts']),
+  globalIgnores(['dist', 'scripts', 'workers']),
 
   js.configs.recommended,
   tseslint.configs.recommended,

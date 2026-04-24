@@ -1,11 +1,12 @@
 import {
-  BALOISE_ANNUAL_CONTRIBUTION,
-  BALOISE_FIRST_YEAR_TOTAL,
+  BALOISE_FIRST_AUTO_DATE_ISO,
   BALOISE_MONTHLY_2026,
   BALOISE_MONTHLY_FROM_2027,
+  BALOISE_OPENING_INVESTED_EUR,
   BIRTH_YEAR,
   CAPITAL_GAINS_TAX_THRESHOLD,
   CRELAN_START_VALUE,
+  INVESTMENT_FIRST_YEAR_MONTHS,
 } from '@config/investment.config';
 import type {
   CombinedYearRow,
@@ -16,24 +17,30 @@ import type {
   PensionYearRow,
 } from '@/@types/investment';
 
-const FIRST_YEAR_MONTHS = 10;
-
 interface PensionRates {
   crelanRate: number;
   baloiseRate: number;
 }
 
+const monthlyRateFromAnnual = (annual: number): number => Math.pow(1 + annual, 1 / 12) - 1;
+
 export const calculatePensionData = (rates: PensionRates, projectionYears: number): PensionYearRow[] => {
   const rCrelan = 1 + rates.crelanRate;
-  const rBaloise = 1 + rates.baloiseRate;
+  const mRateBaloise = monthlyRateFromAnnual(rates.baloiseRate);
   const result: PensionYearRow[] = [];
   const investedCrelan = CRELAN_START_VALUE;
-  let investedBaloise = BALOISE_FIRST_YEAR_TOTAL;
 
-  let valueCrelan = CRELAN_START_VALUE * Math.pow(rCrelan, FIRST_YEAR_MONTHS / 12);
-  let valueBaloise =
-    BALOISE_MONTHLY_2026 * Math.pow(rBaloise, FIRST_YEAR_MONTHS / 12) +
-    (BALOISE_FIRST_YEAR_TOTAL - BALOISE_MONTHLY_2026) * Math.pow(rBaloise, 4.5 / 12);
+  let valueCrelan = CRELAN_START_VALUE * Math.pow(rCrelan, INVESTMENT_FIRST_YEAR_MONTHS / 12);
+
+  let valueBaloise = BALOISE_OPENING_INVESTED_EUR;
+  let investedBaloise = BALOISE_OPENING_INVESTED_EUR;
+  const firstAutoMonthIndex0 = Number(BALOISE_FIRST_AUTO_DATE_ISO.split('-')[1]) - 1;
+
+  for (let m = firstAutoMonthIndex0; m < 12; m++) {
+    valueBaloise *= 1 + mRateBaloise;
+    valueBaloise += BALOISE_MONTHLY_2026;
+    investedBaloise += BALOISE_MONTHLY_2026;
+  }
 
   result.push({
     investedTotal: investedCrelan + investedBaloise,
@@ -46,8 +53,11 @@ export const calculatePensionData = (rates: PensionRates, projectionYears: numbe
 
   for (let y = 1; y <= projectionYears; y++) {
     valueCrelan *= rCrelan;
-    valueBaloise = valueBaloise * rBaloise + BALOISE_ANNUAL_CONTRIBUTION * Math.pow(rBaloise, 0.5);
-    investedBaloise += BALOISE_ANNUAL_CONTRIBUTION;
+    for (let m = 0; m < 12; m++) {
+      valueBaloise *= 1 + mRateBaloise;
+      valueBaloise += BALOISE_MONTHLY_FROM_2027;
+      investedBaloise += BALOISE_MONTHLY_FROM_2027;
+    }
     result.push({
       investedTotal: investedCrelan + investedBaloise,
       valueTotal: valueCrelan + valueBaloise,
@@ -335,6 +345,7 @@ export const calculateAnnualDividend = (position: InvestmentPosition, cadToEur: 
   if (!position.shares || !position.dividendPerShare || !position.dividendFrequencyPerYear) {
     return null;
   }
+
   return position.shares * position.dividendPerShare * position.dividendFrequencyPerYear * cadToEur;
 };
 

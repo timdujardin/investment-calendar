@@ -11,6 +11,8 @@ node_modules
 dist
 dist-ssr
 *.local
+.env
+workers/fund-quote/.dev.vars
 
 # Generated PWA icons (rebuilt via npm run pwa:icons)
 public/apple-touch-icon.png

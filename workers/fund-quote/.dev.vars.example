@@ -1,0 +1,2 @@
+# Kopieer naar .dev.vars (niet committen) voor `npm run dev`
+FINNHUB_API_KEY=

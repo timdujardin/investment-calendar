@@ -12,7 +12,12 @@ import {
   usePlansChartData,
   usePositionsChartData,
 } from '@/hooks/investment.hooks';
-import { formatCurrency, formatCurrencyCompact, formatTooltipCurrency } from '@/utils/format.util';
+import {
+  formatCurrency,
+  formatCurrencyCompact,
+  formatTooltipCurrency,
+  getGainLossClass,
+} from '@/utils/format.util';
 import {
   calculateAnnualDividend,
   getEffectiveMonthlyTotal,
@@ -96,10 +101,10 @@ const InvestmentsPage: FC = () => {
           />
           <DetailCard
             label="Winst op inleg"
-            value={`+${formatCurrency(row.investmentInterest)} (+${returnOnInvestment}%)`}
+            value={`${row.investmentInterest >= 0 ? '+' : ''}${formatCurrency(row.investmentInterest)} (${returnOnInvestment >= 0 ? '+' : ''}${returnOnInvestment}%)`}
             sub={`Ingelegd: ${formatCurrency(row.investmentInvested)}`}
             highlight
-            valueClassName="detail-card__value--large text-interest"
+            valueClassName={`detail-card__value--large ${getGainLossClass(row.investmentInterest)}`}
           />
         </div>
 
@@ -134,6 +139,7 @@ const InvestmentsPage: FC = () => {
                 pos.dividendPerShare && pos.shares
                   ? pos.dividendPerShare * pos.shares * settings.cadToEur
                   : null;
+
               return (
                 <DetailCard
                   key={pos.ticker}
@@ -165,9 +171,9 @@ const InvestmentsPage: FC = () => {
             />
             <DetailCard
               label="Bolero winst"
-              value={`+${formatCurrency(row.positionsValue - row.positionsInvested)}`}
+              value={`${row.positionsValue - row.positionsInvested >= 0 ? '+' : ''}${formatCurrency(row.positionsValue - row.positionsInvested)}`}
               sub={`Ingelegd: ${formatCurrency(row.positionsInvested)}`}
-              valueClassName="text-interest"
+              valueClassName={getGainLossClass(row.positionsValue - row.positionsInvested)}
             />
           </div>
         </div>
@@ -262,15 +268,15 @@ const InvestmentsPage: FC = () => {
           <div className="detail-grid">
             <DetailCard
               label="Groei dit jaar"
-              value={`+${formatCurrency(yearGrowth)}`}
+              value={`${yearGrowth >= 0 ? '+' : ''}${formatCurrency(yearGrowth)}`}
               sub={prevRow ? `Vorig jaar: ${formatCurrency(prevRow.investmentValue)}` : undefined}
-              valueClassName="text-interest"
+              valueClassName={getGainLossClass(yearGrowth)}
             />
             <DetailCard
               label="Rendement op inleg"
-              value={`+${returnOnInvestment}%`}
+              value={`${returnOnInvestment >= 0 ? '+' : ''}${returnOnInvestment}%`}
               sub={`€${row.investmentMonthly}/mnd storting`}
-              valueClassName="text-interest"
+              valueClassName={getGainLossClass(returnOnInvestment)}
             />
           </div>
         </div>

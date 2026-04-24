@@ -28,3 +28,21 @@ export const formatDifference = (diff: number): string => {
 
   return `${prefix}${String(diff)}`;
 };
+
+/** `'text-gain'` bij ≥ 0, anders `'text-loss'`. Voor winst/verlies-kleuring in detail-kaarten. */
+export const getGainLossClass = (amount: number): 'text-gain' | 'text-loss' =>
+  amount >= 0 ? 'text-gain' : 'text-loss';
+
+/** `YYYY-MM-DD` → nl-BE datum (lokale kalender, geen UTC-shift). */
+export const formatIsoDateNl = (isoDate: string): string => {
+  const [y, m, d] = isoDate.split('-').map(Number);
+  if (y == null || m == null || d == null || Number.isNaN(y) || Number.isNaN(m) || Number.isNaN(d)) {
+    return isoDate;
+  }
+
+  return new Date(y, m - 1, d).toLocaleDateString('nl-BE', {
+    day: 'numeric',
+    month: 'long',
+    year: 'numeric',
+  });
+};

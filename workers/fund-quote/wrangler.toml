@@ -1,0 +1,6 @@
+name = "investment-calendar-fund-quote"
+main = "src/index.ts"
+compatibility_date = "2024-12-01"
+
+# Zet de API-key als secret (niet in dit bestand):
+#   cd workers/fund-quote && npx wrangler secret put FINNHUB_API_KEY

@@ -9,6 +9,15 @@ const base = '/investment-calendar/';
 
 export default defineConfig({
   base,
+  server: {
+    proxy: {
+      '/yahoo-finance-api': {
+        target: 'https://query1.finance.yahoo.com',
+        changeOrigin: true,
+        rewrite: (path) => path.replace(/^\/yahoo-finance-api/, ''),
+      },
+    },
+  },
   resolve: {
     alias: {
       '@': path.resolve(__dirname, './src'),

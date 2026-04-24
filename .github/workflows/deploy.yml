@@ -30,6 +30,8 @@ jobs:
 
       - run: npm ci --legacy-peer-deps
       - run: npm run build
+        env:
+          VITE_QUOTE_API_URL: ${{ secrets.VITE_QUOTE_API_URL }}
       - run: cp dist/index.html dist/404.html
 
       - uses: actions/upload-pages-artifact@v4

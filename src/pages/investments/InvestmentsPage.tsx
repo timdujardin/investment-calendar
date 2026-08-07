@@ -1,6 +1,7 @@
 import { useState, type FC } from 'react';
 import { Area, AreaChart, CartesianGrid, Legend, Line, LineChart, Tooltip, XAxis, YAxis } from 'recharts';
 
+import { ANALYST_TARGET_HORIZON_YEARS } from '@config/investment.config';
 import ChartCard from '@/components/atoms/chart-card/ChartCard';
 import DetailCard from '@/components/atoms/detail-card/DetailCard';
 import PageHeader from '@/components/atoms/page-header/PageHeader';
@@ -83,7 +84,7 @@ const InvestmentsPage: FC = () => {
 
         <div className="detail-grid">
           <DetailCard
-            label="Portefeuille waarde"
+            label={`Portefeuille waarde (eind ${row.year})`}
             value={formatCurrency(row.investmentNetValue)}
             sub={
               <>
@@ -103,7 +104,7 @@ const InvestmentsPage: FC = () => {
             }
           />
           <DetailCard
-            label="Winst op inleg"
+            label={`Winst op inleg (eind ${row.year})`}
             value={`${row.investmentInterest >= 0 ? '+' : ''}${formatCurrency(row.investmentInterest)} (${Number(returnOnInvestment) >= 0 ? '+' : ''}${returnOnInvestment}%)`}
             sub={`Ingelegd: ${formatCurrency(row.investmentInvested)}`}
             highlight
@@ -116,7 +117,7 @@ const InvestmentsPage: FC = () => {
           <p className="detail-section__description">
             Eenmalig belegd via KBC Bolero · {settings.rate}% rendement · Prognose einde {row.year}
           </p>
-          <ChartCard title={`Bolero netto waarde — ${settings.startYear}–${settings.endYear}`} height={200}>
+          <ChartCard title={`Bolero netto waarde — ${settings.startYear}–${settings.endYear}`} height={220}>
             <LineChart data={positionsChartData} margin={{ top: 8, right: 8, left: 0, bottom: 0 }}>
               <CartesianGrid strokeDasharray="3 3" stroke="var(--color-grid)" />
               <XAxis dataKey="year" tick={{ fontSize: 11 }} stroke="var(--color-muted)" />
@@ -125,6 +126,7 @@ const InvestmentsPage: FC = () => {
                 formatter={formatTooltipCurrency}
                 contentStyle={{ borderRadius: 12, border: '1px solid var(--color-border)' }}
               />
+              <Legend />
               <Line
                 type="monotone"
                 dataKey="netto"
@@ -133,8 +135,22 @@ const InvestmentsPage: FC = () => {
                 strokeWidth={2}
                 dot={false}
               />
+              <Line
+                type="monotone"
+                dataKey="expert"
+                name="Bij koersdoel analisten"
+                stroke="var(--color-success)"
+                strokeDasharray="5 5"
+                strokeWidth={2}
+                dot={false}
+              />
             </LineChart>
           </ChartCard>
+          <p className="detail-section__disclaimer">
+            De stippellijn is geen prognose van deze app: ze gaat ervan uit dat het koersdoel van analisten binnen{' '}
+            {ANALYST_TARGET_HORIZON_YEARS === 1 ? '12 maanden' : `${ANALYST_TARGET_HORIZON_YEARS} jaar`} gehaald wordt
+            en dat de positie daarna verder groeit aan {settings.rate}%.
+          </p>
           <div className="detail-grid">
             {settings.positions.map((pos) => {
               const annualDividend = calculateAnnualDividend(pos, settings.cadToEur);
@@ -145,7 +161,7 @@ const InvestmentsPage: FC = () => {
               return (
                 <DetailCard
                   key={pos.ticker}
-                  label={pos.name}
+                  label={`${pos.name} (juli 2026)`}
                   value={formatCurrency(pos.amount)}
                   sub={
                     <>
@@ -169,20 +185,20 @@ const InvestmentsPage: FC = () => {
               );
             })}
             <DetailCard
-              label="Bolero cash"
+              label="Bolero cash (juli 2026)"
               value={formatCurrency(settings.boleroCash)}
               sub="Nog niet herbelegd · geen rendement, telt wel mee bij de totalen"
             />
           </div>
           <div className="detail-grid">
             <DetailCard
-              label="Bolero waarde"
+              label={`Bolero waarde (eind ${row.year})`}
               value={formatCurrency(row.positionsNetValue)}
               sub={`Bruto: ${formatCurrency(row.positionsValue)} · Na ${(settings.transactionFeeRate * 100).toFixed(0)}% beurstaks en meerwaardetaks`}
               valueClassName="text-investment"
             />
             <DetailCard
-              label="Bolero winst"
+              label={`Bolero winst (eind ${row.year})`}
               value={`${row.positionsValue - row.positionsInvested >= 0 ? '+' : ''}${formatCurrency(row.positionsValue - row.positionsInvested)}`}
               sub={`Ingelegd: ${formatCurrency(row.positionsInvested)}`}
               valueClassName={getGainLossClass(row.positionsValue - row.positionsInvested)}
@@ -226,13 +242,13 @@ const InvestmentsPage: FC = () => {
           </div>
           <div className="detail-grid">
             <DetailCard
-              label="Crelan waarde"
+              label={`Crelan waarde (eind ${row.year})`}
               value={formatCurrency(row.plansNetValue)}
               sub={`Bruto: ${formatCurrency(row.plansValue)} · Na uitstapkosten -${formatCurrency(row.plansExitFees)}`}
               valueClassName="text-investment"
             />
             <DetailCard
-              label="Effectief belegd"
+              label={`Effectief belegd (eind ${row.year})`}
               value={formatCurrency(row.plansEffectiveInvested)}
               sub={`Nominaal: ${formatCurrency(row.plansInvested)} · Instapkosten: -${formatCurrency(row.plansEntryFees)}`}
             />
@@ -248,25 +264,25 @@ const InvestmentsPage: FC = () => {
           <p className="detail-section__description">Geschatte kosten bij verkoop einde {row.year}</p>
           <div className="detail-grid">
             <DetailCard
-              label="Beurstaks + makelaar (Bolero)"
+              label={`Beurstaks + makelaar (Bolero) (eind ${row.year})`}
               value={`-${formatCurrency(row.positionsTransactionCosts)}`}
               sub={`${(settings.transactionFeeRate * 100).toFixed(0)}% op ${formatCurrency(row.positionsInvested)} inleg`}
               valueClassName="text-warn"
             />
             <DetailCard
-              label="Meerwaardetaks (Bolero)"
+              label={`Meerwaardetaks (Bolero) (eind ${row.year})`}
               value={`-${formatCurrency(row.positionsCapitalGainsTax)}`}
               sub={`${(settings.capitalGainsTaxRate * 100).toFixed(0)}% per €10.000 winst`}
               valueClassName="text-warn"
             />
             <DetailCard
-              label="Instapkosten (Crelan)"
+              label={`Instapkosten (Crelan) (eind ${row.year})`}
               value={`-${formatCurrency(row.plansEntryFees)}`}
               sub={`${avgEntryFeePercent}% per storting — al afgehouden`}
               valueClassName="text-warn"
             />
             <DetailCard
-              label="Uitstapkosten (Crelan)"
+              label={`Uitstapkosten (Crelan) (eind ${row.year})`}
               value={`-${formatCurrency(row.plansExitFees)}`}
               sub="Op bruto waarde bij verkoop"
               valueClassName="text-warn"
@@ -279,13 +295,13 @@ const InvestmentsPage: FC = () => {
           <p className="detail-section__description">Bruto groei op basis van {settings.rate}% jaarlijks rendement</p>
           <div className="detail-grid">
             <DetailCard
-              label="Groei dit jaar"
+              label={`Groei dit jaar (eind ${row.year})`}
               value={`${yearGrowth >= 0 ? '+' : ''}${formatCurrency(yearGrowth)}`}
               sub={prevRow ? `Vorig jaar: ${formatCurrency(prevRow.investmentValue)}` : undefined}
               valueClassName={getGainLossClass(yearGrowth)}
             />
             <DetailCard
-              label="Rendement op inleg"
+              label={`Rendement op inleg (eind ${row.year})`}
               value={`${Number(returnOnInvestment) >= 0 ? '+' : ''}${returnOnInvestment}%`}
               sub={`€${row.investmentMonthly}/mnd storting`}
               valueClassName={getGainLossClass(Number(returnOnInvestment))}

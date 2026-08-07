@@ -14,6 +14,8 @@ export interface InvestmentPosition {
   dividendPerShare?: number;
   dividendFrequencyPerYear?: number;
   dividendPayouts?: DividendPayout[];
+  /** Koersdoel van analisten per aandeel, in CAD net als `dividendPerShare`. */
+  analystTargetPerShare?: number;
 }
 
 export interface ExitFeeSchedule {

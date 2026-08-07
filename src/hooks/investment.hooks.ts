@@ -1,8 +1,10 @@
 import { useMemo } from 'react';
 
+import { ANALYST_TARGET_HORIZON_YEARS } from '@config/investment.config';
 import type { CombinedYearRow } from '@/@types/investment';
 import { useInvestment } from '@/contexts/InvestmentContext';
 import { useSettings } from '@/contexts/SettingsContext';
+import { buildAnalystScenarioNetValues } from '@/utils/investmentCalculation.util';
 
 export const useChartData = () => {
   const { combinedData } = useInvestment();
@@ -49,15 +51,28 @@ export const useInvestmentChartData = () => {
 
 export const usePositionsChartData = () => {
   const { combinedData } = useInvestment();
+  const { settings, positionsTotal } = useSettings();
 
-  return useMemo(
-    () =>
-      combinedData.map((r) => ({
-        year: String(r.year),
-        netto: r.positionsNetValue,
-      })),
-    [combinedData],
-  );
+  return useMemo(() => {
+    const expertByRow = buildAnalystScenarioNetValues(
+      combinedData.map((r) => r.positionsValue),
+      {
+        positions: settings.positions,
+        positionsTotal,
+        cadToEur: settings.cadToEur,
+        rate: settings.rate,
+        horizonYears: ANALYST_TARGET_HORIZON_YEARS,
+        transactionFeeRate: settings.transactionFeeRate,
+        capitalGainsTaxRate: settings.capitalGainsTaxRate,
+      },
+    );
+
+    return combinedData.map((r, i) => ({
+      year: String(r.year),
+      netto: r.positionsNetValue,
+      expert: expertByRow?.[i] ?? null,
+    }));
+  }, [combinedData, settings, positionsTotal]);
 };
 
 export const usePlansChartData = () => {

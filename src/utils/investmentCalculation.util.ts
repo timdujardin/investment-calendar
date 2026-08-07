@@ -28,6 +28,31 @@ export interface PensionInputs {
 
 const monthlyRateFromAnnual = (annual: number): number => Math.pow(1 + annual, 1 / 12) - 1;
 
+export interface PositionsNetBreakdown {
+  transactionCosts: number;
+  capitalGainsTax: number;
+  netValue: number;
+}
+
+/**
+ * Bruto waarde van de Bolero-posities omrekenen naar netto: beurstaks op de inleg en
+ * meerwaardetaks per volle schijf van `CAPITAL_GAINS_TAX_THRESHOLD` winst. Gedeeld tussen de
+ * jaarprojectie en het analistenscenario, zodat beide lijnen op dezelfde basis vergelijkbaar zijn.
+ */
+export const calculatePositionsNet = (
+  grossValue: number,
+  invested: number,
+  transactionFeeRate: number,
+  capitalGainsTaxRate: number,
+): PositionsNetBreakdown => {
+  const transactionCosts = invested * transactionFeeRate;
+  const taxableProfit = Math.max(grossValue - invested, 0);
+  const capitalGainsTax =
+    Math.floor(taxableProfit / CAPITAL_GAINS_TAX_THRESHOLD) * CAPITAL_GAINS_TAX_THRESHOLD * capitalGainsTaxRate;
+
+  return { transactionCosts, capitalGainsTax, netValue: grossValue - transactionCosts - capitalGainsTax };
+};
+
 export const calculatePensionData = (inputs: PensionInputs, projectionYears: number): PensionYearRow[] => {
   const rCrelan = 1 + inputs.crelanRate;
   const mRateBaloise = monthlyRateFromAnnual(inputs.baloiseRate);
@@ -245,13 +270,11 @@ export const buildCombinedData = (params: BuildCombinedDataParams): CombinedYear
     const year = params.investmentYears[i];
     const age = year - BIRTH_YEAR;
 
-    const positionsTransactionCosts = pos.invested * params.transactionFeeRate;
-    const positionsTaxableProfit = Math.max(pos.interest, 0);
-    const positionsCapitalGainsTax =
-      Math.floor(positionsTaxableProfit / CAPITAL_GAINS_TAX_THRESHOLD) *
-      CAPITAL_GAINS_TAX_THRESHOLD *
-      params.capitalGainsTaxRate;
-    const positionsNetValue = pos.value - positionsTransactionCosts - positionsCapitalGainsTax;
+    const {
+      transactionCosts: positionsTransactionCosts,
+      capitalGainsTax: positionsCapitalGainsTax,
+      netValue: positionsNetValue,
+    } = calculatePositionsNet(pos.value, pos.invested, params.transactionFeeRate, params.capitalGainsTaxRate);
 
     const holdingYears = i + params.firstYearMonths / 12;
     const exitFeeRate = getWeightedExitFeeRate(holdingYears, params.monthlyPlans);
@@ -369,5 +392,62 @@ export const getDividendReceivedTotal = (position: InvestmentPosition): number =
 /** Nieuwste uitkering eerst, zodat de recentste betaling bovenaan staat. */
 export const getDividendPayoutsNewestFirst = (position: InvestmentPosition): DividendPayout[] =>
   [...(position.dividendPayouts ?? [])].sort((a, b) => b.paidOnIso.localeCompare(a.paidOnIso));
+
+/** Een koersdoel van 0 of niets ingevuld betekent: geen verwachting voor deze positie. */
+const hasAnalystTarget = (position: InvestmentPosition): boolean =>
+  position.analystTargetPerShare != null && position.analystTargetPerShare > 0 && position.shares > 0;
+
+/**
+ * Brutowaarde van de portefeuille als elk koersdoel gehaald wordt. Posities zonder koersdoel
+ * tellen mee aan hun inleg: zonder verwachting is stilstand de eerlijkste aanname.
+ */
+export const calculateAnalystTargetTotal = (positions: InvestmentPosition[], cadToEur: number): number =>
+  positions.reduce(
+    (sum, position) =>
+      sum +
+      (hasAnalystTarget(position)
+        ? position.shares * (position.analystTargetPerShare ?? 0) * cadToEur
+        : position.amount),
+    0,
+  );
+
+export interface AnalystScenarioParams {
+  positions: InvestmentPosition[];
+  positionsTotal: number;
+  cadToEur: number;
+  rate: InvestmentRate;
+  horizonYears: number;
+  transactionFeeRate: number;
+  capitalGainsTaxRate: number;
+}
+
+/**
+ * Nettowaarde per jaarrij als de koersdoelen uitkomen. Tot de horizon volgt het scenario de
+ * gewone prognose, zodat beide lijnen samen vertrekken; op de horizonrij springt het naar het
+ * koersdoel en daarna groeit het maandelijks samengesteld verder, net als `calculatePositionsGrowth`.
+ *
+ * Geeft `null` terug wanneer geen enkele positie een koersdoel heeft, zodat de grafiek de lijn weglaat.
+ */
+export const buildAnalystScenarioNetValues = (
+  baselineGrossByRow: number[],
+  params: AnalystScenarioParams,
+): number[] | null => {
+  if (!params.positions.some(hasAnalystTarget)) {
+    return null;
+  }
+
+  const targetGross = calculateAnalystTargetTotal(params.positions, params.cadToEur);
+  const monthlyRate = params.rate / 100 / 12;
+
+  return baselineGrossByRow.map((baselineGross, rowIndex) => {
+    const gross =
+      rowIndex < params.horizonYears
+        ? baselineGross
+        : targetGross * Math.pow(1 + monthlyRate, (rowIndex - params.horizonYears) * 12);
+
+    return calculatePositionsNet(gross, params.positionsTotal, params.transactionFeeRate, params.capitalGainsTaxRate)
+      .netValue;
+  });
+};
 
 export const removeAtIndex = <T>(items: T[], index: number): T[] => items.filter((_, i) => i !== index);

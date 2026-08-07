@@ -25,8 +25,12 @@ export const INVESTMENT_POSITIONS: InvestmentPosition[] = [
       { paidOnIso: '2026-03-31', amount: 40.06 },
       { paidOnIso: '2026-06-30', amount: 52.79 },
     ],
+    analystTargetPerShare: 72,
   },
 ];
+
+/** Op hoeveel jaar het analistenkoersdoel gehaald zou worden; consensus staat op 12 maanden. */
+export const ANALYST_TARGET_HORIZON_YEARS = 1;
 
 export const MONTHLY_INVESTMENT_PLANS: MonthlyInvestmentPlan[] = [
   {

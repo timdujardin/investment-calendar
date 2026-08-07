@@ -259,6 +259,26 @@ const SettingsPage: FC = () => {
                       onCommit={(v) => updatePosition(i, { shares: v })}
                     />
                   </div>
+                  <div className="settings-field">
+                    <label className="settings-field__label" htmlFor={`pos-target-${i}`}>
+                      Koersdoel analisten
+                    </label>
+                    <div className="settings-field__input-wrap">
+                      <span className="settings-field__prefix">CA$</span>
+                      <NumericInput
+                        id={`pos-target-${i}`}
+                        className="settings-field__input"
+                        inputMode="decimal"
+                        min="0"
+                        step="0.5"
+                        numericValue={pos.analystTargetPerShare ?? 0}
+                        onCommit={(v) => updatePosition(i, { analystTargetPerShare: v })}
+                      />
+                    </div>
+                    <span className="settings-field__hint">
+                      Per aandeel · 0 laat de scenariolijn op de grafiek weg
+                    </span>
+                  </div>
                 </div>
 
                 {hasDividend ? (

@@ -33,6 +33,7 @@ const InvestmentProvider: FC<{ children: ReactNode }> = ({ children }) => {
       rate: settings.rate,
       pensionInputs,
       cashReserve: settings.cashReserve,
+      boleroCash: settings.boleroCash,
       positionsTotal,
       monthlyPlans: settings.monthlyPlans,
       projectionYears,

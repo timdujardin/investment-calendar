@@ -7,6 +7,8 @@ import { useSettings } from '@/contexts/SettingsContext';
 import { formatCurrency } from '@/utils/format.util';
 import { getLastRow, getTotalCosts } from '@/utils/investmentCalculation.util';
 
+import { formatBreakdown } from './summary-cards.util';
+
 const SummaryCards: FC = () => {
   const { combinedData } = useInvestment();
   const { rowIndexAtTarget, settings } = useSettings();
@@ -28,13 +30,13 @@ const SummaryCards: FC = () => {
       <SummaryCard
         label={`Eindstand ${targetYear} (${settings.targetAge} jaar)`}
         value={formatCurrency(rowTarget.totalNetValue)}
-        sub={`Bolero: ${formatCurrency(rowTarget.positionsNetValue)} · Crelan: ${formatCurrency(rowTarget.plansNetValue)} · Pensioensparen: ${formatCurrency(rowTarget.pensionNetValue)} · Cash: ${formatCurrency(rowTarget.cashReserve)}`}
+        sub={formatBreakdown(rowTarget)}
         variant="blue"
       />
       <SummaryCard
         label={`Eindstand ${endYear} (${rowEnd.age} jaar)`}
         value={formatCurrency(rowEnd.totalNetValue)}
-        sub={`Bolero: ${formatCurrency(rowEnd.positionsNetValue)} · Crelan: ${formatCurrency(rowEnd.plansNetValue)} · Pensioensparen: ${formatCurrency(rowEnd.pensionNetValue)} · Cash: ${formatCurrency(rowEnd.cashReserve)}`}
+        sub={formatBreakdown(rowEnd)}
         variant="orange"
       />
       <SummaryCard

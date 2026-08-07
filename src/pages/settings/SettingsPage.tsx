@@ -1,18 +1,23 @@
 import { useCallback, type FC } from 'react';
 
 import { CRELAN_RATE } from '@config/investment.config';
-import type { InvestmentPosition, MonthlyInvestmentPlan } from '@/@types/investment';
+import type { DividendPayout, InvestmentPosition, MonthlyInvestmentPlan } from '@/@types/investment';
 import PageHeader from '@/components/atoms/page-header/PageHeader';
 import { useSettings } from '@/contexts/SettingsContext';
-import { formatCurrency } from '@/utils/format.util';
-import { getEffectiveMonthlyTotal, getNominalMonthlyTotal, removeAtIndex } from '@/utils/investmentCalculation.util';
+import { formatCurrency, formatIsoDateShortNl, todayIso } from '@/utils/format.util';
+import {
+  getDividendReceivedTotal,
+  getEffectiveMonthlyTotal,
+  getNominalMonthlyTotal,
+  removeAtIndex,
+} from '@/utils/investmentCalculation.util';
 
 import { NumericInput } from './_components/numeric-input/NumericInput';
 import { fromPercent, RATE_OPTIONS, toPercent } from './settings.constants';
 import { rateButton } from './SettingsPage.styles';
 
 const SettingsPage: FC = () => {
-  const { settings, positionsTotal, updateSettings, resetSettings } = useSettings();
+  const { settings, positionsTotal, cashTotal, updateSettings, resetSettings } = useSettings();
 
   const nominalMonthly = getNominalMonthlyTotal(settings.monthlyPlans);
   const effectiveMonthly = getEffectiveMonthlyTotal(settings.monthlyPlans);
@@ -23,6 +28,31 @@ const SettingsPage: FC = () => {
       updateSettings({ positions: next });
     },
     [settings.positions, updateSettings],
+  );
+
+  const updatePayout = useCallback(
+    (positionIndex: number, payoutIndex: number, patch: Partial<DividendPayout>) => {
+      const payouts = settings.positions[positionIndex]?.dividendPayouts ?? [];
+      const next = payouts.map((payout, i) => (i === payoutIndex ? { ...payout, ...patch } : payout));
+      updatePosition(positionIndex, { dividendPayouts: next });
+    },
+    [settings.positions, updatePosition],
+  );
+
+  const addPayout = useCallback(
+    (positionIndex: number) => {
+      const payouts = settings.positions[positionIndex]?.dividendPayouts ?? [];
+      updatePosition(positionIndex, { dividendPayouts: [...payouts, { paidOnIso: todayIso(), amount: 0 }] });
+    },
+    [settings.positions, updatePosition],
+  );
+
+  const removePayout = useCallback(
+    (positionIndex: number, payoutIndex: number) => {
+      const payouts = settings.positions[positionIndex]?.dividendPayouts ?? [];
+      updatePosition(positionIndex, { dividendPayouts: removeAtIndex(payouts, payoutIndex) });
+    },
+    [settings.positions, updatePosition],
   );
 
   const addPosition = useCallback(() => {
@@ -158,7 +188,7 @@ const SettingsPage: FC = () => {
 
           {settings.positions.map((pos, i) => {
             const hasDividend =
-              pos.dividendPerShare != null || pos.dividendFrequencyPerYear != null || pos.dividendReceived != null;
+              pos.dividendPerShare != null || pos.dividendFrequencyPerYear != null || pos.dividendPayouts != null;
 
             return (
               <div key={i} className="settings-position-group">
@@ -232,66 +262,100 @@ const SettingsPage: FC = () => {
                 </div>
 
                 {hasDividend ? (
-                  <div className="settings-field-row settings-field-row--3col">
-                    <div className="settings-field">
-                      <label className="settings-field__label" htmlFor={`pos-div-${i}`}>
-                        Dividend/aandeel
-                      </label>
-                      <div className="settings-field__input-wrap">
-                        <span className="settings-field__prefix">CA$</span>
-                        <NumericInput
-                          id={`pos-div-${i}`}
-                          className="settings-field__input"
-                          inputMode="decimal"
-                          min="0"
-                          step="0.01"
-                          numericValue={pos.dividendPerShare ?? 0}
-                          onCommit={(v) => updatePosition(i, { dividendPerShare: v })}
-                        />
+                  <>
+                    <div className="settings-field-row">
+                      <div className="settings-field">
+                        <label className="settings-field__label" htmlFor={`pos-div-${i}`}>
+                          Dividend/aandeel
+                        </label>
+                        <div className="settings-field__input-wrap">
+                          <span className="settings-field__prefix">CA$</span>
+                          <NumericInput
+                            id={`pos-div-${i}`}
+                            className="settings-field__input"
+                            inputMode="decimal"
+                            min="0"
+                            step="0.01"
+                            numericValue={pos.dividendPerShare ?? 0}
+                            onCommit={(v) => updatePosition(i, { dividendPerShare: v })}
+                          />
+                        </div>
                       </div>
-                    </div>
-                    <div className="settings-field">
-                      <label className="settings-field__label" htmlFor={`pos-freq-${i}`}>
-                        Uitkeringen/jaar
-                      </label>
-                      <NumericInput
-                        id={`pos-freq-${i}`}
-                        className="settings-field__input"
-                        inputMode="numeric"
-                        min="0"
-                        max="12"
-                        step="1"
-                        numericValue={pos.dividendFrequencyPerYear ?? 0}
-                        onCommit={(v) => updatePosition(i, { dividendFrequencyPerYear: v })}
-                      />
-                    </div>
-                    <div className="settings-field">
-                      <label className="settings-field__label" htmlFor={`pos-divrecv-${i}`}>
-                        Ontvangen
-                      </label>
-                      <div className="settings-field__input-wrap">
-                        <span className="settings-field__prefix">€</span>
+                      <div className="settings-field">
+                        <label className="settings-field__label" htmlFor={`pos-freq-${i}`}>
+                          Uitkeringen/jaar
+                        </label>
                         <NumericInput
-                          id={`pos-divrecv-${i}`}
+                          id={`pos-freq-${i}`}
                           className="settings-field__input"
-                          inputMode="decimal"
+                          inputMode="numeric"
                           min="0"
+                          max="12"
                           step="1"
-                          numericValue={pos.dividendReceived ?? 0}
-                          onCommit={(v) => updatePosition(i, { dividendReceived: v })}
+                          numericValue={pos.dividendFrequencyPerYear ?? 0}
+                          onCommit={(v) => updatePosition(i, { dividendFrequencyPerYear: v })}
                         />
                       </div>
                     </div>
-                  </div>
-                ) : null}
 
-                {!hasDividend && (
+                    <span className="settings-field__label">Ontvangen uitkeringen</span>
+                    {(pos.dividendPayouts ?? []).map((payout, p) => (
+                      <div key={p} className="settings-field-row">
+                        <div className="settings-field">
+                          <label className="settings-field__label" htmlFor={`pos-div-date-${i}-${p}`}>
+                            Betaaldatum
+                          </label>
+                          <input
+                            id={`pos-div-date-${i}-${p}`}
+                            className="settings-field__input"
+                            type="date"
+                            value={payout.paidOnIso}
+                            onChange={(e) => updatePayout(i, p, { paidOnIso: e.target.value })}
+                          />
+                        </div>
+                        <div className="settings-field">
+                          <label className="settings-field__label" htmlFor={`pos-div-amount-${i}-${p}`}>
+                            Bedrag
+                          </label>
+                          <div className="settings-field__input-wrap">
+                            <span className="settings-field__prefix">€</span>
+                            <NumericInput
+                              id={`pos-div-amount-${i}-${p}`}
+                              className="settings-field__input"
+                              inputMode="decimal"
+                              min="0"
+                              step="0.01"
+                              numericValue={payout.amount}
+                              onCommit={(v) => updatePayout(i, p, { amount: v })}
+                            />
+                            <button
+                              type="button"
+                              className="settings-field__remove-btn"
+                              onClick={() => removePayout(i, p)}
+                              aria-label={`Verwijder uitkering van ${formatIsoDateShortNl(payout.paidOnIso)}`}
+                            >
+                              ✕
+                            </button>
+                          </div>
+                        </div>
+                      </div>
+                    ))}
+                    <div className="settings-field-row">
+                      <button type="button" className="settings-actions__add" onClick={() => addPayout(i)}>
+                        + Uitkering toevoegen
+                      </button>
+                    </div>
+                    <span className="settings-field__hint">
+                      Totaal ontvangen: {formatCurrency(getDividendReceivedTotal(pos))}
+                    </span>
+                  </>
+                ) : (
                   <div className="settings-field-row">
                     <button
                       type="button"
                       className="settings-actions__add"
                       onClick={() =>
-                        updatePosition(i, { dividendPerShare: 0, dividendFrequencyPerYear: 4, dividendReceived: 0 })
+                        updatePosition(i, { dividendPerShare: 0, dividendFrequencyPerYear: 4, dividendPayouts: [] })
                       }
                     >
                       + Dividend toevoegen
@@ -468,26 +532,51 @@ const SettingsPage: FC = () => {
           </span>
         </section>
 
-        <h2 className="settings-section__title">Cash reserve</h2>
+        <h2 className="settings-section__title">Cash</h2>
         <section className="settings-section">
-          <div className="settings-field">
-            <label className="settings-field__label" htmlFor="cash-reserve">
-              Bedrag
-            </label>
-            <div className="settings-field__input-wrap">
-              <span className="settings-field__prefix">€</span>
-              <NumericInput
-                id="cash-reserve"
-                className="settings-field__input"
-                inputMode="numeric"
-                min="0"
-                step="500"
-                numericValue={settings.cashReserve}
-                onCommit={(v) => updateSettings({ cashReserve: v })}
-              />
+          <span className="settings-field__hint">
+            Vaste bedragen zonder rendement. Ze tellen mee bij de totalen, maar groeien niet mee met de projectie.
+          </span>
+
+          <div className="settings-field-row">
+            <div className="settings-field">
+              <label className="settings-field__label" htmlFor="cash-reserve">
+                Spaarrekening
+              </label>
+              <div className="settings-field__input-wrap">
+                <span className="settings-field__prefix">€</span>
+                <NumericInput
+                  id="cash-reserve"
+                  className="settings-field__input"
+                  inputMode="numeric"
+                  min="0"
+                  step="100"
+                  numericValue={settings.cashReserve}
+                  onCommit={(v) => updateSettings({ cashReserve: v })}
+                />
+              </div>
+              <span className="settings-field__hint">Buffer buiten de beleggingen</span>
             </div>
-            <span className="settings-field__hint">Vast bedrag zonder rendement, telt mee bij totalen</span>
+            <div className="settings-field">
+              <label className="settings-field__label" htmlFor="bolero-cash">
+                Bolero-rekening
+              </label>
+              <div className="settings-field__input-wrap">
+                <span className="settings-field__prefix">€</span>
+                <NumericInput
+                  id="bolero-cash"
+                  className="settings-field__input"
+                  inputMode="decimal"
+                  min="0"
+                  step="0.01"
+                  numericValue={settings.boleroCash}
+                  onCommit={(v) => updateSettings({ boleroCash: v })}
+                />
+              </div>
+              <span className="settings-field__hint">Nog niet herbelegd</span>
+            </div>
           </div>
+          <span className="settings-field__hint">Totaal cash: {formatCurrency(cashTotal)}</span>
         </section>
 
         <div className="settings-actions">

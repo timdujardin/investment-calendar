@@ -12,9 +12,17 @@ import {
   usePlansChartData,
   usePositionsChartData,
 } from '@/hooks/investment.hooks';
-import { formatCurrency, formatCurrencyCompact, formatTooltipCurrency, getGainLossClass } from '@/utils/format.util';
+import {
+  formatCurrency,
+  formatCurrencyCompact,
+  formatIsoDateShortNl,
+  formatTooltipCurrency,
+  getGainLossClass,
+} from '@/utils/format.util';
 import {
   calculateAnnualDividend,
+  getDividendPayoutsNewestFirst,
+  getDividendReceivedTotal,
   getEffectiveMonthlyTotal,
   getWeightedEntryFeeRate,
 } from '@/utils/investmentCalculation.util';
@@ -132,6 +140,7 @@ const InvestmentsPage: FC = () => {
               const annualDividend = calculateAnnualDividend(pos, settings.cadToEur);
               const quarterlyEur =
                 pos.dividendPerShare && pos.shares ? pos.dividendPerShare * pos.shares * settings.cadToEur : null;
+              const payouts = getDividendPayoutsNewestFirst(pos);
 
               return (
                 <DetailCard
@@ -146,14 +155,24 @@ const InvestmentsPage: FC = () => {
                         <>
                           <br />
                           Dividend: ~{formatCurrency(quarterlyEur)}/kwartaal · ~{formatCurrency(annualDividend)}
-                          /jaar · {formatCurrency(pos.dividendReceived ?? 0)} ontvangen
+                          /jaar · {formatCurrency(getDividendReceivedTotal(pos))} ontvangen
                         </>
                       )}
+                      {payouts.map((payout) => (
+                        <span key={payout.paidOnIso} className="detail-card__row">
+                          {formatIsoDateShortNl(payout.paidOnIso)} · {formatCurrency(payout.amount)}
+                        </span>
+                      ))}
                     </>
                   }
                 />
               );
             })}
+            <DetailCard
+              label="Bolero cash"
+              value={formatCurrency(settings.boleroCash)}
+              sub="Nog niet herbelegd · geen rendement, telt wel mee bij de totalen"
+            />
           </div>
           <div className="detail-grid">
             <DetailCard

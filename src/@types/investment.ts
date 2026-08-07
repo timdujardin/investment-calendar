@@ -1,5 +1,11 @@
 export type InvestmentRate = 5 | 7 | 10;
 
+/** Eén werkelijk uitbetaald dividend, in EUR zoals het op de rekening kwam. */
+export interface DividendPayout {
+  paidOnIso: string;
+  amount: number;
+}
+
 export interface InvestmentPosition {
   name: string;
   ticker: string;
@@ -7,7 +13,7 @@ export interface InvestmentPosition {
   shares: number;
   dividendPerShare?: number;
   dividendFrequencyPerYear?: number;
-  dividendReceived?: number;
+  dividendPayouts?: DividendPayout[];
 }
 
 export interface ExitFeeSchedule {
@@ -65,6 +71,7 @@ export interface CombinedYearRow {
   pensionNetValue: number;
 
   cashReserve: number;
+  boleroCash: number;
   totalValue: number;
   profitPercent: number;
   totalNetValue: number;

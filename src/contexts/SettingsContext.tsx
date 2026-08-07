@@ -3,6 +3,7 @@ import { createContext, useCallback, useContext, useMemo, useState, type FC, typ
 import {
   BIRTH_YEAR,
   BALOISE_RATE as DEFAULT_BALOISE_RATE,
+  BOLERO_CASH as DEFAULT_BOLERO_CASH,
   CAD_TO_EUR as DEFAULT_CAD_TO_EUR,
   CAPITAL_GAINS_TAX_RATE as DEFAULT_CAPITAL_GAINS_TAX,
   CASH_RESERVE as DEFAULT_CASH_RESERVE,
@@ -18,7 +19,13 @@ import {
 } from '@config/investment.config';
 import type { InvestmentPosition, InvestmentRate, MonthlyInvestmentPlan } from '@/@types/investment';
 
-const STORAGE_KEY = 'investment-calendar-settings';
+/**
+ * Versie in de sleutel omdat `loadSettings` ondiep merget: een opgeslagen `positions`-array
+ * uit een oudere versie zou de nieuwe defaults volledig overschrijven en dus verkochte
+ * posities en verouderde dividendvelden terugbrengen. Bump deze sleutel bij elke wijziging
+ * aan de vorm of de standaardinhoud van `positions`.
+ */
+const STORAGE_KEY = 'investment-calendar-settings-v2';
 
 export interface AppSettings {
   rate: InvestmentRate;
@@ -29,6 +36,7 @@ export interface AppSettings {
   positions: InvestmentPosition[];
   monthlyPlans: MonthlyInvestmentPlan[];
   cashReserve: number;
+  boleroCash: number;
   investmentMonthly: number;
   baloiseRate: number;
   pensionRecaptureRate: number;
@@ -46,6 +54,7 @@ const DEFAULTS: AppSettings = {
   positions: DEFAULT_POSITIONS,
   monthlyPlans: DEFAULT_PLANS,
   cashReserve: DEFAULT_CASH_RESERVE,
+  boleroCash: DEFAULT_BOLERO_CASH,
   investmentMonthly: DEFAULT_MONTHLY,
   baloiseRate: DEFAULT_BALOISE_RATE,
   pensionRecaptureRate: DEFAULT_PENSION_RECAPTURE,
@@ -74,6 +83,7 @@ const saveSettings = (settings: AppSettings) => {
 interface SettingsContextValue {
   settings: AppSettings;
   positionsTotal: number;
+  cashTotal: number;
   updateSettings: (patch: Partial<AppSettings>) => void;
   resetSettings: () => void;
   projectionYears: number;
@@ -107,9 +117,17 @@ const SettingsProvider: FC<{ children: ReactNode }> = ({ children }) => {
       ...Array.from({ length: projectionYears }, (_, i) => settings.startYear + 1 + i),
     ];
     const positionsTotal = settings.positions.reduce((sum, p) => sum + p.amount, 0);
+    const cashTotal = settings.cashReserve + settings.boleroCash;
 
-    return { projectionYears, rowIndexAtTarget, investmentYears, positionsTotal };
-  }, [settings.startYear, settings.endYear, settings.targetAge, settings.positions]);
+    return { projectionYears, rowIndexAtTarget, investmentYears, positionsTotal, cashTotal };
+  }, [
+    settings.startYear,
+    settings.endYear,
+    settings.targetAge,
+    settings.positions,
+    settings.cashReserve,
+    settings.boleroCash,
+  ]);
 
   const value = useMemo(
     () => ({ settings, updateSettings, resetSettings, ...derived }),

@@ -12,13 +12,20 @@ export const INVESTMENT_POSITIONS: InvestmentPosition[] = [
   {
     name: 'Tourmaline Oil Corp',
     ticker: 'TOU.TO',
-    amount: 10_000,
-    shares: 250,
+    amount: 13_346,
+    shares: 335,
     dividendPerShare: 0.5,
     dividendFrequencyPerYear: 4,
-    dividendReceived: 40,
+    /**
+     * Werkelijk uitbetaalde dividenden, niet de prognose. De maartuitkering was pro rata
+     * (aankoop begin maart) en beide uitkeringen zaten nog op 250 aandelen, dus ze liggen
+     * lager dan wat `dividendPerShare` op de huidige 335 aandelen zou opleveren.
+     */
+    dividendPayouts: [
+      { paidOnIso: '2026-03-31', amount: 40.06 },
+      { paidOnIso: '2026-06-30', amount: 52.79 },
+    ],
   },
-  { name: 'Ivanhoe Mines Ltd', ticker: 'IVN.TO', amount: 6_000, shares: 850 },
 ];
 
 export const MONTHLY_INVESTMENT_PLANS: MonthlyInvestmentPlan[] = [
@@ -48,7 +55,15 @@ export const MONTHLY_INVESTMENT_PLANS: MonthlyInvestmentPlan[] = [
   },
 ];
 
-export const CASH_RESERVE = 8_500;
+/** Spaarrekening: buffer buiten de beleggingen, zonder rendement. */
+export const CASH_RESERVE = 5_700;
+
+/**
+ * Cash op de Bolero-rekening, opbrengst van de Ivanhoe-verkoop en de ontvangen dividenden.
+ * Nog niet herbelegd, dus het telt mee in de totalen maar groeit niet mee met het rendement.
+ */
+export const BOLERO_CASH = 6_941.98;
+
 export const INVESTMENT_FIRST_YEAR_MONTHS = 10; // mrt–dec
 export const INVESTMENT_MONTHLY = 500;
 

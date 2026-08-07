@@ -9,6 +9,7 @@ import {
 } from '@config/investment.config';
 import type {
   CombinedYearRow,
+  DividendPayout,
   ExitFeeSchedule,
   InvestmentPosition,
   InvestmentRate,
@@ -82,6 +83,7 @@ export interface BuildCombinedDataParams {
   rate: InvestmentRate;
   pensionInputs: PensionInputs;
   cashReserve: number;
+  boleroCash: number;
   positionsTotal: number;
   monthlyPlans: MonthlyInvestmentPlan[];
   projectionYears: number;
@@ -267,13 +269,17 @@ export const buildCombinedData = (params: BuildCombinedDataParams): CombinedYear
     const pensionRecapture = pension.valueTotal * params.pensionRecaptureRate;
     const pensionNetValue = pension.valueTotal - pensionRecapture;
 
-    const totalValue = investmentValue + pension.valueTotal + params.cashReserve;
+    // Cash groeit niet mee en blijft buiten `profitPercent`: het rendementscijfer gaat
+    // over wat er belegd is, niet over wat er stil op een rekening staat.
+    const cashTotal = params.cashReserve + params.boleroCash;
+
+    const totalValue = investmentValue + pension.valueTotal + cashTotal;
     const totalInvested = investmentInvested + pension.investedTotal;
     const profitPercent =
       totalInvested > 0
         ? Math.round((1000 * (investmentValue + pension.valueTotal - totalInvested)) / totalInvested) / 10
         : 0;
-    const totalNetValue = investmentNetValue + pensionNetValue + params.cashReserve;
+    const totalNetValue = investmentNetValue + pensionNetValue + cashTotal;
 
     return {
       year,
@@ -307,6 +313,7 @@ export const buildCombinedData = (params: BuildCombinedDataParams): CombinedYear
       pensionNetValue,
 
       cashReserve: params.cashReserve,
+      boleroCash: params.boleroCash,
       totalValue,
       profitPercent,
       totalNetValue,
@@ -354,5 +361,13 @@ export const calculateAnnualDividend = (position: InvestmentPosition, cadToEur: 
 
   return position.shares * position.dividendPerShare * position.dividendFrequencyPerYear * cadToEur;
 };
+
+/** Som van de werkelijk uitbetaalde dividenden; de prognose blijft `calculateAnnualDividend`. */
+export const getDividendReceivedTotal = (position: InvestmentPosition): number =>
+  (position.dividendPayouts ?? []).reduce((sum, payout) => sum + payout.amount, 0);
+
+/** Nieuwste uitkering eerst, zodat de recentste betaling bovenaan staat. */
+export const getDividendPayoutsNewestFirst = (position: InvestmentPosition): DividendPayout[] =>
+  [...(position.dividendPayouts ?? [])].sort((a, b) => b.paidOnIso.localeCompare(a.paidOnIso));
 
 export const removeAtIndex = <T>(items: T[], index: number): T[] => items.filter((_, i) => i !== index);

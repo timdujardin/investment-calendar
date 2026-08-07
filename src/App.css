@@ -392,6 +392,12 @@ body {
   margin-block-start: 0.15rem;
 }
 
+/* Losse regel binnen een sub-tekst, bijvoorbeeld één dividenduitkering per lijn. */
+.detail-card__row {
+  display: block;
+  font-variant-numeric: tabular-nums;
+}
+
 .detail-card__badge {
   display: inline-flex;
   align-items: center;

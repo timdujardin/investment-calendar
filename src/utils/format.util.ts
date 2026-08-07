@@ -54,6 +54,15 @@ const parseIsoDate = (isoDate: string): Date | null => {
   return new Date(y, m - 1, d);
 };
 
+/** Vandaag als `YYYY-MM-DD` in de lokale kalender, bruikbaar als `value` van een date-input. */
+export const todayIso = (): string => {
+  const now = new Date();
+  const month = String(now.getMonth() + 1).padStart(2, '0');
+  const day = String(now.getDate()).padStart(2, '0');
+
+  return `${now.getFullYear()}-${month}-${day}`;
+};
+
 /** `YYYY-MM-DD` → nl-BE datum (lokale kalender, geen UTC-shift). */
 export const formatIsoDateNl = (isoDate: string): string => {
   const date = parseIsoDate(isoDate);

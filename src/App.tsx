@@ -5,6 +5,7 @@ import { PageLoader } from '@/components/atoms/page-loader/PageLoader';
 import { AppBar } from '@/components/organisms/app-bar/AppBar';
 import { BottomNav } from '@/components/organisms/bottom-nav/BottomNav';
 import { AuthProvider, useAuth } from '@/contexts/AuthContext';
+import { FundQuotesProvider } from '@/contexts/FundQuotesContext';
 import { InvestmentProvider } from '@/contexts/InvestmentContext';
 import { SettingsProvider } from '@/contexts/SettingsContext';
 import { ThemeProvider } from '@/contexts/ThemeContext';
@@ -27,24 +28,26 @@ const AuthenticatedApp: FC = () => {
   return (
     <BrowserRouter basename={import.meta.env.BASE_URL}>
       <SettingsProvider>
-        <InvestmentProvider>
-          <div className="app">
-            <AppBar />
-            <div className="app__content">
-              <Suspense fallback={<PageLoader />}>
-                <Routes>
-                  <Route path="/" element={<DashboardPage />} />
-                  <Route path="/maand" element={<MonthlySavingsPage />} />
-                  <Route path="/investeringen" element={<InvestmentsPage />} />
-                  <Route path="/pensioen" element={<PensionPage />} />
-                  <Route path="/instellingen" element={<SettingsPage />} />
-                  <Route path="/loon" element={<BumbaPage />} />
-                </Routes>
-              </Suspense>
+        <FundQuotesProvider>
+          <InvestmentProvider>
+            <div className="app">
+              <AppBar />
+              <div className="app__content">
+                <Suspense fallback={<PageLoader />}>
+                  <Routes>
+                    <Route path="/" element={<DashboardPage />} />
+                    <Route path="/maand" element={<MonthlySavingsPage />} />
+                    <Route path="/investeringen" element={<InvestmentsPage />} />
+                    <Route path="/pensioen" element={<PensionPage />} />
+                    <Route path="/instellingen" element={<SettingsPage />} />
+                    <Route path="/loon" element={<BumbaPage />} />
+                  </Routes>
+                </Suspense>
+              </div>
+              <BottomNav />
             </div>
-            <BottomNav />
-          </div>
-        </InvestmentProvider>
+          </InvestmentProvider>
+        </FundQuotesProvider>
       </SettingsProvider>
     </BrowserRouter>
   );

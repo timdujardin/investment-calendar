@@ -463,7 +463,8 @@ const SettingsPage: FC = () => {
             <span className="settings-field__hint">Maandelijkse bijdrage met samengesteld rendement</span>
           </div>
           <span className="settings-field__hint">
-            Crelan rendement: {(CRELAN_RATE * 100).toFixed(2)}%/jaar (vast) — eenmalige storting, groeit enkel op rente
+            Crelan rendement: {(CRELAN_RATE * 100).toFixed(2)}%/jaar (vast) — afgesloten contract, waardering op de
+            actuele fondskoers en daarna enkel nog rendement
           </span>
         </section>
 

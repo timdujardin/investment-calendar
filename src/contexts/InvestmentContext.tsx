@@ -1,8 +1,9 @@
-import { createContext, useContext, useEffect, useMemo, useState, type FC, type ReactNode } from 'react';
+import { createContext, useContext, useMemo, type FC, type ReactNode } from 'react';
 
 import { CRELAN_RATE, INVESTMENT_FIRST_YEAR_MONTHS } from '@config/investment.config';
 import { useSettings } from '@/contexts/SettingsContext';
-import { loadSavingsData, onSavingsChanged } from '@/hooks/savingsTracker.hooks';
+import { useCrelanPosition } from '@/hooks/crelan.hooks';
+import { useSavingsData } from '@/hooks/savingsTracker.hooks';
 import { buildCombinedData, calculatePensionData } from '@/utils/investmentCalculation.util';
 
 interface InvestmentContextValue {
@@ -14,21 +15,23 @@ const InvestmentContext = createContext<InvestmentContextValue | null>(null);
 
 const InvestmentProvider: FC<{ children: ReactNode }> = ({ children }) => {
   const { settings, positionsTotal, projectionYears, investmentYears } = useSettings();
-  const [savingsData, setSavingsData] = useState(loadSavingsData);
+  const savingsData = useSavingsData();
+  const crelanPosition = useCrelanPosition();
 
-  useEffect(() => {
-    return onSavingsChanged(() => setSavingsData(loadSavingsData()));
-  }, []);
-
-  const pensionRates = useMemo(
-    () => ({ crelanRate: CRELAN_RATE, baloiseRate: settings.baloiseRate }),
-    [settings.baloiseRate],
+  const pensionInputs = useMemo(
+    () => ({
+      crelanRate: CRELAN_RATE,
+      baloiseRate: settings.baloiseRate,
+      crelanStartValue: crelanPosition.value,
+      crelanInvested: crelanPosition.invested,
+    }),
+    [settings.baloiseRate, crelanPosition.value, crelanPosition.invested],
   );
 
   const value = useMemo(() => {
     const params = {
       rate: settings.rate,
-      pensionRates,
+      pensionInputs,
       cashReserve: settings.cashReserve,
       positionsTotal,
       monthlyPlans: settings.monthlyPlans,
@@ -42,10 +45,10 @@ const InvestmentProvider: FC<{ children: ReactNode }> = ({ children }) => {
       capitalGainsTaxRate: settings.capitalGainsTaxRate,
     };
     const combinedData = buildCombinedData(params);
-    const pensionData = calculatePensionData(pensionRates, projectionYears);
+    const pensionData = calculatePensionData(pensionInputs, projectionYears);
 
     return { combinedData, pensionData };
-  }, [settings, pensionRates, positionsTotal, projectionYears, investmentYears, savingsData]);
+  }, [settings, pensionInputs, positionsTotal, projectionYears, investmentYears, savingsData]);
 
   return <InvestmentContext.Provider value={value}>{children}</InvestmentContext.Provider>;
 };

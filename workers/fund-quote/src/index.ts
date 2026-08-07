@@ -49,7 +49,8 @@ interface YahooEnvelope {
   };
 }
 
-const CACHE_HEADER = 'public, max-age=0, s-maxage=300';
+/** Fondskoersen worden één keer per dag gepubliceerd, dus vaker ophalen levert niets op. */
+const CACHE_HEADER = 'public, max-age=0, s-maxage=21600';
 
 const cors = (): HeadersInit => ({
   'Access-Control-Allow-Origin': '*',
@@ -99,6 +100,18 @@ function rangeToFromToSec(range: string): { from: number; to: number } {
     default:
       return { from: to - 365 * d, to };
   }
+}
+
+/**
+ * De laatste gepubliceerde dagslotkoers. `regularMarketPrice` is een intraday veld en dus
+ * geen dag-NAV; het dient enkel als noodgreep wanneer de reeks leeg is.
+ */
+function pickCloseNav(meta: YahooResult['meta'] | undefined, rows: FundQuoteRow[]): number | null {
+  if (rows.length > 0) {
+    return rows[rows.length - 1].nav;
+  }
+  const metaPrice = meta?.regularMarketPrice;
+  return typeof metaPrice === 'number' && !Number.isNaN(metaPrice) ? metaPrice : null;
 }
 
 function pickReferenceNav(meta: YahooResult['meta'] | undefined, rows: FundQuoteRow[]): number | null {
@@ -171,15 +184,12 @@ async function fetchYahooFundQuote(symbol: string, range: string): Promise<FundQ
   }
 
   const rows = yahooRowsFromResult(result);
-  const lastRowNav = rows.length > 0 ? rows[rows.length - 1].nav : null;
-  const metaPrice = result.meta?.regularMarketPrice;
-  const lastNav = typeof metaPrice === 'number' && !Number.isNaN(metaPrice) ? metaPrice : lastRowNav;
 
   return {
     source: 'yahoo',
     currency: result.meta?.currency ?? null,
     rows,
-    lastNav,
+    lastNav: pickCloseNav(result.meta, rows),
     referenceNav: pickReferenceNav(result.meta, rows),
   };
 }

@@ -1,4 +1,4 @@
-import { useCallback, useMemo, useState } from 'react';
+import { useCallback, useMemo, useSyncExternalStore } from 'react';
 
 import { useSettings } from '@/contexts/SettingsContext';
 
@@ -32,10 +32,29 @@ export const onSavingsChanged = (listener: () => void) => {
   return () => window.removeEventListener(SAVINGS_CHANGED_EVENT, listener);
 };
 
+/**
+ * `loadSavingsData` parset JSON en geeft dus elke aanroep een nieuw object terug. Zonder
+ * deze cache zou `useSyncExternalStore` bij elke render een gewijzigde snapshot zien en
+ * eindeloos hertekenen. `saveToStorage` is de enige schrijfweg, dus daar volstaat het om
+ * de cache te verversen.
+ */
+let savingsSnapshot: MonthlySavingsRecord | null = null;
+
+export const getSavingsSnapshot = (): MonthlySavingsRecord => {
+  savingsSnapshot ??= loadSavingsData();
+
+  return savingsSnapshot;
+};
+
 const saveToStorage = (data: MonthlySavingsRecord) => {
+  savingsSnapshot = data;
   localStorage.setItem(STORAGE_KEY, JSON.stringify(data));
   window.dispatchEvent(new Event(SAVINGS_CHANGED_EVENT));
 };
+
+/** Abonneert op de opgeslagen spaardata; alle lezers delen dezelfde snapshot. */
+export const useSavingsData = (): MonthlySavingsRecord =>
+  useSyncExternalStore(onSavingsChanged, getSavingsSnapshot);
 
 interface MonthEntry {
   monthIndex: number;
@@ -50,24 +69,21 @@ interface MonthEntry {
 
 export const useSavingsTracker = (year: number) => {
   const { settings } = useSettings();
-  const [data, setData] = useState<MonthlySavingsRecord>(loadSavingsData);
+  const data = useSavingsData();
 
   const target = settings.investmentMonthly;
 
   const setSaved = useCallback(
     (monthIndex: number, value: number | null) => {
-      setData((prev) => {
-        const yearKey = String(year);
-        const yearData = { ...prev[yearKey] };
-        if (value === null) {
-          delete yearData[monthIndex];
-        } else {
-          yearData[monthIndex] = value;
-        }
-        const next = { ...prev, [yearKey]: yearData };
-        saveToStorage(next);
-        return next;
-      });
+      const previous = getSavingsSnapshot();
+      const yearKey = String(year);
+      const yearData = { ...previous[yearKey] };
+      if (value === null) {
+        delete yearData[monthIndex];
+      } else {
+        yearData[monthIndex] = value;
+      }
+      saveToStorage({ ...previous, [yearKey]: yearData });
     },
     [year],
   );

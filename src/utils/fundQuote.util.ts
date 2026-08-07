@@ -1,26 +1,4 @@
-export interface BaloiseChartRow {
-  timeMs: number;
-  nav: number;
-}
-
-export interface BaloiseParsedChart {
-  rows: BaloiseChartRow[];
-  lastNav: number | null;
-  referenceNav: number | null;
-  currency: string | null;
-  /** Alleen gezet bij response van de fund-quote Worker. */
-  dataSource?: 'finnhub' | 'yahoo';
-}
-
-/** Response van de fund-quote Worker (Finnhub/Yahoo). */
-export interface WorkerFundQuoteBody {
-  source: 'finnhub' | 'yahoo';
-  currency: string | null;
-  rows: BaloiseChartRow[];
-  lastNav: number | null;
-  referenceNav: number | null;
-  error?: string;
-}
+import type { FundQuoteRow, ParsedFundQuote, WorkerFundQuoteBody } from '@/@types/fund';
 
 interface YahooChartMeta {
   currency?: string;
@@ -125,7 +103,7 @@ export async function fetchFundChartJson(symbol: string, range: string, signal?:
   throw new Error('VITE_QUOTE_API_URL ontbreekt. Deploy de Worker en zet de URL in .env — zie README.');
 }
 
-export const parseFundQuoteResponse = (raw: unknown): BaloiseParsedChart => {
+export const parseFundQuoteResponse = (raw: unknown): ParsedFundQuote => {
   if (isWorkerFundQuoteBody(raw)) {
     if (typeof raw.error === 'string' && raw.error.length > 0) {
       throw new Error(raw.error);
@@ -143,7 +121,7 @@ export const parseFundQuoteResponse = (raw: unknown): BaloiseParsedChart => {
   return parseYahooChartEnvelope(raw);
 };
 
-const pickReferenceNav = (meta: YahooChartMeta | undefined, rows: BaloiseChartRow[]): number | null => {
+const pickReferenceNav = (meta: YahooChartMeta | undefined, rows: FundQuoteRow[]): number | null => {
   const fromMeta = meta?.chartPreviousClose ?? meta?.previousClose;
   if (typeof fromMeta === 'number' && !Number.isNaN(fromMeta)) {
     return fromMeta;
@@ -153,6 +131,20 @@ const pickReferenceNav = (meta: YahooChartMeta | undefined, rows: BaloiseChartRo
   }
 
   return null;
+};
+
+/**
+ * De laatste gepubliceerde dagslotkoers. `regularMarketPrice` is een intraday veld en
+ * dus geen dag-NAV; het dient enkel als noodgreep wanneer de reeks leeg is.
+ */
+const pickCloseNav = (meta: YahooChartMeta | undefined, rows: FundQuoteRow[]): number | null => {
+  if (rows.length > 0) {
+    return rows[rows.length - 1].nav;
+  }
+
+  const metaPrice = meta?.regularMarketPrice;
+
+  return typeof metaPrice === 'number' && !Number.isNaN(metaPrice) ? metaPrice : null;
 };
 
 const pickYahooBarClose = (rawClose: number | null | undefined, rawAdj: number | null | undefined): number | null => {
@@ -167,12 +159,12 @@ const pickYahooBarClose = (rawClose: number | null | undefined, rawAdj: number |
   return null;
 };
 
-const yahooRowsFromResult = (result: YahooChartResult): BaloiseChartRow[] => {
+const yahooRowsFromResult = (result: YahooChartResult): FundQuoteRow[] => {
   const ts = result.timestamp ?? [];
   const quote = result.indicators?.quote?.[0];
   const closes = quote?.close ?? [];
   const adj = result.indicators?.adjclose?.[0]?.adjclose ?? [];
-  const rows: BaloiseChartRow[] = [];
+  const rows: FundQuoteRow[] = [];
 
   for (let i = 0; i < ts.length; i++) {
     const v = pickYahooBarClose(closes[i], adj[i]);
@@ -187,7 +179,7 @@ const yahooRowsFromResult = (result: YahooChartResult): BaloiseChartRow[] => {
   return rows;
 };
 
-export const parseYahooChartEnvelope = (raw: unknown): BaloiseParsedChart => {
+export const parseYahooChartEnvelope = (raw: unknown): ParsedFundQuote => {
   const env = raw as YahooChartEnvelope;
   const err = env.chart?.error?.description;
   if (err) {
@@ -200,10 +192,7 @@ export const parseYahooChartEnvelope = (raw: unknown): BaloiseParsedChart => {
   }
 
   const rows = yahooRowsFromResult(result);
-
-  const lastRowNav = rows.length > 0 ? rows[rows.length - 1].nav : null;
-  const metaPrice = result.meta?.regularMarketPrice;
-  const lastNav = typeof metaPrice === 'number' && !Number.isNaN(metaPrice) ? metaPrice : lastRowNav;
+  const lastNav = pickCloseNav(result.meta, rows);
 
   return {
     rows,

@@ -33,16 +33,54 @@ export const formatDifference = (diff: number): string => {
 export const getGainLossClass = (amount: number): 'text-gain' | 'text-loss' =>
   amount >= 0 ? 'text-gain' : 'text-loss';
 
-/** `YYYY-MM-DD` → nl-BE datum (lokale kalender, geen UTC-shift). */
-export const formatIsoDateNl = (isoDate: string): string => {
-  const [y, m, d] = isoDate.split('-').map(Number);
-  if (y == null || m == null || d == null || Number.isNaN(y) || Number.isNaN(m) || Number.isNaN(d)) {
-    return isoDate;
+export const formatSignedCurrency = (amount: number): string =>
+  `${amount >= 0 ? '+' : ''}${formatCurrency(amount)}`;
+
+export const formatSignedPercent = (percent: number | null, fractionDigits = 2): string => {
+  if (percent == null) {
+    return '—';
   }
 
-  return new Date(y, m - 1, d).toLocaleDateString('nl-BE', {
-    day: 'numeric',
-    month: 'long',
-    year: 'numeric',
-  });
+  return `${percent >= 0 ? '+' : ''}${percent.toFixed(fractionDigits)}%`;
 };
+
+/** `YYYY-MM-DD` → lokale `Date`, of `null` bij onzin. Vermijdt de UTC-shift van `new Date(iso)`. */
+const parseIsoDate = (isoDate: string): Date | null => {
+  const [y, m, d] = isoDate.split('-').map(Number);
+  if (y == null || m == null || d == null || Number.isNaN(y) || Number.isNaN(m) || Number.isNaN(d)) {
+    return null;
+  }
+
+  return new Date(y, m - 1, d);
+};
+
+/** `YYYY-MM-DD` → nl-BE datum (lokale kalender, geen UTC-shift). */
+export const formatIsoDateNl = (isoDate: string): string => {
+  const date = parseIsoDate(isoDate);
+
+  return date == null
+    ? isoDate
+    : date.toLocaleDateString('nl-BE', { day: 'numeric', month: 'long', year: 'numeric' });
+};
+
+/** `YYYY-MM-DD` → `31/03/2026`. */
+export const formatIsoDateShortNl = (isoDate: string): string => {
+  const date = parseIsoDate(isoDate);
+
+  return date == null
+    ? isoDate
+    : date.toLocaleDateString('nl-BE', { day: '2-digit', month: '2-digit', year: 'numeric' });
+};
+
+/** `YYYY-MM-DD` → `maart 2026`. */
+export const formatIsoMonthNl = (isoDate: string): string => {
+  const date = parseIsoDate(isoDate);
+
+  return date == null ? isoDate : date.toLocaleDateString('nl-BE', { month: 'long', year: 'numeric' });
+};
+
+/** Epoch-ms → nl-BE datum, of `—` als er nog geen koers is. */
+export const formatTimestampNl = (timeMs: number | null): string =>
+  timeMs == null
+    ? '—'
+    : new Date(timeMs).toLocaleDateString('nl-BE', { day: 'numeric', month: 'long', year: 'numeric' });

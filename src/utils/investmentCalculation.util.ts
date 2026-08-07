@@ -1,11 +1,10 @@
 import {
-  BALOISE_FIRST_AUTO_DATE_ISO,
+  BALOISE_ENTRY_COST_RATE,
+  BALOISE_FIRST_PERIOD_MONTH_INDEX,
   BALOISE_MONTHLY_2026,
   BALOISE_MONTHLY_FROM_2027,
-  BALOISE_OPENING_INVESTED_EUR,
   BIRTH_YEAR,
   CAPITAL_GAINS_TAX_THRESHOLD,
-  CRELAN_START_VALUE,
   INVESTMENT_FIRST_YEAR_MONTHS,
 } from '@config/investment.config';
 import type {
@@ -17,28 +16,35 @@ import type {
   PensionYearRow,
 } from '@/@types/investment';
 
-interface PensionRates {
+export interface PensionInputs {
   crelanRate: number;
   baloiseRate: number;
+  /** Waarde van de Crelan-positie vandaag: eenheden maal de laatste koers. */
+  crelanStartValue: number;
+  /** Bruto gestort op Crelan; de stortingen zijn afgelopen, dus dit blijft constant. */
+  crelanInvested: number;
 }
 
 const monthlyRateFromAnnual = (annual: number): number => Math.pow(1 + annual, 1 / 12) - 1;
 
-export const calculatePensionData = (rates: PensionRates, projectionYears: number): PensionYearRow[] => {
-  const rCrelan = 1 + rates.crelanRate;
-  const mRateBaloise = monthlyRateFromAnnual(rates.baloiseRate);
+export const calculatePensionData = (inputs: PensionInputs, projectionYears: number): PensionYearRow[] => {
+  const rCrelan = 1 + inputs.crelanRate;
+  const mRateBaloise = monthlyRateFromAnnual(inputs.baloiseRate);
   const result: PensionYearRow[] = [];
-  const investedCrelan = CRELAN_START_VALUE;
+  const investedCrelan = inputs.crelanInvested;
 
-  let valueCrelan = CRELAN_START_VALUE * Math.pow(rCrelan, INVESTMENT_FIRST_YEAR_MONTHS / 12);
+  let valueCrelan = inputs.crelanStartValue * Math.pow(rCrelan, INVESTMENT_FIRST_YEAR_MONTHS / 12);
 
-  let valueBaloise = BALOISE_OPENING_INVESTED_EUR;
-  let investedBaloise = BALOISE_OPENING_INVESTED_EUR;
-  const firstAutoMonthIndex0 = Number(BALOISE_FIRST_AUTO_DATE_ISO.split('-')[1]) - 1;
+  // Slechts 98% van elke premie wordt belegd; de instapkost verdwijnt bij Baloise.
+  // Zonder die correctie zou de prognose structureel te rooskleurig zijn.
+  const baloiseInvestedShare = 1 - BALOISE_ENTRY_COST_RATE;
 
-  for (let m = firstAutoMonthIndex0; m < 12; m++) {
+  let valueBaloise = 0;
+  let investedBaloise = 0;
+
+  for (let m = BALOISE_FIRST_PERIOD_MONTH_INDEX; m < 12; m++) {
     valueBaloise *= 1 + mRateBaloise;
-    valueBaloise += BALOISE_MONTHLY_2026;
+    valueBaloise += BALOISE_MONTHLY_2026 * baloiseInvestedShare;
     investedBaloise += BALOISE_MONTHLY_2026;
   }
 
@@ -55,7 +61,7 @@ export const calculatePensionData = (rates: PensionRates, projectionYears: numbe
     valueCrelan *= rCrelan;
     for (let m = 0; m < 12; m++) {
       valueBaloise *= 1 + mRateBaloise;
-      valueBaloise += BALOISE_MONTHLY_FROM_2027;
+      valueBaloise += BALOISE_MONTHLY_FROM_2027 * baloiseInvestedShare;
       investedBaloise += BALOISE_MONTHLY_FROM_2027;
     }
     result.push({
@@ -74,7 +80,7 @@ type SavingsData = Record<string, Record<number, number | null>>;
 
 export interface BuildCombinedDataParams {
   rate: InvestmentRate;
-  pensionRates: PensionRates;
+  pensionInputs: PensionInputs;
   cashReserve: number;
   positionsTotal: number;
   monthlyPlans: MonthlyInvestmentPlan[];
@@ -208,7 +214,7 @@ const calculatePlansGrowth = (
 };
 
 export const buildCombinedData = (params: BuildCombinedDataParams): CombinedYearRow[] => {
-  const pensionData = calculatePensionData(params.pensionRates, params.projectionYears);
+  const pensionData = calculatePensionData(params.pensionInputs, params.projectionYears);
 
   const positionsData = calculatePositionsGrowth(
     params.positionsTotal,

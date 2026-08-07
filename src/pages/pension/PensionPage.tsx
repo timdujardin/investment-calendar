@@ -2,26 +2,27 @@ import { useState, type FC } from 'react';
 import { Area, AreaChart, CartesianGrid, Legend, Tooltip, XAxis, YAxis } from 'recharts';
 
 import {
-  BALOISE_AUTO_PAYMENT_COUNT_2026,
   BALOISE_CONTRACT_END_ISO,
-  BALOISE_DEPOSIT_DAY_OF_MONTH,
-  BALOISE_FIRST_AUTO_DATE_ISO,
+  BALOISE_ENTRY_COST_RATE,
+  BALOISE_FIRST_PERIOD_START_ISO,
+  BALOISE_FIRST_YEAR_INVESTED_TOTAL,
   BALOISE_FUND_NAME,
   BALOISE_ISIN,
   BALOISE_MONTHLY_2026,
   BALOISE_MONTHLY_FROM_2027,
-  BALOISE_OPENING_INVESTED_EUR,
+  BALOISE_PERIOD_START_DAY,
   BALOISE_POLICY_NUMBER,
+  CRELAN_FIRST_DEPOSIT_ISO,
+  CRELAN_LAST_DEPOSIT_ISO,
+  CRELAN_MONTHLY,
   CRELAN_PENSION_FUND_NAME,
   CRELAN_PENSION_ISIN,
   CRELAN_RATE,
-  CRELAN_START_VALUE,
 } from '@config/investment.config';
 import ChartCard from '@/components/atoms/chart-card/ChartCard';
 import DetailCard from '@/components/atoms/detail-card/DetailCard';
 import PageHeader from '@/components/atoms/page-header/PageHeader';
 import { useCurrentYearIndex, YearSelector } from '@/components/atoms/year-selector/YearSelector';
-import { BaloiseLivePosition } from '@/components/molecules/baloise-live-position/BaloiseLivePosition';
 import { useSettings } from '@/contexts/SettingsContext';
 import { usePensionChartData, usePensionPageData } from '@/hooks/investment.hooks';
 import {
@@ -31,7 +32,12 @@ import {
   formatTooltipCurrency,
   getGainLossClass,
 } from '@/utils/format.util';
+import { CRELAN_DEPOSIT_COUNT } from '@/utils/crelanPosition.util';
 import { getAgeFromYear } from '@/utils/investmentCalculation.util';
+
+import { BaloiseFundPosition } from './_components/baloise-fund-position/BaloiseFundPosition';
+import { BaloisePremiumTable } from './_components/baloise-premium-table/BaloisePremiumTable';
+import { CrelanFundPosition } from './_components/crelan-fund-position/CrelanFundPosition';
 
 const PensionPage: FC = () => {
   const { settings } = useSettings();
@@ -43,8 +49,9 @@ const PensionPage: FC = () => {
   const baloiseMonthly = yearIndex === 0 ? BALOISE_MONTHLY_2026 : BALOISE_MONTHLY_FROM_2027;
   const baloiseInvestedSub =
     yearIndex === 0
-      ? `${formatCurrency(BALOISE_OPENING_INVESTED_EUR)} reeds · +${BALOISE_AUTO_PAYMENT_COUNT_2026}×€${BALOISE_MONTHLY_2026} (mei–dec)`
-      : `€${baloiseMonthly}/mnd · elke ${BALOISE_DEPOSIT_DAY_OF_MONTH}e`;
+      ? `10 × €${BALOISE_MONTHLY_2026} (maart–dec) = ${formatCurrency(BALOISE_FIRST_YEAR_INVESTED_TOTAL)}`
+      : `€${baloiseMonthly}/mnd · periode vanaf elke ${BALOISE_PERIOD_START_DAY}e`;
+  const crelanDepositSub = `${CRELAN_DEPOSIT_COUNT} × €${CRELAN_MONTHLY}`;
 
   return (
     <div className="page">
@@ -115,26 +122,30 @@ const PensionPage: FC = () => {
           <h2 className="detail-section__title">Crelan ({(CRELAN_RATE * 100).toFixed(2)}%/jaar)</h2>
           <p className="detail-section__description">
             {CRELAN_PENSION_FUND_NAME} · ISIN: {CRELAN_PENSION_ISIN}
+            <br />€{CRELAN_MONTHLY} per maand van {formatIsoDateNl(CRELAN_FIRST_DEPOSIT_ISO)} tot{' '}
+            {formatIsoDateNl(CRELAN_LAST_DEPOSIT_ISO)}. Sinds de overstap naar Baloise komt er niets meer bij: de
+            projectie laat de bestaande waarde enkel nog renderen.
           </p>
           <div className="detail-grid">
             <DetailCard
               label="Ingelegd"
               value={formatCurrency(row.investedCrelan)}
-              sub="Eenmalige storting — blijft staan"
-              valueClassName="frozen"
+              sub={`${crelanDepositSub} — afgesloten`}
             />
             <DetailCard
-              label="Waarde"
+              label="Waarde (projectie)"
               value={formatCurrency(row.valueCrelan)}
               sub={
-                <span className={getGainLossClass(row.valueCrelan - CRELAN_START_VALUE)}>
-                  {row.valueCrelan - CRELAN_START_VALUE >= 0 ? '+' : ''}
-                  {formatCurrency(row.valueCrelan - CRELAN_START_VALUE)} rente
+                <span className={getGainLossClass(row.valueCrelan - row.investedCrelan)}>
+                  {row.valueCrelan - row.investedCrelan >= 0 ? '+' : ''}
+                  {formatCurrency(row.valueCrelan - row.investedCrelan)} winst
                 </span>
               }
               valueClassName="text-pension"
             />
           </div>
+          <h3 className="detail-section__subtitle">Positie op slotkoers</h3>
+          <CrelanFundPosition />
         </div>
 
         <div className="detail-section">
@@ -142,12 +153,13 @@ const PensionPage: FC = () => {
           <p className="detail-section__description">
             Polis {BALOISE_POLICY_NUMBER} · einddatum contract {formatIsoDateNl(BALOISE_CONTRACT_END_ISO)}
             <br />
-            {BALOISE_FUND_NAME} · ISIN: {BALOISE_ISIN}
+            100% {BALOISE_FUND_NAME} · ISIN: {BALOISE_ISIN}
             <br />
-            {formatCurrency(BALOISE_OPENING_INVESTED_EUR)} stond er vóór automatische incasso; vanaf{' '}
-            {formatIsoDateNl(BALOISE_FIRST_AUTO_DATE_ISO)} elke maand €{BALOISE_MONTHLY_2026} tot eind 2026. Vanaf 2027
-            elke {BALOISE_DEPOSIT_DAY_OF_MONTH}e €{BALOISE_MONTHLY_FROM_2027}. De projectie gebruikt maandrente uit je
-            jaarpct en één storting per maand.
+            Premieperiodes lopen van de {BALOISE_PERIOD_START_DAY}e tot de {BALOISE_PERIOD_START_DAY}e, vanaf{' '}
+            {formatIsoDateNl(BALOISE_FIRST_PERIOD_START_ISO)}. In 2026 €{BALOISE_MONTHLY_2026} per maand, vanaf 13/01/2027
+            €{BALOISE_MONTHLY_FROM_2027} — telkens {formatCurrency(BALOISE_FIRST_YEAR_INVESTED_TOTAL)} per jaar, de
+            maximale fiscale premie. Er gaat {(BALOISE_ENTRY_COST_RATE * 100).toFixed(0)}% instapkost af vóór aankoop.
+            Er is geen domiciliëring, dus je stort zelf; de projectie hieronder rekent met één premie per maand.
           </p>
           <div className="detail-grid">
             <DetailCard
@@ -167,8 +179,10 @@ const PensionPage: FC = () => {
               valueClassName="text-pension"
             />
           </div>
-          <h3 className="detail-section__subtitle">Live positie — exact op je stortingen</h3>
-          <BaloiseLivePosition />
+          <h3 className="detail-section__subtitle">Positie op slotkoers</h3>
+          <BaloiseFundPosition />
+          <h3 className="detail-section__subtitle">Rendement per storting</h3>
+          <BaloisePremiumTable />
         </div>
       </main>
     </div>

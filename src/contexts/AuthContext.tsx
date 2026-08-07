@@ -19,6 +19,12 @@ interface AuthContextValue {
 
 const AuthContext = createContext<AuthContextValue | null>(null);
 
+/**
+ * Sessieherstel hoort bij het opstarten van de app en mag dus maar één keer draaien.
+ * Zonder deze vlag doet StrictMode de sleutelimport en AES-decryptie dubbel.
+ */
+let didRestoreSession = false;
+
 const decryptBumbaData = async (aesKey: CryptoKey): Promise<BumbaEntry[]> => {
   const json = await decryptWithKey(ENCRYPTED_BUMBA_DATA, ENCRYPTION_IV, aesKey);
 
@@ -31,6 +37,11 @@ const AuthProvider: FC<{ children: ReactNode }> = ({ children }) => {
   const [bumbaData, setBumbaData] = useState<BumbaEntry[] | null>(null);
 
   useEffect(() => {
+    if (didRestoreSession) {
+      return;
+    }
+    didRestoreSession = true;
+
     const restore = async () => {
       try {
         const session = localStorage.getItem(SESSION_KEY);
@@ -64,8 +75,7 @@ const AuthProvider: FC<{ children: ReactNode }> = ({ children }) => {
       }
     };
 
-    // eslint-disable-next-line react-you-might-not-need-an-effect/no-initialize-state
-    restore();
+    void restore();
   }, []);
 
   const login = useCallback(async (username: string, password: string): Promise<boolean> => {

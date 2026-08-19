@@ -177,7 +177,8 @@ export const BALOISE_PREMIUMS: readonly BaloisePremium[] = [
   { periodStartIso: '2026-04-13', amount: BALOISE_MONTHLY_2026, paidOnIso: '2026-03-31' },
   { periodStartIso: '2026-05-13', amount: BALOISE_MONTHLY_2026, paidOnIso: '2026-05-29' },
   { periodStartIso: '2026-06-13', amount: BALOISE_MONTHLY_2026, paidOnIso: '2026-07-28' },
-  { periodStartIso: '2026-07-13', amount: BALOISE_MONTHLY_2026, paidOnIso: null },
+  { periodStartIso: '2026-07-13', amount: BALOISE_MONTHLY_2026, paidOnIso: '2026-08-19' },
+  { periodStartIso: '2026-08-13', amount: BALOISE_MONTHLY_2026, paidOnIso: null },
 ];
 
 /** Bruto betaald over alle afgeronde premies. */

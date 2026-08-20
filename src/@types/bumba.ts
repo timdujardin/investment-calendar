@@ -15,6 +15,13 @@ export interface BumbaEntry {
   note: string | null;
 }
 
+export interface IndexAdjustment {
+  date: string;
+  rate: number;
+  /** Percentage per schijf zodra het brutoloon boven het plafond uitkomt. */
+  cappedRate?: number;
+}
+
 export interface YearlySummary {
   year: number;
   avgGross: number | null;

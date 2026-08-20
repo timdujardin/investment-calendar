@@ -1,12 +1,14 @@
 import { useMemo } from 'react';
 
-import { MONTH_LABELS, RATIO_CARRY_FORWARD_MONTHS } from '@config/bumba.config';
+import { MONTH_LABELS } from '@config/bumba.config';
 import { useAuth } from '@/contexts/AuthContext';
 import {
   buildCompanyZones,
+  buildGrossWithoutA11ySeries,
   buildLineChartData,
   buildRaiseChartData,
   buildRaiseItems,
+  calculateNetWithoutA11y,
   getA11yImpact,
   getCompanyPeriods,
   getGrossGrowthPercent,
@@ -38,23 +40,15 @@ export const useBumbaData = () => {
     const careerYears = firstEntry && currentEntry ? currentEntry.year - firstEntry.year : 0;
 
     const lastEntry = includedEntries.at(-1);
-    const a11yImpact = lastEntry ? getA11yImpact(lastEntry.date) : 0;
-    const grossWithoutA11y = lastEntry?.gross != null ? lastEntry.gross - a11yImpact : null;
+    const withoutA11ySeries = buildGrossWithoutA11ySeries(includedEntries);
+    const grossWithoutA11y =
+      lastEntry?.gross != null ? (withoutA11ySeries.get(lastEntry.date) ?? lastEntry.gross) : null;
+    const a11yImpact =
+      lastEntry?.gross != null ? getA11yImpact(lastEntry.gross, withoutA11ySeries.get(lastEntry.date)) : 0;
     const a11yImpactPercent =
       grossWithoutA11y != null && grossWithoutA11y > 0 ? (a11yImpact / grossWithoutA11y) * 100 : null;
 
-    let lastRatio: number | null = null;
-    if (lastEntry) {
-      if (RATIO_CARRY_FORWARD_MONTHS.has(lastEntry.date)) {
-        const prev = includedEntries.findLast((e) => e.ratio !== null && e.date < lastEntry.date);
-        lastRatio = prev?.ratio ?? lastEntry.ratio;
-      } else {
-        lastRatio = lastEntry.ratio;
-      }
-    }
-
-    const netWithoutA11y =
-      grossWithoutA11y !== null && lastRatio !== null ? Math.round(grossWithoutA11y * lastRatio * 100) / 100 : null;
+    const netWithoutA11y = calculateNetWithoutA11y(lastEntry?.net ?? null, lastEntry?.gross ?? null, grossWithoutA11y);
     const netA11yImpact =
       lastEntry?.net != null && netWithoutA11y !== null
         ? Math.round((lastEntry.net - netWithoutA11y) * 100) / 100
@@ -84,7 +78,7 @@ export const useBumbaChartData = () => {
   const { includedEntries, raiseEvents, yearlySummaries } = useBumbaData();
 
   return useMemo(() => {
-    const lineChartData = buildLineChartData(includedEntries, RATIO_CARRY_FORWARD_MONTHS);
+    const lineChartData = buildLineChartData(includedEntries);
     const companyZones = buildCompanyZones(lineChartData);
 
     const ratioChartData = includedEntries

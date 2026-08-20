@@ -1,5 +1,12 @@
-import { A11Y_BUMPS, A11Y_START_DATE, INDEX_ADJUSTMENTS, MONTH_LABELS } from '@config/bumba.config';
-import type { BumbaEntry, CompanyPeriod, RaiseEvent, YearlySummary } from '@/@types/bumba';
+import {
+  A11Y_BUMPS,
+  A11Y_START_DATE,
+  INDEX_ADJUSTMENTS,
+  INDEX_CEILING,
+  MARGINAL_NET_RATE,
+  MONTH_LABELS,
+} from '@config/bumba.config';
+import type { BumbaEntry, CompanyPeriod, IndexAdjustment, RaiseEvent, YearlySummary } from '@/@types/bumba';
 
 const average = (values: number[]): number | null => {
   if (values.length === 0) {
@@ -129,28 +136,64 @@ export const groupEntriesByYear = (entries: BumbaEntry[]): Map<number, BumbaEntr
   return map;
 };
 
-export const getA11yImpact = (date: string): number => {
-  if (date < A11Y_START_DATE) {
-    return 0;
-  }
+/**
+ * Boven het plafond wordt de index niet meer volledig toegekend, dus bepaalt het brutoloon zelf
+ * welk percentage van toepassing is.
+ */
+export const calculateIndexedGross = (gross: number, adjustment: IndexAdjustment): number => {
+  const rate = adjustment.cappedRate != null && gross > INDEX_CEILING ? adjustment.cappedRate : adjustment.rate;
 
-  let total = 0;
+  return gross * (1 + rate);
+};
 
-  for (const bump of A11Y_BUMPS) {
-    if (bump.date > date) {
+const getIndexAdjustmentAt = (date: string): IndexAdjustment | undefined =>
+  INDEX_ADJUSTMENTS.find((a) => a.date === date);
+
+const getBumpTotalAt = (date: string): number =>
+  A11Y_BUMPS.reduce((sum, bump) => (bump.date === date ? sum + bump.amount : sum), 0);
+
+/**
+ * Het scenario zonder a11y-bumps, maand per maand opgebouwd vanaf de vorige maand. Index en gewone
+ * loonsprongen gelden in beide scenario's, alleen de bumps blijven eruit.
+ *
+ * Bij een index met plafond wordt dit scenario apart geindexeerd in plaats van van het echte
+ * brutoloon afgetrokken. Dat is het hele punt: zonder de bumps blijf je onder het plafond en krijg
+ * je de volle index, terwijl je er met de bumps boven zit en terugvalt op het lagere percentage.
+ * De bumps kosten je dus index op je basisloon.
+ */
+export const buildGrossWithoutA11ySeries = (entries: BumbaEntry[]): Map<string, number> => {
+  const series = new Map<string, number>();
+  let previous: { gross: number; withoutA11y: number } | null = null;
+
+  for (const entry of entries) {
+    if (entry.gross === null) {
       continue;
     }
 
-    let compounded = bump.amount;
-    for (const idx of INDEX_ADJUSTMENTS) {
-      if (idx.date > bump.date && idx.date <= date) {
-        compounded *= 1 + idx.rate;
-      }
+    if (entry.date < A11Y_START_DATE || previous === null) {
+      previous = { gross: entry.gross, withoutA11y: entry.gross };
+      continue;
     }
-    total += compounded;
+
+    const adjustment = getIndexAdjustmentAt(entry.date);
+    const withoutA11y: number = adjustment
+      ? calculateIndexedGross(previous.withoutA11y, adjustment)
+      : previous.withoutA11y + (entry.gross - previous.gross - getBumpTotalAt(entry.date));
+
+    series.set(entry.date, withoutA11y);
+    previous = { gross: entry.gross, withoutA11y };
   }
 
-  return Math.round(total * 100) / 100;
+  return series;
+};
+
+/** Wat de a11y-bumps je opleveren: het verschil tussen je echte brutoloon en het scenario zonder. */
+export const getA11yImpact = (gross: number, grossWithoutA11y: number | undefined): number => {
+  if (grossWithoutA11y === undefined) {
+    return 0;
+  }
+
+  return Math.round((gross - grossWithoutA11y) * 100) / 100;
 };
 
 export const formatPercent = (value: number): string => {
@@ -189,35 +232,39 @@ export interface RaiseItem {
 
 const formatChartDate = (month: number, year: number): string => `${MONTH_LABELS[month]} '${String(year).slice(2)}`;
 
-export const buildLineChartData = (
-  entries: BumbaEntry[],
-  ratioCarryForwardMonths: ReadonlySet<string>,
-): LineChartEntry[] => {
-  const result: LineChartEntry[] = [];
-  let prevRatio: number | null = null;
+/**
+ * Het brutoverschil met het a11y-scenario valt bovenop je loon, dus daar weegt het marginale
+ * tarief op en niet de gemiddelde bruto/netto-ratio van je loon.
+ */
+export const calculateNetWithoutA11y = (
+  net: number | null,
+  gross: number | null,
+  grossWithoutA11y: number | null,
+): number | null => {
+  if (net === null || gross === null || grossWithoutA11y === null) {
+    return null;
+  }
 
-  for (const e of entries) {
-    const isA11y = e.date >= A11Y_START_DATE;
-    const effectiveRatio = ratioCarryForwardMonths.has(e.date) && prevRatio !== null ? prevRatio : e.ratio;
-    const grossWo = isA11y && e.gross !== null ? Math.round((e.gross - getA11yImpact(e.date)) * 100) / 100 : null;
+  return Math.round((net - (gross - grossWithoutA11y) * MARGINAL_NET_RATE) * 100) / 100;
+};
 
-    result.push({
+export const buildLineChartData = (entries: BumbaEntry[]): LineChartEntry[] => {
+  const withoutA11ySeries = buildGrossWithoutA11ySeries(entries);
+
+  return entries.map((e) => {
+    const withoutA11y = withoutA11ySeries.get(e.date);
+    const grossWo = withoutA11y !== undefined ? Math.round(withoutA11y * 100) / 100 : null;
+
+    return {
       date: formatChartDate(e.month, e.year),
       gross: e.gross,
       net: e.net,
       ratio: e.ratio !== null ? e.ratio * 100 : null,
       company: e.company,
       grossWithoutA11y: grossWo,
-      netWithoutA11y:
-        grossWo !== null && effectiveRatio !== null ? Math.round(grossWo * effectiveRatio * 100) / 100 : null,
-    });
-
-    if (e.ratio !== null) {
-      prevRatio = e.ratio;
-    }
-  }
-
-  return result;
+      netWithoutA11y: calculateNetWithoutA11y(e.net, e.gross, grossWo),
+    };
+  });
 };
 
 export const buildCompanyZones = (lineChartData: LineChartEntry[]): CompanyZone[] => {
@@ -254,7 +301,7 @@ export const buildRaiseItems = (raiseEvents: RaiseEvent[], includedEntries: Bumb
       e.newGross != null && e.percentage !== 0
         ? Math.round((e.newGross - e.newGross / (1 + e.percentage)) * 100) / 100
         : null;
-    const euroNet = euroGross != null && e.ratio != null ? Math.round(euroGross * e.ratio * 100) / 100 : null;
+    const euroNet = euroGross != null ? Math.round(euroGross * MARGINAL_NET_RATE * 100) / 100 : null;
 
     return {
       sortKey: e.date,
@@ -290,7 +337,7 @@ export const buildRaiseItems = (raiseEvents: RaiseEvent[], includedEntries: Bumb
       note: 'a11y',
       isIndexation: false,
       euroGross: bump.amount,
-      euroNet: entry.ratio != null ? Math.round(bump.amount * entry.ratio * 100) / 100 : null,
+      euroNet: Math.round(bump.amount * MARGINAL_NET_RATE * 100) / 100,
     });
   }
 

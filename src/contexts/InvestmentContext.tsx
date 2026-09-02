@@ -38,8 +38,6 @@ const InvestmentProvider: FC<{ children: ReactNode }> = ({ children }) => {
       monthlyPlans: settings.monthlyPlans,
       projectionYears,
       firstYearMonths: INVESTMENT_FIRST_YEAR_MONTHS,
-      savingsData,
-      startYear: settings.startYear,
       investmentYears,
       pensionRecaptureRate: settings.pensionRecaptureRate,
       transactionFeeRate: settings.transactionFeeRate,

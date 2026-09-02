@@ -102,7 +102,6 @@ export const calculatePensionData = (inputs: PensionInputs, projectionYears: num
   return result;
 };
 
-type SavingsData = Record<string, Record<number, number | null>>;
 
 export interface BuildCombinedDataParams {
   rate: InvestmentRate;
@@ -113,23 +112,12 @@ export interface BuildCombinedDataParams {
   monthlyPlans: MonthlyInvestmentPlan[];
   projectionYears: number;
   firstYearMonths: number;
-  savingsData: SavingsData;
-  startYear: number;
   investmentYears: readonly number[];
   pensionRecaptureRate: number;
   transactionFeeRate: number;
   capitalGainsTaxRate: number;
 }
 
-const getMonthlyDeposit = (
-  yearSaved: Record<number, number | null> | undefined,
-  monthIndex: number,
-  fallback: number,
-): number => {
-  const saved = yearSaved?.[monthIndex];
-
-  return saved ?? fallback;
-};
 
 const getExitFeeRate = (holdingYears: number, exitFees: ExitFeeSchedule[]): number => {
   let rate = exitFees[0]?.rate ?? 0;
@@ -197,8 +185,6 @@ const calculatePlansGrowth = (
   entryFeeRate: number,
   projectionYears: number,
   firstYearMonths: number,
-  savingsData: SavingsData,
-  startYear: number,
 ): PlansStreamRow[] => {
   const monthlyRate = rate / 100 / 12;
   const entryMultiplier = 1 - entryFeeRate;
@@ -209,12 +195,9 @@ const calculatePlansGrowth = (
   let effectiveInvested = 0;
 
   const startMonthIndex = 12 - firstYearMonths;
-  const firstYearKey = String(startYear);
-  const firstYearSaved = savingsData[firstYearKey];
-
   for (let m = startMonthIndex; m < 12; m++) {
     value *= 1 + monthlyRate;
-    const nominal = getMonthlyDeposit(firstYearSaved, m, nominalMonthly);
+    const nominal = nominalMonthly;
     const effective = nominal * entryMultiplier;
     value += effective;
     invested += nominal;
@@ -223,12 +206,9 @@ const calculatePlansGrowth = (
   result.push({ invested, effectiveInvested, value, interest: value - effectiveInvested });
 
   for (let y = 1; y <= projectionYears; y++) {
-    const yearKey = String(startYear + y);
-    const yearSaved = savingsData[yearKey];
-
     for (let m = 0; m < 12; m++) {
       value *= 1 + monthlyRate;
-      const nominal = getMonthlyDeposit(yearSaved, m, nominalMonthly);
+      const nominal = nominalMonthly;
       const effective = nominal * entryMultiplier;
       value += effective;
       invested += nominal;
@@ -260,8 +240,6 @@ export const buildCombinedData = (params: BuildCombinedDataParams): CombinedYear
     avgEntryFeeRate,
     params.projectionYears,
     params.firstYearMonths,
-    params.savingsData,
-    params.startYear,
   );
 
   return positionsData.map((pos, i) => {

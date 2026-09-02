@@ -15,6 +15,11 @@ export const useChartData = () => {
       investments: row.investmentNetValue,
       pension: row.pensionNetValue,
       total: row.totalNetValue,
+      bolero: row.positionsNetValue,
+      crelanPlans: row.plansNetValue,
+      pensionTotal: row.pensionNetValue,
+      cashReserve: row.cashReserve,
+      boleroCash: row.boleroCash,
     }));
   }, [combinedData]);
 };

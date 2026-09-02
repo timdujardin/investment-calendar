@@ -71,12 +71,34 @@ export const BOLERO_CASH = 6_941.98;
 export const INVESTMENT_FIRST_YEAR_MONTHS = 10; // mrt–dec
 export const INVESTMENT_MONTHLY = 500;
 
-export const CRELAN_PENSION_FUND_NAME = 'BNP Paribas B Pension Balanced Classic Cap';
-export const CRELAN_PENSION_ISIN = 'BE0026480963';
-export const CRELAN_RATE = 0.0261;
+export const CRELAN_PENSION_FUND_NAME = 'Crelan Pension Fund Growth Classic Cap';
+export const CRELAN_PENSION_ISIN = 'BE6280095249';
 
-/** Fondseenheden volgens het Crelan-overzicht. */
-export const CRELAN_UNITS = 33.463;
+/**
+ * Aanname voor de projectie, niet het gerealiseerde rendement. Growth haalde sinds zijn start
+ * in maart 2022 6,72% per jaar; 5% houdt daar marge op. Dit is enkel de startwaarde: ze staat
+ * in de instellingen en is daar bij te stellen zonder codewijziging.
+ */
+export const CRELAN_RATE = 0.05;
+
+/**
+ * Overstap van BNP Paribas B Pension Balanced (BE0026480963) naar Growth: meer aandelen,
+ * minder staatsobligaties. De volledige waarde verhuist mee, er wordt niets bijgestort.
+ */
+export const CRELAN_SWITCH_ISO = '2026-09-01';
+
+/** Wat er verhuist: de stand bij het oude fonds, 33,463 eenheden à € 246,23. */
+export const CRELAN_SWITCH_VALUE = 8_146.90;
+
+/** Koers van Growth rond de wisseldatum, samen met de waarde goed voor de geschatte eenheden. */
+export const CRELAN_SWITCH_NAV = 158.19;
+
+/**
+ * Fondseenheden volgens het Crelan-overzicht. `null` zolang dat overzicht de nieuwe eenheden
+ * nog niet toont: de positie rekent dan met `CRELAN_SWITCH_VALUE / CRELAN_SWITCH_NAV` en meldt
+ * in de app dat het een schatting is. Vul het echte aantal in zodra je het hebt.
+ */
+export const CRELAN_UNITS: number | null = null;
 export const CRELAN_UNIT_DECIMALS = 3;
 
 export const CRELAN_MONTHLY = 87.5;
@@ -93,26 +115,27 @@ export const CRELAN_LAST_DEPOSIT_ISO = '2026-02-16';
 
 /**
  * Bruto gestort over de volledige looptijd. Dit is een reconstructie (75 × € 87,50) en geen
- * cijfer van het overzicht, want Crelan toont enkel de waarde en het aantal eenheden.
+ * cijfer van het overzicht, want Crelan toont enkel de waarde en het aantal eenheden. De
+ * fondswissel verandert hier niets aan: er verhuist waarde, er komt geen inleg bij.
  *
- * Vermoedelijk staat het zo'n € 470 te laag: tegen de werkelijke fondskoersen kopen 75
- * stortingen van € 87,50 samen maar ~31,2 eenheden, terwijl er 33,463 op het overzicht
- * staan. Dat verschil wijst op een eenmalige inhaalstorting bij de opstart in december 2019.
- * Duikt het echte bedrag op een fiscaal attest (code 1361) op, vul het dan hier in. De
- * waarde van de positie verandert daar niet door — die hangt aan de eenheden — enkel de
- * winst en het rendement kloppen dan.
+ * Vermoedelijk staat het zo'n € 470 te laag: tegen de werkelijke koersen van het oude fonds
+ * kochten 75 stortingen van € 87,50 samen maar ~31,2 eenheden, terwijl er 33,463 op het
+ * overzicht stonden. Dat verschil wijst op een eenmalige inhaalstorting bij de opstart in
+ * december 2019. Duikt het echte bedrag op een fiscaal attest (code 1361) op, vul het dan
+ * hier in. De waarde van de positie verandert daar niet door — die hangt aan de eenheden —
+ * enkel de winst en het rendement kloppen dan.
  */
 export const CRELAN_INVESTED_TOTAL = 6_562.5;
 
 /**
  * Terugval als de koers-API niets teruggeeft, zodat de projectie nooit op een laadtoestand
- * hoeft te wachten. Afgeleid uit het Crelan-overzicht: 8 239,59 / 33,463 = 246,23.
+ * hoeft te wachten.
  */
-export const CRELAN_LAST_KNOWN_NAV = 246.23;
-export const CRELAN_LAST_KNOWN_NAV_DATE_ISO = '2026-08-06';
+export const CRELAN_LAST_KNOWN_NAV = 158.19;
+export const CRELAN_LAST_KNOWN_NAV_DATE_ISO = '2026-08-28';
 
 /** Morningstar-ID van het fonds; de Frankfurt-notering serveert wél een dagreeks. */
-export const CRELAN_YAHOO_CHART_SYMBOL = '0P00000NCK.F';
+export const CRELAN_YAHOO_CHART_SYMBOL = '0P000170Z6.F';
 
 export const CRELAN_YAHOO_QUOTE_URL = `https://finance.yahoo.com/quote/${encodeURIComponent(CRELAN_YAHOO_CHART_SYMBOL)}`;
 
@@ -121,7 +144,13 @@ export const CRELAN_YAHOO_CHART_RANGE = '1mo';
 
 export const BALOISE_FUND_NAME = 'R-co Valor';
 export const BALOISE_ISIN = 'FR0011253624';
-export const BALOISE_RATE = 0.075;
+
+/**
+ * Aanname voor de projectie. R-co Valor deed 9,21% per jaar over dezelfde periode waarin
+ * Crelan Growth 6,72% haalde; 7% houdt daar marge op en blijft in verhouding tot de 5% die
+ * voor Crelan aangehouden wordt. Enkel de startwaarde: bij te stellen in de instellingen.
+ */
+export const BALOISE_RATE = 0.07;
 
 /**
  * Yahoo Finance-symbool voor live NAV + historiek.
@@ -178,7 +207,8 @@ export const BALOISE_PREMIUMS: readonly BaloisePremium[] = [
   { periodStartIso: '2026-05-13', amount: BALOISE_MONTHLY_2026, paidOnIso: '2026-05-29' },
   { periodStartIso: '2026-06-13', amount: BALOISE_MONTHLY_2026, paidOnIso: '2026-07-28' },
   { periodStartIso: '2026-07-13', amount: BALOISE_MONTHLY_2026, paidOnIso: '2026-08-19' },
-  { periodStartIso: '2026-08-13', amount: BALOISE_MONTHLY_2026, paidOnIso: null },
+  { periodStartIso: '2026-08-13', amount: BALOISE_MONTHLY_2026, paidOnIso: '2026-08-31' },
+  { periodStartIso: '2026-09-13', amount: BALOISE_MONTHLY_2026, paidOnIso: null },
 ];
 
 /** Bruto betaald over alle afgeronde premies. */

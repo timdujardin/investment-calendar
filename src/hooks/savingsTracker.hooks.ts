@@ -8,9 +8,7 @@ const MONTH_LABELS = ['Jan', 'Feb', 'Mrt', 'Apr', 'Mei', 'Jun', 'Jul', 'Aug', 'S
 
 export type MonthlySavingsRecord = Record<string, Record<number, number | null>>;
 
-const PREFILLED: MonthlySavingsRecord = {
-  '2026': { 0: 450, 1: 500 },
-};
+const PREFILLED: MonthlySavingsRecord = {};
 
 export const loadSavingsData = (): MonthlySavingsRecord => {
   try {
@@ -53,8 +51,7 @@ const saveToStorage = (data: MonthlySavingsRecord) => {
 };
 
 /** Abonneert op de opgeslagen spaardata; alle lezers delen dezelfde snapshot. */
-export const useSavingsData = (): MonthlySavingsRecord =>
-  useSyncExternalStore(onSavingsChanged, getSavingsSnapshot);
+export const useSavingsData = (): MonthlySavingsRecord => useSyncExternalStore(onSavingsChanged, getSavingsSnapshot);
 
 interface MonthEntry {
   monthIndex: number;

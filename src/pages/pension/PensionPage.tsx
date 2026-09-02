@@ -17,7 +17,7 @@ import {
   CRELAN_MONTHLY,
   CRELAN_PENSION_FUND_NAME,
   CRELAN_PENSION_ISIN,
-  CRELAN_RATE,
+  CRELAN_SWITCH_ISO,
 } from '@config/investment.config';
 import ChartCard from '@/components/atoms/chart-card/ChartCard';
 import DetailCard from '@/components/atoms/detail-card/DetailCard';
@@ -29,10 +29,10 @@ import {
   formatCurrency,
   formatCurrencyCompact,
   formatIsoDateNl,
+  formatSignedCurrency,
   formatTooltipCurrency,
   getGainLossClass,
 } from '@/utils/format.util';
-import { CRELAN_DEPOSIT_COUNT } from '@/utils/crelanPosition.util';
 import { getAgeFromYear } from '@/utils/investmentCalculation.util';
 
 import { BaloiseFundPosition } from './_components/baloise-fund-position/BaloiseFundPosition';
@@ -51,7 +51,6 @@ const PensionPage: FC = () => {
     yearIndex === 0
       ? `10 × €${BALOISE_MONTHLY_2026} (maart–dec) = ${formatCurrency(BALOISE_FIRST_YEAR_INVESTED_TOTAL)}`
       : `€${baloiseMonthly}/mnd · periode vanaf elke ${BALOISE_PERIOD_START_DAY}e`;
-  const crelanDepositSub = `${CRELAN_DEPOSIT_COUNT} × €${CRELAN_MONTHLY}`;
 
   return (
     <div className="page">
@@ -59,7 +58,7 @@ const PensionPage: FC = () => {
 
       <PageHeader
         title={`🏦 Pensioensparen — ${year}`}
-        subtitle={`${age} jaar · Crelan ${(CRELAN_RATE * 100).toFixed(2)}%/jaar + Baloise ${(settings.baloiseRate * 100).toFixed(1)}%/jaar`}
+        subtitle={`${age} jaar · Crelan ${(settings.crelanPensionRate * 100).toFixed(1)}%/jaar + Baloise ${(settings.baloiseRate * 100).toFixed(1)}%/jaar`}
       />
 
       <main className="page__main">
@@ -73,6 +72,21 @@ const PensionPage: FC = () => {
               contentStyle={{ borderRadius: 12, border: '1px solid var(--color-border)' }}
             />
             <Legend />
+            {/*
+              Bruto is de top van de stapel en wordt dus al getekend door de twee vlakken
+              hieronder. Deze reeks tekent niets en staat er enkel om het totaal in de tooltip
+              te krijgen; vandaar buiten de stapel, zonder legenda en zonder hoverpunt.
+            */}
+            <Area
+              type="monotone"
+              dataKey="bruto"
+              name="Bruto waarde"
+              stroke="var(--color-pension)"
+              strokeOpacity={0}
+              fill="none"
+              legendType="none"
+              activeDot={false}
+            />
             <Area
               type="monotone"
               dataKey="netto"
@@ -119,27 +133,38 @@ const PensionPage: FC = () => {
         </div>
 
         <div className="detail-section">
-          <h2 className="detail-section__title">Crelan ({(CRELAN_RATE * 100).toFixed(2)}%/jaar)</h2>
+          <h2 className="detail-section__title">Crelan beleggingsplannen</h2>
           <p className="detail-section__description">
             {CRELAN_PENSION_FUND_NAME} · ISIN: {CRELAN_PENSION_ISIN}
             <br />€{CRELAN_MONTHLY} per maand van {formatIsoDateNl(CRELAN_FIRST_DEPOSIT_ISO)} tot{' '}
             {formatIsoDateNl(CRELAN_LAST_DEPOSIT_ISO)}. Sinds de overstap naar Baloise komt er niets meer bij: de
             projectie laat de bestaande waarde enkel nog renderen.
+            <br />
+            Op {formatIsoDateNl(CRELAN_SWITCH_ISO)} is die waarde volledig verhuisd van BNP Paribas B Pension Balanced
+            naar dit fonds, dat zwaarder in aandelen zit en minder in staatsobligaties.
           </p>
           <div className="detail-grid">
             <DetailCard
-              label="Ingelegd"
-              value={formatCurrency(row.investedCrelan)}
-              sub={`${crelanDepositSub} — afgesloten`}
+              label="Huidige positie (slotkoers)"
+              value={formatCurrency(combined.pensionValue)}
+              sub={
+                <>
+                  Ingelegd: {formatCurrency(combined.pensionInvested)}
+                  <br />
+                  Winst: {formatSignedCurrency(combined.pensionValue - combined.pensionInvested)}
+                </>
+              }
+              valueClassName="text-pension"
             />
             <DetailCard
-              label="Waarde (projectie)"
-              value={formatCurrency(row.valueCrelan)}
+              label="Projectie einde jaar (netto)"
+              value={formatCurrency(combined.pensionNetValue)}
               sub={
-                <span className={getGainLossClass(row.valueCrelan - row.investedCrelan)}>
-                  {row.valueCrelan - row.investedCrelan >= 0 ? '+' : ''}
-                  {formatCurrency(row.valueCrelan - row.investedCrelan)} winst
-                </span>
+                <>
+                  Bruto: {formatCurrency(combined.pensionValue)}
+                  <br />
+                  Terugvordering: {formatSignedCurrency(-combined.pensionRecapture)}
+                </>
               }
               valueClassName="text-pension"
             />
@@ -156,10 +181,11 @@ const PensionPage: FC = () => {
             100% {BALOISE_FUND_NAME} · ISIN: {BALOISE_ISIN}
             <br />
             Premieperiodes lopen van de {BALOISE_PERIOD_START_DAY}e tot de {BALOISE_PERIOD_START_DAY}e, vanaf{' '}
-            {formatIsoDateNl(BALOISE_FIRST_PERIOD_START_ISO)}. In 2026 €{BALOISE_MONTHLY_2026} per maand, vanaf 13/01/2027
-            €{BALOISE_MONTHLY_FROM_2027} — telkens {formatCurrency(BALOISE_FIRST_YEAR_INVESTED_TOTAL)} per jaar, de
-            maximale fiscale premie. Er gaat {(BALOISE_ENTRY_COST_RATE * 100).toFixed(0)}% instapkost af vóór aankoop.
-            Er is geen domiciliëring, dus je stort zelf; de projectie hieronder rekent met één premie per maand.
+            {formatIsoDateNl(BALOISE_FIRST_PERIOD_START_ISO)}. In 2026 €{BALOISE_MONTHLY_2026} per maand, vanaf
+            13/01/2027 €{BALOISE_MONTHLY_FROM_2027} — telkens {formatCurrency(BALOISE_FIRST_YEAR_INVESTED_TOTAL)} per
+            jaar, de maximale fiscale premie. Er gaat {(BALOISE_ENTRY_COST_RATE * 100).toFixed(0)}% instapkost af vóór
+            aankoop. Er is geen domiciliëring, dus je stort zelf; de projectie hieronder rekent met één premie per
+            maand.
           </p>
           <div className="detail-grid">
             <DetailCard

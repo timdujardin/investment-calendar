@@ -3,6 +3,8 @@ import {
   CRELAN_INVESTED_TOTAL,
   CRELAN_LAST_DEPOSIT_ISO,
   CRELAN_LAST_KNOWN_NAV,
+  CRELAN_SWITCH_NAV,
+  CRELAN_SWITCH_VALUE,
   CRELAN_UNITS,
 } from '@config/investment.config';
 import type { CrelanPosition } from '@/@types/crelan';
@@ -27,6 +29,22 @@ export const countMonthlyDeposits = (firstIso: string, lastIso: string): number 
 
 export const CRELAN_DEPOSIT_COUNT = countMonthlyDeposits(CRELAN_FIRST_DEPOSIT_ISO, CRELAN_LAST_DEPOSIT_ISO);
 
+/**
+ * Het aantal eenheden na de fondswissel. Zolang het Crelan-overzicht ze nog niet toont, is
+ * het beste dat we hebben de waarde die verhuisde, gedeeld door de koers rond de wisseldatum.
+ * De eenheden van het oude fonds gebruiken zou de positie met duizenden euro's naast de
+ * werkelijkheid zetten, want die koers lag ruim boven die van Growth.
+ */
+const resolveUnits = (): { units: number; unitsAreEstimated: boolean } => {
+  if (CRELAN_UNITS != null) {
+    return { units: CRELAN_UNITS, unitsAreEstimated: false };
+  }
+
+  const estimated = CRELAN_SWITCH_NAV > 0 ? CRELAN_SWITCH_VALUE / CRELAN_SWITCH_NAV : 0;
+
+  return { units: estimated, unitsAreEstimated: true };
+};
+
 interface CrelanPositionInput {
   /** Laatste slotkoers, of `null` zolang die niet geladen is. */
   nav: number | null;
@@ -40,18 +58,20 @@ interface CrelanPositionInput {
 export const computeCrelanPosition = (input: CrelanPositionInput): CrelanPosition => {
   const navIsFallback = input.nav == null;
   const nav = input.nav ?? CRELAN_LAST_KNOWN_NAV;
+  const { units, unitsAreEstimated } = resolveUnits();
 
   const invested = CRELAN_INVESTED_TOTAL;
-  const value = CRELAN_UNITS * nav;
+  const value = units * nav;
   const pnl = value - invested;
 
   return {
     invested,
-    units: CRELAN_UNITS,
+    units,
+    unitsAreEstimated,
     value,
     pnl,
     returnPercent: invested > 0 ? (pnl / invested) * 100 : null,
-    averageCostNav: CRELAN_UNITS > 0 ? invested / CRELAN_UNITS : null,
+    averageCostNav: units > 0 ? invested / units : null,
     nav,
     navDateMs: navIsFallback ? null : input.navDateMs,
     navIsFallback,

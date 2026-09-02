@@ -12,7 +12,7 @@
     "check:precommit": "npm run format:code && npm run check:all",
     "check:all": "npm run check:lint && npm run check:types",
     "check:lint": "eslint --fix --report-unused-disable-directives .",
-    "check:types": "tsc --noEmit --extendedDiagnostics",
+    "check:types": "tsc -b --force",
     "format:code": "prettier --write ."
   },
   "dependencies": {

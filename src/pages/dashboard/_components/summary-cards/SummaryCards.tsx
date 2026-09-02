@@ -1,6 +1,6 @@
 import type { FC } from 'react';
 
-import { BIRTH_YEAR, CRELAN_RATE } from '@config/investment.config';
+import { BIRTH_YEAR } from '@config/investment.config';
 import SummaryCard from '@/components/atoms/summary-card/SummaryCard';
 import { useInvestment } from '@/contexts/InvestmentContext';
 import { useSettings } from '@/contexts/SettingsContext';
@@ -48,7 +48,7 @@ const SummaryCards: FC = () => {
       <SummaryCard
         label={`Pensioensparen op ${rowEnd.age} jaar`}
         value={formatCurrency(rowEnd.pensionNetValue)}
-        sub={`Bruto: ${formatCurrency(rowEnd.pensionValue)} · Na ${(settings.pensionRecaptureRate * 100).toFixed(0)}% terugvordering · Crelan ${(CRELAN_RATE * 100).toFixed(2)}%/jaar, Baloise ${(settings.baloiseRate * 100).toFixed(1)}%/jaar`}
+        sub={`Bruto: ${formatCurrency(rowEnd.pensionValue)} · Na ${(settings.pensionRecaptureRate * 100).toFixed(0)}% terugvordering · Crelan ${(settings.crelanPensionRate * 100).toFixed(1)}%/jaar, Baloise ${(settings.baloiseRate * 100).toFixed(1)}%/jaar`}
         variant="purple"
       />
     </div>

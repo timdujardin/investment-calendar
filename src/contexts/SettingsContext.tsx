@@ -7,6 +7,7 @@ import {
   CAD_TO_EUR as DEFAULT_CAD_TO_EUR,
   CAPITAL_GAINS_TAX_RATE as DEFAULT_CAPITAL_GAINS_TAX,
   CASH_RESERVE as DEFAULT_CASH_RESERVE,
+  CRELAN_RATE as DEFAULT_CRELAN_PENSION_RATE,
   END_YEAR as DEFAULT_END_YEAR,
   INVESTMENT_MONTHLY as DEFAULT_MONTHLY,
   PENSION_RECAPTURE_RATE as DEFAULT_PENSION_RECAPTURE,
@@ -38,6 +39,11 @@ export interface AppSettings {
   cashReserve: number;
   boleroCash: number;
   investmentMonthly: number;
+  /**
+   * Rendement van het pensioenspaarfonds bij Crelan. Uitdrukkelijk niet de beleggingsplannen
+   * die ook via Crelan lopen: die rekenen met `rate`.
+   */
+  crelanPensionRate: number;
   baloiseRate: number;
   pensionRecaptureRate: number;
   transactionFeeRate: number;
@@ -56,6 +62,7 @@ const DEFAULTS: AppSettings = {
   cashReserve: DEFAULT_CASH_RESERVE,
   boleroCash: DEFAULT_BOLERO_CASH,
   investmentMonthly: DEFAULT_MONTHLY,
+  crelanPensionRate: DEFAULT_CRELAN_PENSION_RATE,
   baloiseRate: DEFAULT_BALOISE_RATE,
   pensionRecaptureRate: DEFAULT_PENSION_RECAPTURE,
   transactionFeeRate: DEFAULT_TRANSACTION_FEE,

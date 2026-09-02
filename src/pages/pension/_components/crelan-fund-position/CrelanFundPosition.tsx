@@ -2,12 +2,15 @@ import { memo, type FC } from 'react';
 
 import {
   CRELAN_LAST_KNOWN_NAV_DATE_ISO,
+  CRELAN_SWITCH_ISO,
+  CRELAN_SWITCH_VALUE,
   CRELAN_UNIT_DECIMALS,
   CRELAN_YAHOO_CHART_SYMBOL,
   CRELAN_YAHOO_QUOTE_URL,
 } from '@config/investment.config';
 import DetailCard from '@/components/atoms/detail-card/DetailCard';
 import { useCrelanPosition } from '@/hooks/crelan.hooks';
+import { CRELAN_DEPOSIT_COUNT } from '@/utils/crelanPosition.util';
 import {
   formatCurrency,
   formatIsoDateNl,
@@ -16,15 +19,26 @@ import {
   formatTimestampNl,
   getGainLossClass,
 } from '@/utils/format.util';
-import { CRELAN_DEPOSIT_COUNT } from '@/utils/crelanPosition.util';
 
 const CrelanFundPosition: FC = () => {
-  const { invested, units, value, pnl, returnPercent, averageCostNav, nav, navDateMs, navIsFallback } =
-    useCrelanPosition();
+  const {
+    invested,
+    units,
+    unitsAreEstimated,
+    value,
+    pnl,
+    returnPercent,
+    averageCostNav,
+    nav,
+    navDateMs,
+    navIsFallback,
+  } = useCrelanPosition();
 
   const asOf = navIsFallback
     ? `Laatst bekende koers ${formatIsoDateNl(CRELAN_LAST_KNOWN_NAV_DATE_ISO)}`
     : `Slotkoers ${formatTimestampNl(navDateMs)}`;
+
+  const unitsLabel = `${unitsAreEstimated ? '± ' : ''}${units.toFixed(CRELAN_UNIT_DECIMALS)} eenheden`;
 
   return (
     <div className="fund-position">
@@ -35,7 +49,7 @@ const CrelanFundPosition: FC = () => {
         <DetailCard
           label="Gestort (geschat)"
           value={formatCurrency(invested)}
-          sub={`${CRELAN_DEPOSIT_COUNT} maandelijkse stortingen · gemiddelde aankoopkoers ${averageCostNav != null ? formatCurrency(averageCostNav) : '—'}`}
+          sub={`${CRELAN_DEPOSIT_COUNT} maandelijkse stortingen · break-evenkoers ${averageCostNav != null ? formatCurrency(averageCostNav) : '—'}`}
         />
         <DetailCard
           label="Waarde op slotkoers"
@@ -46,7 +60,7 @@ const CrelanFundPosition: FC = () => {
                 {formatSignedCurrency(pnl)} ({formatSignedPercent(returnPercent)})
               </span>
               <br />
-              {units.toFixed(CRELAN_UNIT_DECIMALS)} eenheden
+              {unitsLabel}
             </>
           }
           valueClassName="text-pension"
@@ -57,11 +71,18 @@ const CrelanFundPosition: FC = () => {
           De live koers is niet beschikbaar; de waardering gebruikt de laatst bekende koers uit je Crelan-overzicht.
         </p>
       ) : null}
+      {unitsAreEstimated ? (
+        <p className="fund-position__status fund-position__status--warn">
+          Je Crelan-overzicht toont na de wissel van {formatIsoDateNl(CRELAN_SWITCH_ISO)} nog geen eenheden. Zolang dat
+          duurt zijn ze geschat uit de {formatCurrency(CRELAN_SWITCH_VALUE)} die mee verhuisde, gedeeld door de koers
+          van die dag.
+        </p>
+      ) : null}
       <p className="detail-section__disclaimer">
-        Het aantal eenheden komt rechtstreeks van je Crelan-overzicht, dus de waarde is exact. Het gestorte bedrag staat
-        er niet op en is een reconstructie; tegen de werkelijke fondskoersen lijkt het zo&apos;n € 470 te laag, waardoor
-        winst en rendement hier geflatteerd zijn. Vind je het echte bedrag op een fiscaal attest, vul dan
-        `CRELAN_INVESTED_TOTAL` in. Geen beleggingsadvies.{' '}
+        Sinds de wissel van BNP Paribas B Pension Balanced naar Growth staat er meer in aandelen en minder in
+        staatsobligaties. Er verhuisde enkel waarde, geen nieuwe inleg. Dat gestorte bedrag staat niet op het overzicht
+        en is een reconstructie; tegen de werkelijke koersen van het oude fonds lijkt het zo&apos;n € 470 te laag,
+        waardoor winst en rendement hier geflatteerd zijn. Geen beleggingsadvies.{' '}
         <a className="fund-position__link" href={CRELAN_YAHOO_QUOTE_URL} target="_blank" rel="noreferrer">
           Yahoo Finance — {CRELAN_YAHOO_CHART_SYMBOL}
         </a>

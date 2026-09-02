@@ -109,6 +109,7 @@ export const usePensionChartData = () => {
     () =>
       combinedData.map((r: CombinedYearRow) => ({
         year: String(r.year),
+        bruto: r.pensionValue,
         netto: r.pensionNetValue,
         terugvordering: r.pensionRecapture,
       })),

@@ -1,6 +1,5 @@
 import { useCallback, type FC } from 'react';
 
-import { CRELAN_RATE } from '@config/investment.config';
 import type { DividendPayout, InvestmentPosition, MonthlyInvestmentPlan } from '@/@types/investment';
 import PageHeader from '@/components/atoms/page-header/PageHeader';
 import { useSettings } from '@/contexts/SettingsContext';
@@ -84,8 +83,8 @@ const SettingsPage: FC = () => {
         <h2 className="settings-section__title">Projectie-instellingen</h2>
         <section className="settings-section">
           <span className="settings-field__hint">
-            Rendement wordt toegepast op Bolero-posities en Crelan-beleggingsplannen. Pensioensparen heeft eigen vaste
-            rentetarieven.
+            Rendement wordt toegepast op Bolero-posities en Crelan-beleggingsplannen. Pensioensparen heeft eigen
+            rendementen, in te stellen onderaan.
           </span>
           <div className="settings-field">
             <label className="settings-field__label">Winstpercentage</label>
@@ -275,9 +274,7 @@ const SettingsPage: FC = () => {
                         onCommit={(v) => updatePosition(i, { analystTargetPerShare: v })}
                       />
                     </div>
-                    <span className="settings-field__hint">
-                      Per aandeel · 0 laat de scenariolijn op de grafiek weg
-                    </span>
+                    <span className="settings-field__hint">Per aandeel · 0 laat de scenariolijn op de grafiek weg</span>
                   </div>
                 </div>
 
@@ -459,11 +456,11 @@ const SettingsPage: FC = () => {
           </div>
         </section>
 
-        <h2 className="settings-section__title">Crelan</h2>
+        <h2 className="settings-section__title">Crelan beleggingsplannen</h2>
         <section className="settings-section">
           <span className="settings-field__hint">
-            Beleggingsplannen beheerd door Crelan · Totaal: €{nominalMonthly}/mnd bruto · €{effectiveMonthly.toFixed(2)}
-            /mnd effectief
+            Beleggingsplannen beheerd door Crelan, los van het pensioensparen hieronder · Totaal: €{nominalMonthly}/mnd
+            bruto · €{effectiveMonthly.toFixed(2)}/mnd effectief
           </span>
 
           {settings.monthlyPlans.map((plan, i) => (
@@ -525,30 +522,55 @@ const SettingsPage: FC = () => {
             </span>
           </div>
 
-          <div className="settings-field">
-            <label className="settings-field__label" htmlFor="baloise-rate">
-              Baloise rendement
-            </label>
-            <div className="settings-field__input-wrap">
-              <NumericInput
-                id="baloise-rate"
-                className="settings-field__input"
-                inputMode="decimal"
-                min="0"
-                max="20"
-                step="0.25"
-                numericValue={settings.baloiseRate}
-                toDisplay={toPercent}
-                fromDisplay={fromPercent}
-                onCommit={(v) => updateSettings({ baloiseRate: v })}
-              />
-              <span className="settings-field__suffix">%/jaar</span>
+          <div className="settings-field-row">
+            <div className="settings-field">
+              <label className="settings-field__label" htmlFor="crelan-pension-rate">
+                Crelan Pension Fund Growth
+              </label>
+              <div className="settings-field__input-wrap">
+                <NumericInput
+                  id="crelan-pension-rate"
+                  className="settings-field__input"
+                  inputMode="decimal"
+                  min="0"
+                  max="20"
+                  step="0.25"
+                  numericValue={settings.crelanPensionRate}
+                  toDisplay={toPercent}
+                  fromDisplay={fromPercent}
+                  onCommit={(v) => updateSettings({ crelanPensionRate: v })}
+                />
+                <span className="settings-field__suffix">%/jaar</span>
+              </div>
+              <span className="settings-field__hint">
+                Afgesloten contract: waardering op de actuele fondskoers, daarna enkel nog rendement
+              </span>
             </div>
-            <span className="settings-field__hint">Maandelijkse bijdrage met samengesteld rendement</span>
+            <div className="settings-field">
+              <label className="settings-field__label" htmlFor="baloise-rate">
+                Baloise R-co Valor
+              </label>
+              <div className="settings-field__input-wrap">
+                <NumericInput
+                  id="baloise-rate"
+                  className="settings-field__input"
+                  inputMode="decimal"
+                  min="0"
+                  max="20"
+                  step="0.25"
+                  numericValue={settings.baloiseRate}
+                  toDisplay={toPercent}
+                  fromDisplay={fromPercent}
+                  onCommit={(v) => updateSettings({ baloiseRate: v })}
+                />
+                <span className="settings-field__suffix">%/jaar</span>
+              </div>
+              <span className="settings-field__hint">Maandelijkse bijdrage met samengesteld rendement</span>
+            </div>
           </div>
           <span className="settings-field__hint">
-            Crelan rendement: {(CRELAN_RATE * 100).toFixed(2)}%/jaar (vast) — afgesloten contract, waardering op de
-            actuele fondskoers en daarna enkel nog rendement
+            Deze twee gelden enkel voor het pensioensparen. De beleggingsplannen hierboven rekenen met het
+            winstpercentage bovenaan.
           </span>
         </section>
 

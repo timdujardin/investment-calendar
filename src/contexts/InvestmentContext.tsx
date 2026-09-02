@@ -1,6 +1,6 @@
 import { createContext, useContext, useMemo, type FC, type ReactNode } from 'react';
 
-import { CRELAN_RATE, INVESTMENT_FIRST_YEAR_MONTHS } from '@config/investment.config';
+import { INVESTMENT_FIRST_YEAR_MONTHS } from '@config/investment.config';
 import { useSettings } from '@/contexts/SettingsContext';
 import { useCrelanPosition } from '@/hooks/crelan.hooks';
 import { useSavingsData } from '@/hooks/savingsTracker.hooks';
@@ -20,12 +20,12 @@ const InvestmentProvider: FC<{ children: ReactNode }> = ({ children }) => {
 
   const pensionInputs = useMemo(
     () => ({
-      crelanRate: CRELAN_RATE,
+      crelanRate: settings.crelanPensionRate,
       baloiseRate: settings.baloiseRate,
       crelanStartValue: crelanPosition.value,
       crelanInvested: crelanPosition.invested,
     }),
-    [settings.baloiseRate, crelanPosition.value, crelanPosition.invested],
+    [settings.crelanPensionRate, settings.baloiseRate, crelanPosition.value, crelanPosition.invested],
   );
 
   const value = useMemo(() => {

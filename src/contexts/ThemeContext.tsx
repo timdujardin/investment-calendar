@@ -1,20 +1,41 @@
-import { createContext, useCallback, useContext, useEffect, useMemo, useState, type FC, type ReactNode } from 'react';
+import {
+  createContext,
+  useCallback,
+  useContext,
+  useEffect,
+  useMemo,
+  useState,
+  useSyncExternalStore,
+  type FC,
+  type ReactNode,
+} from 'react';
 
 type Theme = 'light' | 'dark';
 
 const STORAGE_KEY = 'investment-calendar-theme';
+const COLOR_SCHEME_QUERY = '(prefers-color-scheme: dark)';
 
-const getInitialTheme = (): Theme => {
+/** Expliciete keuze van de gebruiker, of `null` zolang die de systeemvoorkeur volgt. */
+const getStoredTheme = (): Theme | null => {
   if (typeof window === 'undefined') {
-    return 'light';
+    return null;
   }
-  const stored = localStorage.getItem(STORAGE_KEY) as Theme | null;
-  if (stored === 'light' || stored === 'dark') {
-    return stored;
-  }
+  const stored = localStorage.getItem(STORAGE_KEY);
 
-  return window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
+  return stored === 'light' || stored === 'dark' ? stored : null;
 };
+
+const subscribeToColorScheme = (onChange: () => void): (() => void) => {
+  const media = window.matchMedia(COLOR_SCHEME_QUERY);
+  media.addEventListener('change', onChange);
+
+  return () => media.removeEventListener('change', onChange);
+};
+
+const getSystemTheme = (): Theme => (window.matchMedia(COLOR_SCHEME_QUERY).matches ? 'dark' : 'light');
+
+/** Er is geen server-render; dit is enkel de waarde die `useSyncExternalStore` verplicht stelt. */
+const getServerTheme = (): Theme => 'light';
 
 interface ThemeContextValue {
   theme: Theme;
@@ -25,7 +46,14 @@ interface ThemeContextValue {
 const ThemeContext = createContext<ThemeContextValue | null>(null);
 
 const ThemeProvider: FC<{ children: ReactNode }> = ({ children }) => {
-  const [theme, setThemeState] = useState<Theme>(getInitialTheme);
+  /**
+   * De systeemvoorkeur is een externe bron die buiten React om verandert, dus die komt via
+   * `useSyncExternalStore` binnen in plaats van via een Effect dat state bijhoudt.
+   */
+  const systemTheme = useSyncExternalStore(subscribeToColorScheme, getSystemTheme, getServerTheme);
+  const [storedTheme, setStoredTheme] = useState<Theme | null>(getStoredTheme);
+
+  const theme = storedTheme ?? systemTheme;
 
   useEffect(() => {
     document.documentElement.setAttribute('data-theme', theme);
@@ -35,19 +63,8 @@ const ThemeProvider: FC<{ children: ReactNode }> = ({ children }) => {
     }
   }, [theme]);
 
-  useEffect(() => {
-    const media = window.matchMedia('(prefers-color-scheme: dark)');
-    const handler = () => {
-      if (!localStorage.getItem(STORAGE_KEY)) {
-        setThemeState(media.matches ? 'dark' : 'light');
-      }
-    };
-    media.addEventListener('change', handler);
-    return () => media.removeEventListener('change', handler);
-  }, []);
-
   const setTheme = useCallback((newTheme: Theme) => {
-    setThemeState(newTheme);
+    setStoredTheme(newTheme);
     localStorage.setItem(STORAGE_KEY, newTheme);
   }, []);
 
